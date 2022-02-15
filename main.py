@@ -3,6 +3,7 @@ import csv
 import datetime
 import random
 import subprocess
+import sys
 import threading
 import time
 import discord
@@ -13,13 +14,25 @@ import uwu_data
 react_on = "$"
 client = discord.Client()
 csv_writer_lock = threading.Lock()
-csvfile = open('msgs.csv', 'a', newline='')
+csvfile = open('/home/langj/owo/msgs.csv', 'a', newline='')
 msgwriter = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
+gen_res = open('/home/langj/owo/generated9.owo')
+gen_reader = csv.reader(gen_res)
+
+BASE = "https://discord.com/api/v9/"
+TOKEN = "Nzc5NDEwMDM4NDQ3NDA3MTM2.X7gIKQ.2yMGGTAg-0BBQ_vTj4Jh4TdvrxQ"
+client.run(TOKEN)
+bot = discord.Bot()
+bot.run(TOKEN)
 
 @client.event
 async def on_ready():
     print(f"Hellowo, mwy nwame is {client.user}")
 
+
+@bot.slash_command()
+async def hello(ctx):
+    await ctx.respond("Hewwo:)")
 
 def timeout_user(*, user_id: int, guild_id: int, until: int):
     endpoint = f'guilds/{guild_id}/members/{user_id}'
@@ -40,6 +53,15 @@ async def on_message(message):
     elif message.author.id == -1:
         print("trying to timeout uwu")
         await timeout_user(user_id=message.author.id, guild_id=message.guild.id, until=1)
+    if message.content == (f"{react_on}generate"):
+        resp = next(gen_reader)[0][:1999].replace("<|startoftext|>","\n").replace("<|endoftext|>","").replace("<","")
+        await message.channel.send(resp)
+    if message.content == f"{react_on}obamamedal":
+        await message.channel.send("https://media.discordapp.net/attachments/798609300955594782/816701722818117692/obama.jpg")
+    if message.content == f"{react_on}owobamamedal":
+        await message.channel.send("https://cdn.discordapp.com/attachments/938102328282722345/939605208999264367/Unbenannt.png")
+    if message.content == f"{react_on}crash":
+        sys.exit(0)
     if message.content == f"{react_on}hello":
         rep = "Hello"
         if random.randint(0, 10) > 5:
@@ -49,7 +71,12 @@ async def on_message(message):
         await message.channel.send(rep)
     elif message.content.startswith(f"{react_on}bottom"):
         bottomify = message.content.split(f'{react_on}bottom', 1)[1]
-        uwu = subprocess.run(["./bottomify", "-b", bottomify], capture_output=True)
+        uwu = subprocess.run(["home/langj/nowobot/bottomify", "-b", bottomify], capture_output=True)
+        await message.channel.send(uwu.stdout.decode("utf8"))
+    elif message.content.startswith(f"{react_on}unbottom"):
+        bottomify = message.content.split(f'{react_on}unbottom', 1)[1]
+        print(bottomify)
+        uwu = subprocess.run(["./bottomify", "-r", bottomify], capture_output=True)
         await message.channel.send(uwu.stdout.decode("utf8"))
     elif message.content == f"{react_on}help":
         rep = """```K-Konichiwa!
@@ -93,6 +120,16 @@ $owo - OwO```"""
                 is_only_alpha = False
         if owo_score < 1 and not is_only_alpha and message.channel.id == 937306121901850684:
             answer = owo.owofy(msg)
+            spoiler_tok = answer.split('||')
+            na = ""
+            is_spoiler = False
+            for tok in range(0, len(spoiler_tok)):
+                is_spoiler = not is_spoiler
+                if is_spoiler and tok + 1 < len(spoiler_tok):
+                    na += "█" * len(spoiler_tok[tok])
+                else:
+                    na += spoiler_tok[tok]
+            answer = na
             answer_score = owo.score(answer)
             print(answer_score)
             await message.channel.send(
@@ -102,6 +139,3 @@ $owo - OwO```"""
         msgwriter.writerow([message.author.id, message.channel.id, time.time(), message.content])
         csvfile.flush()
 
-BASE = "https://discord.com/api/v9/"
-TOKEN = open("token.owo", "r").read()
-client.run(TOKEN)
