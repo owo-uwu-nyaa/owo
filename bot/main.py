@@ -61,7 +61,9 @@ def timeout_user(*, user_id: int, guild_id: int, until: int):
 def genRow(maxlen: int, curRow: int):
     ltr = chr(ord('A') + curRow)
     opad = maxlen - curRow - 1
-    return f"{'.' * opad}{ltr}{'.' * curRow * 2}{ltr}{'.' * opad}"
+    if (curRow == 0):
+        return f"{'.' * opad}{ltr}{'.' * opad}"
+    return f"{'.' * opad}{ltr}{'.' * ((curRow * 2) - 1)}{ltr}{'.' * opad}"
 
 
 @bot.command()
@@ -98,7 +100,7 @@ async def crash():
 async def redeploy(ctx):
     os.chdir(bpath)
     uwu = subprocess.run(["git", "pull"], capture_output=True)
-    await ctx.send(uwu)
+    await ctx.send(f"```\n{uwu}\n```")
     sys.exit(0)
 
 
