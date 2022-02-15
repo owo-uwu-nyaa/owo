@@ -71,6 +71,9 @@ async def diamond(ctx, nrows: int):
     if nrows > 22:
         await ctx.send(f"{random.choice(uwu_data.sowwy)}, thiws is too mwuch fow me to take nyaaa~")
         return
+    elif nrows < 1:
+        await ctx.send(f"{random.choice(uwu_data.sowwy)}, thiws is nwot enough fow me to take nyaaa~")
+        return
     else:
         result = []
         for i in range(0, nrows - 1):
@@ -138,7 +141,7 @@ async def love(ctx, msg: str):
 @bot.command(brief="OwO")
 async def owo(ctx):
     await ctx.send(random.choice(uwu_data.int_emote))
-
+    
 
 @bot.command(brief="owofy <msg> nyaa~~")
 async def owofy(ctx, *, msg: str):
