@@ -13,6 +13,7 @@ import requests
 from discord.ext import commands
 import owolib
 import uwu_data
+import catapi
 
 react_on = "$"
 client = discord.Client()
@@ -33,6 +34,8 @@ TOKEN = open(bpath + "token.owo", "r").read()
 desc = "Pwease end my misewy, nyaaa~"
 bot = commands.Bot(command_prefix=react_on, description=desc)
 
+catapi_key = open(bpath + "cat_token.owo", "r").read()
+catapi = catapi.CatApi(api_key=catapi_key)
 
 @bot.event
 async def on_ready():
@@ -141,7 +144,13 @@ async def love(ctx, msg: str):
 @bot.command(brief="OwO")
 async def owo(ctx):
     await ctx.send(random.choice(uwu_data.int_emote))
-    
+
+
+@bot.command(brief="cat")
+async def aww(ctx):
+    task = loop.create_task(catapi.search_images(limit=1))
+    await task
+    await ctx.send(task.result()[0].url)
 
 @bot.command(brief="owofy <msg> nyaa~~")
 async def owofy(ctx, *, msg: str):
