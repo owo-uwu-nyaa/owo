@@ -147,7 +147,7 @@ async def owo(ctx):
     await ctx.send(random.choice(uwu_data.int_emote))
 
 @bot.command(brief="lena")
-async def baaaa(ctx):
+async def baaa(ctx):
     await ctx.send("<@898152253330972672>")
     await ctx.send("https://cdn.discordapp.com/attachments/779413828051664966/943597938687508500/unknown.png")
     
