@@ -5,7 +5,7 @@ from langdetect import detect
 from aitextgen.tokenizers import train_tokenizer
 from aitextgen import aitextgen
 
-stripped_path = "stripped_msgs.txt"
+stripped_path = "gen_text.txt"
 msgs = []
 with open('msgs.csv', 'r', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
