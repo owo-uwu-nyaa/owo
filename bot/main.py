@@ -146,7 +146,10 @@ async def love(ctx, msg: str):
 async def owo(ctx):
     await ctx.send(random.choice(uwu_data.int_emote))
 
-
+@bot.command(brief="lena")
+async def baaaa(ctx):
+    await ctx.send("@898152253330972672")
+    
 @bot.command(brief="cat")
 async def aww(ctx):
     task = loop.create_task(catapi.search_images(limit=1))
