@@ -37,6 +37,7 @@ bot = commands.Bot(command_prefix=react_on, description=desc)
 catapi_key = open(bpath + "cat_token.owo", "r").read()
 catapi = catapi.CatApi(api_key=catapi_key)
 
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
@@ -93,7 +94,7 @@ async def obamamedal(ctx):
 
 
 @bot.command()
-async def owobamamedal(ctx):
+async def owobaamamedal(ctx):
     await ctx.send("https://cdn.discordapp.com/attachments/938102328282722345/939605208999264367/Unbenannt.png")
 
 
@@ -151,6 +152,7 @@ async def aww(ctx):
     task = loop.create_task(catapi.search_images(limit=1))
     await task
     await ctx.send(task.result()[0].url)
+
 
 @bot.command(brief="owofy <msg> nyaa~~")
 async def owofy(ctx, *, msg: str):
