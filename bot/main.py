@@ -148,7 +148,7 @@ async def owo(ctx):
 
 @bot.command(brief="lena")
 async def baaaa(ctx):
-    await ctx.send("@898152253330972672")
+    await ctx.send("<@898152253330972672> https://www.raisingsheep.net/wp-content/uploads/2015/07/what-is-a-baby-sheep-called-1024x538.jpg")
     
 @bot.command(brief="cat")
 async def aww(ctx):
