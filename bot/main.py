@@ -187,7 +187,8 @@ async def on_message(message):
     if message.author.id == -1:
         print("trying to timeout uwu")
         await timeout_user(user_id=message.author.id, guild_id=message.guild.id, until=1)
-    if re.match(r"^baaaa*", message.content):
+    #TODO this is very broken if the prefix changes
+    if re.match(f"^\$baaaa*", message.content):
         await message.channel.send("<@898152253330972672>")
         await message.channel.send(random.choice(lambs))
     if message.channel.id == 937306121901850684:
