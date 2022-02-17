@@ -21,6 +21,8 @@ react_on = "$"
 client = discord.Client()
 csv_writer_lock = threading.Lock()
 q_writer_lock = threading.Lock()
+hug_lock = threading.Lock()
+
 
 tries = 0
 bpath = f"{sys.argv[1]}/"
@@ -96,7 +98,7 @@ async def obamamedal(ctx):
 
 
 @bot.command()
-async def owobaamamedal(ctx):
+async def owobamamedal(ctx):
     await ctx.send("https://cdn.discordapp.com/attachments/938102328282722345/939605208999264367/Unbenannt.png")
 
 
@@ -164,9 +166,17 @@ async def baaa(ctx):
 
 @bot.command(brief="@someone <3")
 async def hug(ctx, member: discord.Member):
-    hug_json = requests.get("https://api.waifu.pics/sfw/hug").json()
-    await ctx.send(f"<@{ctx.author.id}> sends you a hug, <@{member.id}>")
-    await ctx.send(hug_json["url"])
+    url = random.choice(["https://api.waifu.pics/sfw/hug", "https://api.waifu.pics/sfw/cuddle"])
+    hug_json = requests.get(url).json()
+    if member.id == 174230172105441280:
+        hug_url = random.choice(["https://tenor.com/view/chibird-penguin-hug-gif-14248948", "https://tenor.com/view/cuddle-group-group-hug-friends-penguin-gif-13295520"])
+    else:
+        hug_url = hug_json["url"]
+    hugger_nick = ctx.author.nick if ctx.author.nick is not None else ctx.author.name
+    hugged_nick = member.nick if member.nick is not None else member.name
+    with hug_lock:
+        await ctx.send(f'{re.sub(r"[@!$]","",hugger_nick)} sends you a hug, {re.sub(r"[@!$]","",hugged_nick)}')
+        await ctx.send(hug_url)
 
 
 @bot.command(brief="cat")
