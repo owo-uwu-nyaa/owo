@@ -140,7 +140,7 @@ async def unbottom(ctx, msg: str):
 
 @bot.command()
 async def love(ctx, msg: str):
-    user = ctx.message.mentions[0]
+    user = ctx.author
     for i in range(0, random.randint(5, 25)):
         time.sleep(1)
         await user.send('👀')
