@@ -2,6 +2,7 @@
 import asyncio
 import csv
 import datetime
+import json
 import os
 import random
 import re
@@ -159,6 +160,13 @@ lambs = ["https://cdn.discordapp.com/attachments/779413828051664966/943597938687
 @bot.command(brief="lena")
 async def baaa(ctx):
     return
+
+
+@bot.command(brief="@someone <3")
+async def hug(ctx, member: discord.Member):
+    hug_json = requests.get("https://api.waifu.pics/sfw/hug").json()
+    await ctx.send(f"<@{ctx.author.id}> sends you a hug, <@{member.id}>")
+    await ctx.send(hug_json["url"])
 
 
 @bot.command(brief="cat")
