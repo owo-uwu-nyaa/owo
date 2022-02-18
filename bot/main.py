@@ -127,13 +127,13 @@ async def generate(ctx):
 
 
 @bot.command()
-async def bottom(ctx, msg: str):
+async def bottom(ctx, *, msg: str):
     bottom = subprocess.run([bpath + "bottomify", "-b", msg], capture_output=True)
     await ctx.send(bottom.stdout.decode("utf8"))
 
 
 @bot.command()
-async def unbottom(ctx, msg: str):
+async def unbottom(ctx, *, msg: str):
     uwu = subprocess.run([bpath + "bottomify", "-r", msg], capture_output=True)
     await ctx.send(uwu.stdout.decode("utf8"))
 
