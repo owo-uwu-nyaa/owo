@@ -44,9 +44,7 @@ class Quotes(commands.Cog):
         cur.execute("SELECT * FROM quotes WHERE quotes.quote ILIKE %s ESCAPE ''", (f"%%{msg.replace('%', '')}%%",))
         res = cur.fetchone()
         author_id = res[1]
-        author = ctx.guild.get_member(author_id)
-        if author is None:
-            author = await self.bot.fetch_user(author_id)
+        author = await common.author_id_to_obj(self.bot, author_id, ctx)
         await ctx.channel.send(f"```\n{res[3].replace('`', '')}``` - {common.get_nick_or_name(author)}")
         cur.close()
         self.pool.putconn(conn)
@@ -59,9 +57,7 @@ class Quotes(commands.Cog):
         res = cur.fetchall()
         for qt in res:
             author_id = qt[1]
-            author = ctx.guild.get_member(author_id)
-            if author is None:
-                author = await self.bot.fetch_user(author_id)
+            author = await common.author_id_to_obj(self.bot, author_id, ctx)
             await ctx.channel.send(f"```\n{qt[3].replace('`', '')}``` - {common.get_nick_or_name(author)}")
         cur.close()
         self.pool.putconn(conn)
