@@ -112,5 +112,5 @@ class Stats(commands.Cog):
         dft = dft.orderBy("date", ascending=False)
         dfp = dft.toPandas()
         fig = px.line(dfp, x="date", y="count", color="name")
-        fig.write_image(self.bpath + "yeet.png")
+        fig.write_image(self.bpath + "yeet.png", scale=3)
         await ctx.channel.send(file=discord.File(self.bpath + "yeet.png"))
