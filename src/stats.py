@@ -41,6 +41,7 @@ class Stats(commands.Cog):
 
     async def check_allow_query(self, ctx):
         if self.spark_lock.locked():
+            await ctx.channel.send(f"Sorry, another query seems to be running")
             return False
 
     @commands.group()
@@ -49,7 +50,7 @@ class Stats(commands.Cog):
 
     @stats.command(brief="when do you procrastinate?")
     async def activity(self, ctx):
-        if not self.check_allow_query(ctx):
+        if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx.author)
@@ -60,7 +61,7 @@ class Stats(commands.Cog):
 
     @stats.command(brief="use your words")
     async def words(self, ctx):
-        if not self.check_allow_query(ctx):
+        if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx.author)
@@ -73,7 +74,7 @@ class Stats(commands.Cog):
 
     @stats.command(brief="use your ~~words~~ letters")
     async def letters(self, ctx):
-        if not self.check_allow_query(ctx):
+        if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx.author)
