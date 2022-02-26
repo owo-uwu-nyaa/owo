@@ -43,6 +43,7 @@ class Stats(commands.Cog):
         if self.spark_lock.locked():
             await ctx.channel.send(f"Sorry, another query seems to be running")
             return False
+        return True
 
     @commands.group()
     async def stats(self, ctx):
