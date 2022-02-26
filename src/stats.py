@@ -71,3 +71,17 @@ class Stats(commands.Cog):
                 .orderBy("count", ascending=False)
             res = get_show_string(dfw, n=20)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
+
+    @stats.command(brief="use your ~~words~~ letters")
+    async def letters(self, ctx):
+        if not self.check_allow_query(ctx):
+            return
+        with self.spark_lock:
+            dfa = self.get_messages_by_author(ctx.author)
+            dfl = dfa.withColumn("letter", explode(split(col("msg"), ""))) \
+                .groupBy("letter") \
+                .count() \
+                .filter(ascii("letter") != 0) \
+                .orderBy("count", ascending=False)
+            res = get_show_string(dfl, n=20)
+            await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
