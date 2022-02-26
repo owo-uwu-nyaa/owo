@@ -41,7 +41,6 @@ class Stats(commands.Cog):
 
     async def check_allow_query(self, ctx):
         if self.spark_lock.locked():
-            await ctx.channel.send(f"Sorry, another query seems to be running")
             return False
 
     @commands.group()
