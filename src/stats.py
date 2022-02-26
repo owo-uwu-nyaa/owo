@@ -1,5 +1,5 @@
 import threading
-
+import io
 import discord
 import pandas
 
@@ -112,5 +112,7 @@ class Stats(commands.Cog):
         dft = dft.orderBy("date", ascending=False)
         dfp = dft.toPandas()
         fig = px.line(dfp, x="date", y="count", color="name")
-        fig.write_image(self.bpath + "yeet.png", scale=3)
-        await ctx.channel.send(file=discord.File(self.bpath + "yeet.png"))
+        img = io.BytesIO()
+        fig.write_image(img, format="png", scale=3)
+        img.seek(0)
+        await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
