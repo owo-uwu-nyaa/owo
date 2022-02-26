@@ -23,6 +23,7 @@ class Stats(commands.Cog):
     def __init__(self, bot, bpath):
         self.bot = bot
         self.spark_lock = threading.Lock()
+        self.bpath = bpath
         sc = spark.sparkContext
 
         schema = StructType([
@@ -111,5 +112,5 @@ class Stats(commands.Cog):
         dft = dft.orderBy("date", ascending=False)
         dfp = dft.toPandas()
         fig = px.line(dfp, x="date", y="count", color="name")
-        fig.write_image("yeet.png")
-        await ctx.channel.send(file=discord.File("yeet.png"))
+        fig.write_image(self.bpath + "yeet.png")
+        await ctx.channel.send(file=discord.File(self.bpath + "yeet.png"))
