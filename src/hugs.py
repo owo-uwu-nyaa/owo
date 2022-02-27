@@ -43,11 +43,6 @@ class Hugs(commands.Cog):
         gelbooru_url = await self.get_hug_gelbooru(ctx, tag_str)
         await send_hug(ctx, member, str(gelbooru_url))
 
-    @commands.command(brief="@someone <3 (hug someone from behind)")
-    async def hug_behind(self, ctx, member: discord.Member):
-        gelbooru_url = await self.get_hug_gelbooru(ctx, 'hug hug_from_behind')
-        await send_hug(ctx, member, str(gelbooru_url))
-
     @commands.command(brief="@someone <3 (people hugging)")
     async def ahug(self, ctx, member: discord.Member):
         gelbooru_url = await self.get_hug_gelbooru(ctx, 'hug androgynous')
