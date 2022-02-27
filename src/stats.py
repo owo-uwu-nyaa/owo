@@ -95,26 +95,28 @@ class Stats(commands.Cog):
 
     @stats.command(brief="make history")
     async def history(self, ctx, *members: discord.Member):
-         if not await self.check_allow_query(ctx):
+        if not await self.check_allow_query(ctx):
             return
-        with self.spark_lock:
-            author_mappings = []
-            if len(members) == 0:
-                dfq = self.df.groupBy("author_id").count().orderBy("count", ascending=False).limit(10)
-                for r in dfq.collect():
-                    author_mappings.append((common.get_nick_or_name(await common.author_id_to_obj(self.bot, r["author_id"], ctx)), r["author_id"]))
-            else:
-                for m in members:
-                    author_mappings.append((common.get_nick_or_name(m), m.id))
-            author_mappings_df = spark.createDataFrame(data=author_mappings, schema=["name", "id"])
-            dft = self.df.drop("channel_id", "msg")
-            dft = dft.withColumn("date", date_trunc("day", "u_time"))
-            dft = dft.groupBy("date", "author_id").agg(count("date").alias("count"))
-            dft = dft.join(author_mappings_df, self.df["author_id"] == author_mappings_df["id"])
-            dft = dft.orderBy("date", ascending=False)
-            dfp = dft.toPandas()
-            fig = px.line(dfp, x="date", y="count", color="name")
-            img = io.BytesIO()
-            fig.write_image(img, format="png", scale=3)
-            img.seek(0)
-            await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
+
+    with self.spark_lock:
+        author_mappings = []
+        if len(members) == 0:
+            dfq = self.df.groupBy("author_id").count().orderBy("count", ascending=False).limit(10)
+            for r in dfq.collect():
+                author_mappings.append((common.get_nick_or_name(
+                    await common.author_id_to_obj(self.bot, r["author_id"], ctx)), r["author_id"]))
+        else:
+            for m in members:
+                author_mappings.append((common.get_nick_or_name(m), m.id))
+        author_mappings_df = spark.createDataFrame(data=author_mappings, schema=["name", "id"])
+        dft = self.df.drop("channel_id", "msg")
+        dft = dft.withColumn("date", date_trunc("day", "u_time"))
+        dft = dft.groupBy("date", "author_id").agg(count("date").alias("count"))
+        dft = dft.join(author_mappings_df, self.df["author_id"] == author_mappings_df["id"])
+        dft = dft.orderBy("date", ascending=False)
+        dfp = dft.toPandas()
+        fig = px.line(dfp, x="date", y="count", color="name")
+        img = io.BytesIO()
+        fig.write_image(img, format="png", scale=3)
+        img.seek(0)
+        await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
