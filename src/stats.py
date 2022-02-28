@@ -1,3 +1,4 @@
+import asyncio
 import threading
 import io
 import discord
@@ -38,17 +39,31 @@ class Stats(commands.Cog):
             .schema(schema) \
             .csv(bpath + "msgs.csv")
 
-        self.df = self.df.withColumn("u_time", from_unixtime("time")).drop("time")
+        # TODO fix this by writing and using guild ids
+        # unfortunately, i did not write the guild id with old messages - these are dumb hardcoded channels which contain garbage messages
+        rejectChans = [937308889425281034, 946545522167124000, 779413828051664966, 498443061316157455,
+                       170911988346519553, 877658158460452874, 779414116812849192, 194411030607167491]
+        self.df = self.df.filter(~self.df["channel_id"].isin(rejectChans)).withColumn("u_time",
+                                                                                      from_unixtime("time")).drop(
+            "time")
 
     def get_messages_by_author(self, author):
-        rejectChans = [937308889425281034, 946545522167124000, 779413828051664966]
-        return self.df.filter((col("author_id") == author.id) & (~self.df["channel_id"].isin(rejectChans)))
+        return self.df.filter((col("author_id") == author.id))
 
     async def check_allow_query(self, ctx):
         if self.spark_lock.locked():
             await ctx.channel.send(f"Sorry, another query seems to be running")
             return False
         return True
+
+    async def get_names_from_df(self, ctx, relevant_hug_ids):
+        # TODO this cant be really the correct way of gathering all names, is this even done in parallel? Maybe pycord blocks?
+        async def f(r):
+            return (
+                common.get_nick_or_name(await common.author_id_to_obj(self.bot, r["author_id"], ctx)), r["author_id"])
+
+        mappings = await asyncio.gather(*[f(r) for r in relevant_hug_ids.collect()])
+        return spark.createDataFrame(data=mappings, schema=["name", "id"])
 
     @commands.group()
     async def stats(self, ctx):
@@ -97,6 +112,7 @@ class Stats(commands.Cog):
         if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
+            # gather relevant authors
             author_mappings = []
             if len(members) == 0:
                 dfq = self.df.groupBy("author_id").count().orderBy("count", ascending=False).limit(10)
@@ -107,11 +123,13 @@ class Stats(commands.Cog):
                 for m in members:
                     author_mappings.append((common.get_nick_or_name(m), m.id))
             author_mappings_df = spark.createDataFrame(data=author_mappings, schema=["name", "id"])
+            # get msg counts
             dft = self.df.drop("channel_id", "msg") \
                 .join(author_mappings_df.drop("name"), self.df["author_id"] == author_mappings_df["id"]) \
                 .withColumn("date", date_trunc("day", "u_time")) \
                 .groupBy("date", "author_id") \
                 .agg(count("date").alias("count"))
+            # fill gaps in data with zeros, replace ids with names
             dfp = dft.toPandas() \
                 .pivot(index="date", columns="author_id", values="count") \
                 .asfreq("1D", fill_value=0) \
@@ -124,3 +142,33 @@ class Stats(commands.Cog):
             fig.write_image(img, format="png", scale=3)
             img.seek(0)
             await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
+
+    @stats.command(brief="see all the lovebirbs #choo choo #ship", alias="ships")
+    async def couples(self, ctx):
+        if not await self.check_allow_query(ctx):
+            return
+        with self.spark_lock:
+            df_hugs = self.df.drop("channel_id", "u_time") \
+                .withColumn("hug_target",
+                            regexp_extract(
+                                col("msg"), "(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug)) <@!)\\d{18}(?=(>.*))", 0)
+                            .cast(LongType())) \
+                .drop("msg")
+            df_hug_counts = df_hugs.filter(df_hugs["hug_target"].isNotNull()) \
+                .rdd.map(lambda x: (x[0], x[1]) if x[0] > x[1] else (x[1], x[0])) \
+                .toDF() \
+                .groupBy(["_1", "_2"]) \
+                .count() \
+                .limit(40)
+            relevant_hug_ids = df_hug_counts.select("_1").withColumnRenamed("_1", "author_id") \
+                .union(df_hug_counts.select("_2").withColumnRenamed("_2", "author_id")) \
+                .drop_duplicates()
+            author_mappings = await self.get_names_from_df(ctx, relevant_hug_ids)
+            df_hug_counts_names = df_hug_counts.join(author_mappings, df_hug_counts["_1"] == author_mappings["id"]) \
+                .withColumnRenamed("name", "#1").drop("id", "_1") \
+                .join(author_mappings, df_hug_counts["_2"] == author_mappings["id"]) \
+                .withColumnRenamed("name", "#2").drop("id", "_2") \
+                .orderBy("count", ascending=False) \
+                .select("#1", "#2", "count")
+            res = get_show_string(df_hug_counts_names, 40)
+            await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
