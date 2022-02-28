@@ -19,7 +19,7 @@ def main():
     token = open(bpath + "token.owo", "r").read()
     desc = "Pwease end my misewy, nyaaa~"
     intents = discord.Intents().all()
-    allowed_mentions = discord.AllowedMentions(users=False, everyone=False, roles=False, replied_user=False)
+    allowed_mentions = discord.AllowedMentions(users=True, everyone=False, roles=False, replied_user=False)
     bot = commands.Bot(command_prefix=react_on, description=desc, intents=intents, allowed_mentions=allowed_mentions)
 
     bot.add_cog(Hugs(bot))
