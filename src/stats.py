@@ -98,7 +98,7 @@ class Stats(commands.Cog):
         if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
-            dfa = self.get_messages_by_author(ctx.author)
+gather            dfa = self.get_messages_by_author(ctx.author)
             dfl = dfa.withColumn("letter", explode(split(col("msg"), ""))) \
                 .groupBy("letter") \
                 .count() \
