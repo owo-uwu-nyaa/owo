@@ -159,7 +159,7 @@ class Stats(commands.Cog):
                 .toDF() \
                 .groupBy(["_1", "_2"]) \
                 .count() \
-                .limit(40)
+                .limit(30)
             relevant_hug_ids = df_hug_counts.select("_1").withColumnRenamed("_1", "author_id") \
                 .union(df_hug_counts.select("_2").withColumnRenamed("_2", "author_id")) \
                 .drop_duplicates()
@@ -170,5 +170,5 @@ class Stats(commands.Cog):
                 .withColumnRenamed("name", "#2").drop("id", "_2") \
                 .orderBy("count", ascending=False) \
                 .select("#1", "#2", "count")
-            res = get_show_string(df_hug_counts_names, 40)
+            res = get_show_string(df_hug_counts_names, 30)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
