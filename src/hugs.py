@@ -39,13 +39,9 @@ class Hugs(commands.Cog):
         await send_hug(ctx, member, str(gelbooru_url))
 
     @commands.command(brief="@someone <3 (customize your hug!)")
-    async def hugc(self, ctx, member: discord.Member, tag_str: str):
-        gelbooru_url = await self.get_hug_gelbooru(ctx, tag_str)
-        await send_hug(ctx, member, str(gelbooru_url))
-
-    @commands.command(brief="@someone <3 (hug someone from behind)")
-    async def hug_behind(self, ctx, member: discord.Member):
-        gelbooru_url = await self.get_hug_gelbooru(ctx, 'hug hug_from_behind')
+    async def hugc(self, ctx, member: discord.Member, *tags: str):
+        #convert tags to a space separated string, as thats what get_hug_gelbooru expects
+        gelbooru_url = await self.get_hug_gelbooru(ctx, " ".join(tags))
         await send_hug(ctx, member, str(gelbooru_url))
 
     @commands.command(brief="@someone <3 (people hugging)")
