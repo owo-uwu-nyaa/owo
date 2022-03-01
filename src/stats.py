@@ -159,6 +159,7 @@ class Stats(commands.Cog):
                 .toDF() \
                 .groupBy(["_1", "_2"]) \
                 .count() \
+                .orderBy("count", ascending=False) \
                 .limit(30)
             relevant_hug_ids = df_hug_counts.select("_1").withColumnRenamed("_1", "author_id") \
                 .union(df_hug_counts.select("_2").withColumnRenamed("_2", "author_id")) \
