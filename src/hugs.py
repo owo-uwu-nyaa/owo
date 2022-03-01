@@ -32,6 +32,12 @@ class Hugs(commands.Cog):
     async def hug(self, ctx, member: discord.Member):
         gelbooru_url = await self.get_hug_gelbooru(ctx, 'hug')
         await send_hug(ctx, member, str(gelbooru_url))
+        
+    @commands.command(brief="@someone <3")
+    async def bonk(self, ctx, member: discord.Member):
+        name = common.get_nick_or_name(ctx.author)
+        name2 = common.get_nick_or_name(member)
+        await ctx.send(f"{name} {owolib.owofy("bonkt")} {name2})
 
     @commands.command(brief="@someone <3 (2 boys hugging)")
     async def bhug(self, ctx, member: discord.Member):
