@@ -36,18 +36,13 @@ class Hugs(commands.Cog):
         other = common.get_nick_or_name(member)
         await ctx.send(f"{name} {owolib.owofy('bonkt')} {other} <:pingbonk:940280394736074763>")
 
-    @commands.command(brief="@someone <3")
-    async def hug(self, ctx, member: discord.Member):
-        gelbooru_url = await self.get_hug_gelbooru(ctx, 'hug')
-        await send_hug(ctx, member, str(gelbooru_url))
-
     @commands.command(brief="@someone <3 (2 boys hugging)")
     async def bhug(self, ctx, member: discord.Member):
         gelbooru_url = await self.get_hug_gelbooru(ctx, 'hug 2boys')
         await send_hug(ctx, member, str(gelbooru_url))
 
-    @commands.command(brief="@someone <3 (customize your hug!)")
-    async def hugc(self, ctx, member: discord.Member, *tags: str):
+    @commands.command(brief="@someone <3 (customize your hug!)", aliases=["hugc"])
+    async def hug(self, ctx, member: discord.Member, *tags: str):
         #convert tags to a space separated string, as thats what get_hug_gelbooru expects
         gelbooru_url = await self.get_hug_gelbooru(ctx, " ".join(tags))
         await send_hug(ctx, member, str(gelbooru_url))

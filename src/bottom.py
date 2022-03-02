@@ -23,12 +23,12 @@ class Bottom(commands.Cog):
         (uwu,_)=await process.communicate()
         return uwu.decode("utf-8")
 
-    @commands.command()
+    @commands.command(aliases=["bowottom"])
     async def bottom(self, ctx, *, msg: str):
         bottom = await self.call_bottom("-b",msg)
         await ctx.send(bottom)
 
-    @commands.command()
+    @commands.command(aliases=["unbowottom"])
     async def unbottom(self, ctx, *, msg: str):
         uwu = await self.call_bottom("-r",msg)
         await ctx.send(uwu)

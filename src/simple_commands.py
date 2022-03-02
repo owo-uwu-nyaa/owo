@@ -20,11 +20,11 @@ class Misc(commands.Cog):
     async def owobamamedal(self, ctx):
         await ctx.send("https://cdn.discordapp.com/attachments/938102328282722345/939605208999264367/Unbenannt.png")
 
-    @commands.command()
+    @commands.command(aliases=["hewwo"])
     async def hello(self, ctx):
         await ctx.send(random.choice(["Hello", "Hello handsome :)"]))
 
-    @commands.command()
+    @commands.command(aliases=["evewyone"])
     async def everyone(self, ctx):
         await ctx.send("@everyone")
 

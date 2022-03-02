@@ -107,7 +107,7 @@ class Stats(commands.Cog):
             res = get_show_string(dfl, n=20)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
 
-    @stats.command(brief="make history")
+    @stats.command(brief="make history", aliases=["histowowy"])
     async def history(self, ctx, *members: discord.Member):
         if not await self.check_allow_query(ctx):
             return
@@ -143,7 +143,7 @@ class Stats(commands.Cog):
             img.seek(0)
             await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
 
-    @stats.command(brief="see all the lovebirbs #choo choo #ship", alias="ships")
+    @stats.command(brief="see all the lovebirbs #choo choo #ship", aliases=["ships"])
     async def couples(self, ctx):
         if not await self.check_allow_query(ctx):
             return

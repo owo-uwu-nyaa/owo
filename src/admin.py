@@ -11,11 +11,11 @@ class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(aliases=["cwash"])
     async def crash(self, ctx):
         sys.exit(0)
 
-    @commands.command()
+    @commands.command(aliases=["redwepoy"])
     async def redeploy(self, ctx):
         #get path of src dir, no need for passing it as a variable
         (src_path,_)=path.split(path.realpath(__file__))
