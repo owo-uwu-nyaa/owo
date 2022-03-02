@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from pygelbooru import Gelbooru
 import common
+import owolib
 
 
 async def send_hug(ctx: object, member: object, img_url: str) -> None:
@@ -27,6 +28,13 @@ class Hugs(commands.Cog):
             tags.append('rating:safe')
         result = await self.gelbooru.random_post(tags=tags, exclude_tags=blocklist)
         return result
+
+    """Nils: bonking is basically a hug"""
+    @commands.command(brief="bonk")
+    async def bonk(self, ctx, member: discord.Member):
+        name = common.get_nick_or_name(ctx.author)
+        other = common.get_nick_or_name(member)
+        await ctx.send(f"{name} {owolib.owofy('bonkt')} {other} <:pingbonk:940280394736074763>")
 
     @commands.command(brief="@someone <3")
     async def hug(self, ctx, member: discord.Member):
