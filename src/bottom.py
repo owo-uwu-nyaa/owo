@@ -4,9 +4,9 @@ from discord.ext import commands
 
 class Bottom(commands.Cog):
 
-    def __init__(self, bot, bpath:str):
-        self.bottom_cmd = bpath+"bottomify"
+    def __init__(self, bot, bottom_cmd:str):
         self.bot = bot
+        self.bottom_cmd=bottom_cmd
 
     async def call_bottom(self,arg:str,msg:str):
         if msg.startswith("-"):

@@ -7,9 +7,9 @@ from discord.ext import commands
 
 class MsgWriter(commands.Cog):
 
-    def __init__(self, bot, bpath):
+    def __init__(self, bot, file_path):
         self.bot = bot
-        self.csvfile = open(bpath + 'msgs.csv', 'a', newline='')
+        self.csvfile = open(file_path,'a', newline='')
         self.msgwriter = csv.writer(self.csvfile, quoting=csv.QUOTE_MINIMAL)
         self.csv_writer_lock = threading.Lock()
 

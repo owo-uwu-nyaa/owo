@@ -21,7 +21,7 @@ def get_show_string(df, n=20, truncate=True, vertical=False):
 
 
 class Stats(commands.Cog):
-    def __init__(self, bot, bpath):
+    def __init__(self, bot, message_file):
         self.bot = bot
         self.spark_lock = threading.Lock()
 
@@ -37,7 +37,7 @@ class Stats(commands.Cog):
             .option("multiLine", True) \
             .option("escape", '"') \
             .schema(schema) \
-            .csv(bpath + "msgs.csv")
+            .csv(message_file)
 
         # TODO fix this by writing and using guild ids
         # unfortunately, i did not write the guild id with old messages - these are dumb hardcoded channels which contain garbage messages
