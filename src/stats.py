@@ -43,9 +43,8 @@ class Stats(commands.Cog):
         # unfortunately, i did not write the guild id with old messages - these are dumb hardcoded channels which contain garbage messages
         rejectChans = [937308889425281034, 946545522167124000, 779413828051664966, 498443061316157455,
                        170911988346519553, 877658158460452874, 779414116812849192, 194411030607167491]
-        self.df = self.df.filter(~self.df["channel_id"].isin(rejectChans)).withColumn("u_time",
-                                                                                      from_unixtime("time")).drop(
-            "time")
+        self.df = self.df.filter(~self.df["channel_id"].isin(rejectChans)) \
+            .withColumn("u_time", from_unixtime("time")).drop("time")
 
     def get_messages_by_author(self, author):
         return self.df.filter((col("author_id") == author.id))
@@ -148,10 +147,11 @@ class Stats(commands.Cog):
         if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
+            n_limit = 30
             df_hugs = self.df.drop("channel_id", "u_time") \
                 .withColumn("hug_target",
                             regexp_extract(
-                                col("msg"), "(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug)) <@!)\\d{18}(?=(>.*))", 0)
+                                col("msg"), "(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug).{0,10})<@!?)\\d{17,19}(?=(>*.))", 0)
                             .cast(LongType())) \
                 .drop("msg")
             df_hug_counts = df_hugs.filter(df_hugs["hug_target"].isNotNull()) \
@@ -160,7 +160,7 @@ class Stats(commands.Cog):
                 .groupBy(["_1", "_2"]) \
                 .count() \
                 .orderBy("count", ascending=False) \
-                .limit(30)
+                .limit(n_limit)
             relevant_hug_ids = df_hug_counts.select("_1").withColumnRenamed("_1", "author_id") \
                 .union(df_hug_counts.select("_2").withColumnRenamed("_2", "author_id")) \
                 .drop_duplicates()
@@ -171,5 +171,5 @@ class Stats(commands.Cog):
                 .withColumnRenamed("name", "#2").drop("id", "_2") \
                 .orderBy("count", ascending=False) \
                 .select("#1", "#2", "count")
-            res = get_show_string(df_hug_counts_names, 30)
+            res = get_show_string(df_hug_counts_names, n_limit)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
