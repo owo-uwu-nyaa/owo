@@ -2,9 +2,7 @@ import random
 import re
 
 from discord.ext import commands
-import uwu_data
-import owolib
-import common
+from owobot.misc import common, owolib
 
 
 class Misc(commands.Cog):
@@ -30,7 +28,7 @@ class Misc(commands.Cog):
 
     @commands.command(brief="OwO")
     async def owo(self, ctx):
-        await ctx.send(random.choice(uwu_data.int_emote))
+        await ctx.send(owolib.get_random_emote())
 
     '''$baaa so it appears in the help message'''
 
@@ -73,7 +71,7 @@ class Misc(commands.Cog):
         name = common.get_nick_or_name(ctx.author)
         await ctx.send(name + " " + owolib.owofy(" wünscht allen eine GuNa!"))
 
-    def genRow(self, maxlen: int, curRow: int):
+    def gen_row(self, maxlen: int, curRow: int):
         ltr = chr(ord('A') + curRow)
         opad = maxlen - curRow - 1
         if (curRow == 0):
@@ -83,16 +81,16 @@ class Misc(commands.Cog):
     @commands.command()
     async def diamond(self, ctx, nrows: int):
         if nrows > 22:
-            await ctx.send(f"{random.choice(uwu_data.sowwy)}, thiws is too mwuch fow me to take nyaaa~")
+            await ctx.send(f"{random.choice(owolib.get_random_sorry())}, thiws is too mwuch fow me to take nyaaa~")
             return
         elif nrows < 1:
-            await ctx.send(f"{random.choice(uwu_data.sowwy)}, thiws is nwot enough fow me, give me more nyaaa~")
+            await ctx.send(f"{random.choice(owolib.get_random_sorry())}, thiws is nwot enough fow me, give me more nyaaa~")
             return
         else:
             result = []
             for i in range(0, nrows - 1):
-                result.append(self.genRow(nrows, i))
+                result.append(self.gen_row(nrows, i))
             for i in range(nrows - 1, -1, -1):
-                result.append(self.genRow(nrows, i))
+                result.append(self.gen_row(nrows, i))
             d = '\n'.join(result)
             await ctx.send(f"```\n{d}\n```")

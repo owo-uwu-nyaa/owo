@@ -1,16 +1,14 @@
 import asyncio
-import threading
 import io
+import threading
 import discord
-import pandas
-
-import common
 import plotly.express as px
-
 from discord.ext import commands
 from pyspark.shell import spark
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+
+from owobot.misc import common
 
 
 def get_show_string(df, n=20, truncate=True, vertical=False):
@@ -140,7 +138,7 @@ class Stats(commands.Cog):
             img = io.BytesIO()
             fig.write_image(img, format="png", scale=3)
             img.seek(0)
-            await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
+            await ctx.channel.send(file=discord.File(fp=img, filename="../yeet.png"))
 
     @stats.command(brief="see all the lovebirbs #choo choo #ship", aliases=["ships"])
     async def couples(self, ctx):

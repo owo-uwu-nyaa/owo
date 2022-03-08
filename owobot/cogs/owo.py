@@ -1,8 +1,5 @@
-import random
-
 from discord.ext import commands
-import owolib
-import uwu_data
+from owobot.misc import owolib
 
 
 class Owo(commands.Cog):
@@ -39,4 +36,4 @@ class Owo(commands.Cog):
             if owo_score < 1 and not is_only_alpha:
                 answer = owolib.owofy(msg)
                 await message.channel.send(
-                    f'{random.choice(uwu_data.sowwy)} <@{message.author.id}> youw seem to nwot hav owofied ywour text.. h-here lwet me show you:\n```{answer.replace("`", "")} ```')
+                    f'{owolib.get_random_sorry()} <@{message.author.id}> youw seem to nwot hav owofied ywour text.. h-here lwet me show you:\n```{answer.replace("`", "")} ```')

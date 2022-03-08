@@ -11,17 +11,18 @@ from msg_writer import MsgWriter
 from simple_commands import Misc
 from owo import Owo
 from stats import Stats
-from config import Config
+from owobot.misc.config import Config
 
 
 def main():
-    config_file="owo.toml"
-    if len(sys.argv)>1:
-        config_file=sys.argv[1]
-    config=Config(config_file)
+    config_file = "owo.toml"
+    if len(sys.argv) > 1:
+        config_file = sys.argv[1]
+    config = Config(config_file)
     intents = discord.Intents().all()
     allowed_mentions = discord.AllowedMentions(users=True, everyone=False, roles=False, replied_user=False)
-    bot = commands.Bot(command_prefix=config.command_prefix, description=config.desc, intents=intents, allowed_mentions=allowed_mentions)
+    bot = commands.Bot(command_prefix=config.command_prefix, description=config.desc, intents=intents,
+                       allowed_mentions=allowed_mentions)
 
     bot.add_cog(Hugs(bot))
     bot.add_cog(MsgWriter(bot, config.message_file))

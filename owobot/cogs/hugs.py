@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
 from pygelbooru import Gelbooru
-import common
-import owolib
+from owobot.misc import common, owolib
 
 
 async def send_hug(ctx: object, member: object, img_url: str) -> None:
