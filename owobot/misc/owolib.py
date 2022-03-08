@@ -1,5 +1,5 @@
 import random
-import uwu_data
+from misc import uwu_data
 
 """
 wwhat the fuck even is owo/uwu
@@ -16,25 +16,22 @@ these seem to be important modifications as in https://github.com/FernOfSigma/ow
 
 
 def score(msg: str) -> float:
-    owo_chars = 0
-    for c in uwu_data.owo_chars:
-        owo_chars += msg.count(c)
-    emo_count = 0
-    for emo in uwu_data.int_emote:
-        if emo in msg:
-            emo_count += 1
+    msg = msg.lower()
     spirit_count = 0
     for spirit in uwu_data.good_owo_spirit:
         if spirit in msg:
             spirit_count += 1
     map_count = 0
     lost_owo_potential = 0
-    for mapping in uwu_data.mappings[2:]:
+    for mapping in uwu_data.mappings:
         if mapping[1] in msg:
             map_count += 1
         if mapping[0] in msg:
-            lost_owo_potential += 1
-    return (owo_chars * 3 + map_count * 10 + spirit_count * 10 - (lost_owo_potential * 4)) / len(msg)
+           lost_owo_potential += 1
+    stuttewing = 0
+    for word in msg.split(" "):
+        stuttewing += word.count("-")
+    return (stuttewing * 20 + map_count * 15 + spirit_count * 10 - lost_owo_potential) / len(msg)
 
 
 def owofy(msg: str) -> str:
@@ -45,8 +42,7 @@ def owofy(msg: str) -> str:
     nmsg = []
     if random.randint(0, 10) > 7:
         nmsg.append(random.choice(uwu_data.prefixes))
-    words = str.split(msg)
-    for word in words:
+    for word in str.split(msg):
         if random.randint(0, 10) > 8 and word[0].isalpha():
             nmsg.append(f"{word[0]}-{word[0]}-{word}")
         else:
@@ -54,3 +50,11 @@ def owofy(msg: str) -> str:
         if word[-1] in [".", ",", "?"]:
             nmsg.append(random.choice(uwu_data.int_emote))
     return " ".join(nmsg)
+
+
+def get_random_emote() -> str:
+    return random.choice(uwu_data.int_emote)
+
+
+def get_random_sorry() -> str:
+    return random.choice(uwu_data.sowwy)

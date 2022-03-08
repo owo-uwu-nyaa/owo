@@ -1,11 +1,6 @@
-
 command_prefix = "$"
 
 desc = "Pwease end my misewy, nyaaa~"
-
-[messages]
-
-file = "./msgs.csv"
 
 [bottom]
 
@@ -14,7 +9,26 @@ executable = "bottomify"
 [api_tokens]
 
 #cute cat pictures nyaaa~
-#catapi = ""
+# catapi = ""
 
 #discord
-#discord = ""
+# discord = ""
+
+[sqlite]
+dir = "."
+
+# use postgres as general purpose db, takes precedence over sqlite
+# [postgres]
+# host = "localhost"
+# user = "uwu"
+# db = "owo"
+
+
+# use kudu as data lake backend, takes precedence over csv
+# [kudu]
+# host = ["localhost", "localhost", "localhost"]
+# port = [7051, 7151, 7251]
+# table_prefix = "uwu"
+
+[csv]
+dir = "."

@@ -9,7 +9,13 @@ prefixes = [
     "*notices bulge*",
     "K-Konichiwa",
     "*blush*",
-    "*heart goes doki-doki*"
+    "*heart goes doki-doki*",
+    "*boops your nose*",
+    "giggles",
+    "*gives you headpats*",
+    "*wags tail*",
+    "*pets you*",
+    "*tips fedora*"
 ]
 
 mappings = [
@@ -30,11 +36,7 @@ mappings = [
     ["meow", "nya~"],
     ["ee", "ew"],
     ["at", "awt"],
-    ["oops", "oopsie woopsie"],
-    ["uw", "uwu"],
-    ["ow", "owo"],
-    ["wo", "owo"],
-    ["wu", "uwu"]
+    ["oops", "oopsie woopsie"]
 ]
 
 int_emote = [
@@ -92,29 +94,25 @@ sowwy = [
     "I'm sowwwyy ~~",
     "nani?",
     "s-s-sadwy you cwannot dow that",
-    "i w-want to compwy, mwaster, but i cwannot"
-]
-
-owo_chars = [
-    "w",
-    "l",
-    "r",
-    "-",
-    "~"
+    "i w-want to compwy, mwaster, but i cwannot",
+    "Baka!"
 ]
 
 good_owo_spirit = [
-    "OwO",
-    "UwU",
-    "UmU",
     "umu",
+    "owo",
+    "uwu",
     "~~~",
     "senpai",
-    "Senpai",
     "oni",
-    "Oni",
     "chan",
     "nicole",
     "desu",
-    "fucky wucky"
+    "nowu",
+    "desu",
+    "haj",
+    "wolf",
+    "neko",
+    "kon"
 ]
+

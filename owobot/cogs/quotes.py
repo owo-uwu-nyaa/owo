@@ -4,23 +4,13 @@ import discord
 import psycopg2
 from discord.ext import commands
 from psycopg2 import sql, pool
-import common
+from misc import common
 
 
 class Quotes(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot, config):
         self.bot = bot
-        try:
-            self.pool = psycopg2.pool.ThreadedConnectionPool(
-                1, 20,
-                host="localhost",
-                database="owo",
-                user="langj"
-            )
-        except psycopg2.DatabaseError as e:
-
-            print(f'postgres db seems to be fucked: {e}')
-            sys.exit(1)
+        self.pool = config.db_prox
 
     @commands.group()
     async def qt(self, ctx):

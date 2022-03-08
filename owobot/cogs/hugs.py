@@ -1,9 +1,7 @@
 import discord
 from discord.ext import commands
 from pygelbooru import Gelbooru
-import common
-import owolib
-
+from misc import common, owolib
 
 async def send_hug(ctx: object, member: object, img_url: str) -> None:
     await ctx.send(f'{common.get_nick_or_name(ctx.author)} sends you a hug, {common.get_nick_or_name(member)}')
@@ -12,8 +10,7 @@ async def send_hug(ctx: object, member: object, img_url: str) -> None:
 
 class Hugs(commands.Cog):
 
-    def __init__(self, bot):
-        # TODO is this even threadsafe?
+    def __init__(self, bot, config):
         self.gelbooru = Gelbooru()
         self.bot = bot
 
