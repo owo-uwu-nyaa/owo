@@ -81,10 +81,10 @@ class Misc(commands.Cog):
     @commands.command()
     async def diamond(self, ctx, nrows: int):
         if nrows > 22:
-            await ctx.send(f"{random.choice(owolib.get_random_sorry())}, thiws is too mwuch fow me to take nyaaa~")
+            await ctx.send(f"{owolib.get_random_sorry()}, thiws is too mwuch fow me to take nyaaa~")
             return
         elif nrows < 1:
-            await ctx.send(f"{random.choice(owolib.get_random_sorry())}, thiws is nwot enough fow me, give me more nyaaa~")
+            await ctx.send(f"{owolib.get_random_sorry()}, thiws is nwot enough fow me, give me more nyaaa~")
             return
         else:
             result = []
