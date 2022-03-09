@@ -2,7 +2,7 @@ import random
 import re
 
 from discord.ext import commands
-from owobot.misc import common, owolib
+from misc import common, owolib
 
 
 class Misc(commands.Cog):

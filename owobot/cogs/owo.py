@@ -1,5 +1,5 @@
 from discord.ext import commands
-from owobot.misc import owolib
+from misc import owolib
 
 
 class Owo(commands.Cog):

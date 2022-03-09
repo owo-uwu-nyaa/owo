@@ -1,5 +1,7 @@
 import os.path as path
+import sys
 
+import psycopg2.pool
 import toml
 
 
@@ -49,9 +51,22 @@ class Config:
         self.command_prefix = str(get_key(config, default_config, "command_prefix"))
         self.desc = str(get_key(config, default_config, "desc"))
 
+        self.bot_owner = list(map(int, get_key(config, default_config, "bot_owner")))
+
         self.message_file = str(get_key(config, default_config, "messages", "file"))
 
         self.bottom_cmd = str(get_key(config, default_config, "bottom", "executable"))
 
         self.catapi_token = str(get_key(config, default_config, "api_tokens", "catapi"))
         self.discord_token = str(get_key(config, default_config, "api_tokens", "discord"))
+
+        try:
+            self.pool = psycopg2.pool.ThreadedConnectionPool(
+                1, 20,
+                host="localhost",
+                database="owo",
+                user="langj"
+            )
+        except psycopg2.DatabaseError as e:
+            print(f'DB Connection unsuccessful: {e}')
+            sys.exit(1)

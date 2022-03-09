@@ -8,7 +8,7 @@ from pyspark.shell import spark
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 
-from owobot.misc import common
+from misc import common
 
 
 def get_show_string(df, n=20, truncate=True, vertical=False):
@@ -19,33 +19,30 @@ def get_show_string(df, n=20, truncate=True, vertical=False):
 
 
 class Stats(commands.Cog):
-    def __init__(self, bot, message_file):
+    def __init__(self, bot, config):
         self.bot = bot
         self.spark_lock = threading.Lock()
 
         schema = StructType([
+            StructField("snowflake", LongType(), False),
             StructField("author_id", LongType(), False),
             StructField("channel_id", LongType(), False),
+            StructField("guild_id", LongType(), False),
             StructField("time", DoubleType(), False),
             StructField("msg", StringType(), False)
         ])
 
-        self.df = spark.read \
-            .option("header", True) \
-            .option("multiLine", True) \
-            .option("escape", '"') \
-            .schema(schema) \
-            .csv(message_file)
+        self.df_global = spark.read \
+            .schema(schema).options(mode='FAILFAST', multiLine=True, escape='"', header=True) \
+            .csv(config.message_file)
 
-        # TODO fix this by writing and using guild ids
-        # unfortunately, i did not write the guild id with old messages - these are dumb hardcoded channels which contain garbage messages
-        rejectChans = [937308889425281034, 946545522167124000, 779413828051664966, 498443061316157455,
-                       170911988346519553, 877658158460452874, 779414116812849192, 194411030607167491]
-        self.df = self.df.filter(~self.df["channel_id"].isin(rejectChans)) \
-            .withColumn("u_time", from_unixtime("time")).drop("time")
+        self.df_global = self.df_global.withColumn("u_time", from_unixtime("time")).drop("time")
 
-    def get_messages_by_author(self, author):
-        return self.df.filter((col("author_id") == author.id))
+    def get_messages_by_author(self, ctx):
+        return self.df_global.filter((col("author_id") == ctx.author.id) & (col("guild_id") == ctx.guild.id))
+
+    def get_guild_df(self, ctx):
+        return self.df_global.filter(col("guild_id") == ctx.guild.id)
 
     async def check_allow_query(self, ctx):
         if self.spark_lock.locked():
@@ -56,9 +53,12 @@ class Stats(commands.Cog):
     async def get_names_from_df(self, ctx, relevant_hug_ids):
         # TODO this cant be really the correct way of gathering all names, is this even done in parallel? Maybe pycord blocks?
         async def f(r):
-            return (
-                common.get_nick_or_name(await common.author_id_to_obj(self.bot, r["author_id"], ctx)), r["author_id"])
-
+            try:
+                return (
+                    common.get_nick_or_name(await common.author_id_to_obj(self.bot, r["author_id"], ctx)),
+                    r["author_id"])
+            except:
+                return ("", r["author_id"])
         mappings = await asyncio.gather(*[f(r) for r in relevant_hug_ids.collect()])
         return spark.createDataFrame(data=mappings, schema=["name", "id"])
 
@@ -71,7 +71,7 @@ class Stats(commands.Cog):
         if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
-            dfa = self.get_messages_by_author(ctx.author)
+            dfa = self.get_messages_by_author(ctx).select("u_time")
             dft = dfa.groupBy(hour("u_time").alias("hour")).agg(count("u_time").alias("count"))
             dft = dft.orderBy("hour")
             res = get_show_string(dft, n=24)
@@ -82,8 +82,8 @@ class Stats(commands.Cog):
         if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
-            dfa = self.get_messages_by_author(ctx.author)
-            dfw = dfa.withColumn("word", explode(split(col("msg"), " "))) \
+            dfa = self.get_messages_by_author(ctx)
+            dfw = dfa.select(explode(split(col("msg"), " ")).alias("word")) \
                 .groupBy("word") \
                 .count() \
                 .orderBy("count", ascending=False)
@@ -95,8 +95,8 @@ class Stats(commands.Cog):
         if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
-            dfa = self.get_messages_by_author(ctx.author)
-            dfl = dfa.withColumn("letter", explode(split(col("msg"), ""))) \
+            dfa = self.get_messages_by_author(ctx)
+            dfl = dfa.select(explode(split(col("msg"), "")).alias("letter")) \
                 .groupBy("letter") \
                 .count() \
                 .filter(ascii("letter") != 0) \
@@ -112,7 +112,7 @@ class Stats(commands.Cog):
             # gather relevant authors
             author_mappings = []
             if len(members) == 0:
-                dfq = self.df.groupBy("author_id").count().orderBy("count", ascending=False).limit(10)
+                dfq = self.get_guild_df(ctx).groupBy("author_id").count().orderBy("count", ascending=False).limit(10)
                 for r in dfq.collect():
                     author_mappings.append((common.get_nick_or_name(
                         await common.author_id_to_obj(self.bot, r["author_id"], ctx)), r["author_id"]))
@@ -121,8 +121,8 @@ class Stats(commands.Cog):
                     author_mappings.append((common.get_nick_or_name(m), m.id))
             author_mappings_df = spark.createDataFrame(data=author_mappings, schema=["name", "id"])
             # get msg counts
-            dft = self.df.drop("channel_id", "msg") \
-                .join(author_mappings_df.drop("name"), self.df["author_id"] == author_mappings_df["id"]) \
+            dfg = self.get_guild_df(ctx).select("author_id", "u_time")
+            dft = dfg.join(author_mappings_df.drop("name"), dfg["author_id"] == author_mappings_df["id"]) \
                 .withColumn("date", date_trunc("day", "u_time")) \
                 .groupBy("date", "author_id") \
                 .agg(count("date").alias("count"))
@@ -146,7 +146,7 @@ class Stats(commands.Cog):
             return
         with self.spark_lock:
             n_limit = 30
-            df_hugs = self.df.drop("channel_id", "u_time") \
+            df_hugs = self.get_guild_df(ctx).select("author_id", "msg") \
                 .withColumn("hug_target",
                             regexp_extract(
                                 col("msg"), "(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug).{0,10})<@!?)\\d{17,19}(?=(>*.))", 0)

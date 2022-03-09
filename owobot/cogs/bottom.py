@@ -4,15 +4,15 @@ from discord.ext import commands
 
 class Bottom(commands.Cog):
 
-    def __init__(self, bot, bottom_cmd:str):
+    def __init__(self, bot, config):
         self.bot = bot
-        self.bottom_cmd=bottom_cmd
+        self.bottom_cmd = config.bottom_cmd
 
-    async def call_bottom(self,arg:str,msg:str):
+    async def call_bottom(self, arg: str, msg: str):
         if msg.startswith("-"):
-            #prepend zero width space to prevent interpretation as command line argument
-            msg="\ue2808b"+msg
-        process=await sub.create_subprocess_exec(
+            # prepend zero width space to prevent interpretation as command line argument
+            msg = "\ue2808b" + msg
+        process = await sub.create_subprocess_exec(
             self.bottom_cmd,
             arg,
             msg,
@@ -20,15 +20,15 @@ class Bottom(commands.Cog):
             stdout=sub.PIPE,
             stderr=sub.DEVNULL
         )
-        (uwu,_)=await process.communicate()
+        (uwu, _) = await process.communicate()
         return uwu.decode("utf-8")
 
     @commands.command(aliases=["bowottom"])
     async def bottom(self, ctx, *, msg: str):
-        bottom = await self.call_bottom("-b",msg)
+        bottom = await self.call_bottom("-b", msg)
         await ctx.send(bottom)
 
     @commands.command(aliases=["unbowottom"])
     async def unbottom(self, ctx, *, msg: str):
-        uwu = await self.call_bottom("-r",msg)
+        uwu = await self.call_bottom("-r", msg)
         await ctx.send(uwu)

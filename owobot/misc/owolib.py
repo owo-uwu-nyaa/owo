@@ -1,5 +1,5 @@
 import random
-from owobot.misc import uwu_data
+from misc import uwu_data
 
 """
 wwhat the fuck even is owo/uwu
