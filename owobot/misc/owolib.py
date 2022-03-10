@@ -27,8 +27,11 @@ def score(msg: str) -> float:
         if mapping[1] in msg:
             map_count += 1
         if mapping[0] in msg:
-            lost_owo_potential += 1
-    return (map_count * 15 + spirit_count * 10 - (lost_owo_potential * 4)) / len(msg)
+           lost_owo_potential += 1
+    stuttewing = 0
+    for word in msg.split(" "):
+        stuttewing += word.count("-")
+    return (stuttewing * 20 +  map_count * 20 + spirit_count * 10 - lost_owo_potential) / len(msg)
 
 
 def owofy(msg: str) -> str:

@@ -13,7 +13,7 @@ class Owo(commands.Cog):
         await ctx.send(f'```{owofied.replace("`", "")} ```')
 
     @commands.command(brief="telwlws you how owo-kawai <msg> is - scowre >= 1 is owo :3")
-    async def rate(self, ctx, msg: str):
+    async def rate(self, ctx, *, msg: str):
         score = owolib.score(msg)
         await ctx.send(f'S-Senpai ywou scwored a {score:.2f}')
 
