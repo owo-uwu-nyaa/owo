@@ -23,7 +23,7 @@ def score(msg: str) -> float:
             spirit_count += 1
     map_count = 0
     lost_owo_potential = 0
-    for mapping in uwu_data.mappings[2:]:
+    for mapping in uwu_data.mappings:
         if mapping[1] in msg:
             map_count += 1
         if mapping[0] in msg:
@@ -31,7 +31,7 @@ def score(msg: str) -> float:
     stuttewing = 0
     for word in msg.split(" "):
         stuttewing += word.count("-")
-    return (stuttewing * 20 +  map_count * 20 + spirit_count * 10 - lost_owo_potential) / len(msg)
+    return (stuttewing * 20 + map_count * 15 + spirit_count * 10 - lost_owo_potential) / len(msg)
 
 
 def owofy(msg: str) -> str:
