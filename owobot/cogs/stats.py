@@ -1,5 +1,7 @@
 import os
 
+import misc.common
+
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell'
 
 import io
@@ -10,7 +12,6 @@ from discord.ext import commands
 from pyspark.shell import spark
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
-
 from misc import common
 
 
@@ -21,23 +22,32 @@ def get_show_string(df, n=20, truncate=True, vertical=False):
         return df._jdf.showString(n, int(truncate), vertical)
 
 
+def count_words(df) -> str:
+    dfw = df.select(explode(
+        split(regexp_replace(regexp_replace(lower(col("msg")), "[^a-z $]", ""), " +", " "), " ")).alias("word")) \
+        .groupBy("word") \
+        .count() \
+        .orderBy("count", ascending=False)
+    return get_show_string(dfw, n=20)
+
+
 class Stats(commands.Cog):
     def __init__(self, bot, config):
         self.bot = bot
         self.spark_lock = threading.Lock()
         self.df_global = config.datalake.get_df("msgs")
 
+    async def cog_check(self, ctx):
+        if not self.spark_lock.locked():
+            return True
+        await ctx.channel.send(f"Sorry, another query seems to be running")
+        return False
+
     def get_messages_by_author(self, ctx):
         return self.df_global.filter((col("author_id") == ctx.author.id) & (col("guild_id") == ctx.guild.id))
 
     def get_guild_df(self, ctx):
         return self.df_global.filter(col("guild_id") == ctx.guild.id)
-
-    async def check_allow_query(self, ctx):
-        if self.spark_lock.locked():
-            await ctx.channel.send(f"Sorry, another query seems to be running")
-            return False
-        return True
 
     async def get_id_name_df(self, ctx):
         mmap = []
@@ -50,10 +60,17 @@ class Stats(commands.Cog):
     async def stats(self, ctx):
         pass
 
+    @stats.command(brief="how many msgs?")
+    async def count(self, ctx):
+        with self.spark_lock:
+            dfa = self.get_messages_by_author(ctx).select("time")
+            dft = dfa.groupBy(hour("time").alias("hour")).agg(count("time").alias("count"))
+            dft = dft.orderBy("hour")
+            res = get_show_string(dft, n=24)
+            await ctx.channel.send(f'```\n{res}total messages: {dfa.count()}```')
+
     @stats.command(brief="when do you procrastinate?")
     async def activity(self, ctx):
-        if not await self.check_allow_query(ctx):
-            return
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx).select("time")
             dft = dfa.groupBy(hour("time").alias("hour")).agg(count("time").alias("count"))
@@ -63,21 +80,31 @@ class Stats(commands.Cog):
 
     @stats.command(brief="use your words")
     async def words(self, ctx):
-        if not await self.check_allow_query(ctx):
-            return
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
-            dfw = dfa.select(explode(split(col("msg"), " ")).alias("word")) \
-                .groupBy("word") \
+            res = count_words(dfa)
+            await ctx.channel.send(f'```\n{misc.common.sanitize(res)}\n```')
+
+    @stats.command(brief="words, but also use messages from dms/other guilds")
+    async def simonwords(self, ctx):
+        with self.spark_lock:
+            dfa = self.df_global.filter(col("author_id") == ctx.author.id)
+            res = count_words(dfa)
+            await ctx.channel.send(f'```\n{misc.common.sanitize(res)}\n```')
+
+    @stats.command(brief="words, but emotes", aliases=["emo"])
+    async def emotes(self, ctx):
+        with self.spark_lock:
+            dfa = self.get_messages_by_author(ctx)
+            dfw = dfa.select(explode(expr("regexp_extract_all(msg, '<a?:[^:<>@*_~]+:\\\\d+>', 0)")).alias("emote")) \
+                .groupBy("emote") \
                 .count() \
                 .orderBy("count", ascending=False)
-            res = get_show_string(dfw, n=20)
-            await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
+            res = get_show_string(dfw, n=20, truncate=False)
+            await ctx.channel.send(f'{res}')
 
     @stats.command(brief="use your ~~words~~ letters")
     async def letters(self, ctx):
-        if not await self.check_allow_query(ctx):
-            return
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
             dfl = dfa.select(explode(split(col("msg"), "")).alias("letter")) \
@@ -90,8 +117,6 @@ class Stats(commands.Cog):
 
     @stats.command(brief="make history", aliases=["histowowy"])
     async def history(self, ctx, *members: discord.Member):
-        if not await self.check_allow_query(ctx):
-            return
         with self.spark_lock:
             # gather relevant authors
             author_mappings = []
@@ -126,8 +151,6 @@ class Stats(commands.Cog):
 
     @stats.command(brief="see all the lovebirbs #choo choo #ship", aliases=["ships"])
     async def couples(self, ctx):
-        if not await self.check_allow_query(ctx):
-            return
         with self.spark_lock:
             n_limit = 30
             df_hugs = self.get_guild_df(ctx).select("author_id", "msg") \
