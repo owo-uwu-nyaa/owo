@@ -5,19 +5,23 @@ import sys
 import discord
 from discord.ext import commands
 
-from misc.db import Admin
+from misc.db import Owner, HugShort
 
 
 class Restricted(commands.Cog):
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
 
     async def cog_check(self, ctx):
-        return Admin.select().where(Admin.snowflake == ctx.author.id).exists()
+        return Owner.select().where(Owner.snowflake == ctx.author.id).exists()
 
     @commands.command(aliases=["cwash"])
     async def crash(self):
         sys.exit(0)
+
+    @commands.command()
+    async def parrot(self, ctx, *, msg: str):
+        await ctx.send(msg)
 
     @commands.command(aliases=["redwepoy"])
     async def redeploy(self, ctx):
@@ -36,8 +40,20 @@ class Restricted(commands.Cog):
 
     @owner.command(brief="add an owner")
     async def add(self, ctx, member: discord.Member):
-        Admin.create(snowflake=member.id)
+        Owner.create(snowflake=member.id)
 
     @owner.command(brief="remove an owner")
-    async def remove(self, ctx, member: discord.Member):
-        Admin.delete().where(Admin.snowflake == member.id).execute()
+    async def rm(self, ctx, member: discord.Member):
+        Owner.delete().where(Owner.snowflake == member.id).execute()
+
+    @commands.group()
+    async def hugconfigure(self, ctx):
+        pass
+
+    @hugconfigure.command(brief="add a tag shorthand")
+    async def add(self, ctx, shorthand: str, tag: str):
+        HugShort.create(key=shorthand, val=tag)
+
+    @hugconfigure.command(brief="add a tag shorthand")
+    async def rm(self, ctx, shorthand: str):
+        HugShort.delete().where(HugShort.key == shorthand).execute()

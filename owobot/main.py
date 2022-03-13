@@ -3,6 +3,8 @@ import asyncio
 import sys
 import discord
 from discord.ext import commands
+
+from cogs.admin import Admin
 from cogs.restricted import Restricted
 from cogs.aww import Aww
 from cogs.bottom import Bottom
@@ -29,7 +31,8 @@ def main():
     bot.add_cog(Aww(bot, config))
     bot.add_cog(Misc(bot))
     bot.add_cog(Owo(bot))
-    bot.add_cog(Restricted(bot, config))
+    bot.add_cog(Restricted(bot))
+    bot.add_cog(Admin(bot))
     bot.add_cog(Stats(bot, config))
     bot.add_cog(Bottom(bot, config))
     # bot.add_cog(Quotes(bot))
