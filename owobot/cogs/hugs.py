@@ -13,7 +13,6 @@ class Hugs(commands.Cog):
     def __init__(self, bot, config):
         self.gelbooru = Gelbooru()
         self.bot = bot
-        self.pool = config.pool
 
     # penguin pics
     # random.choice(["https://tenor.com/view/chibird-penguin-hug-gif-14248948", "https://tenor.com/view/cuddle-group-group-hug-friends-penguin-gif-13295520"])

@@ -2,16 +2,18 @@ import os.path as path
 import subprocess
 import sys
 
+import discord
 from discord.ext import commands
 
+from misc.db import Admin
 
-class Admin(commands.Cog):
+
+class Restricted(commands.Cog):
     def __init__(self, bot, config):
         self.bot = bot
-        self.bot_owner = config.bot_owner
 
     async def cog_check(self, ctx):
-        return ctx.author.id in self.bot_owner
+        return Admin.select().where(Admin.snowflake == ctx.author.id).exists()
 
     @commands.command(aliases=["cwash"])
     async def crash(self):
@@ -27,3 +29,15 @@ class Admin(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("Hewoo, my name is", self.bot.user)
+
+    @commands.group()
+    async def owner(self, ctx):
+        pass
+
+    @owner.command(brief="add an owner")
+    async def add(self, ctx, member: discord.Member):
+        Admin.create(snowflake=member.id)
+
+    @owner.command(brief="remove an owner")
+    async def remove(self, ctx, member: discord.Member):
+        Admin.delete().where(Admin.snowflake == member.id).execute()

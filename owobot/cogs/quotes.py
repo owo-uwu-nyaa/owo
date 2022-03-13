@@ -10,7 +10,7 @@ from misc import common
 class Quotes(commands.Cog):
     def __init__(self, bot, config):
         self.bot = bot
-        self.pool = config.pool
+        self.pool = config.db_prox
 
     @commands.group()
     async def qt(self, ctx):

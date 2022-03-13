@@ -1,4 +1,7 @@
-import asyncio
+import os
+
+os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell'
+
 import io
 import threading
 import discord
@@ -22,21 +25,7 @@ class Stats(commands.Cog):
     def __init__(self, bot, config):
         self.bot = bot
         self.spark_lock = threading.Lock()
-
-        schema = StructType([
-            StructField("snowflake", LongType(), False),
-            StructField("author_id", LongType(), False),
-            StructField("channel_id", LongType(), False),
-            StructField("guild_id", LongType(), False),
-            StructField("time", DoubleType(), False),
-            StructField("msg", StringType(), False)
-        ])
-
-        self.df_global = spark.read \
-            .schema(schema).options(mode='FAILFAST', multiLine=True, escape='"', header=True) \
-            .csv(config.message_file)
-
-        self.df_global = self.df_global.withColumn("u_time", from_unixtime("time")).drop("time")
+        self.df_global = config.datalake.get_df("msgs")
 
     def get_messages_by_author(self, ctx):
         return self.df_global.filter((col("author_id") == ctx.author.id) & (col("guild_id") == ctx.guild.id))
@@ -50,17 +39,12 @@ class Stats(commands.Cog):
             return False
         return True
 
-    async def get_names_from_df(self, ctx, relevant_hug_ids):
-        # TODO this cant be really the correct way of gathering all names, is this even done in parallel? Maybe pycord blocks?
-        async def f(r):
-            try:
-                return (
-                    common.get_nick_or_name(await common.author_id_to_obj(self.bot, r["author_id"], ctx)),
-                    r["author_id"])
-            except:
-                return ("", r["author_id"])
-        mappings = await asyncio.gather(*[f(r) for r in relevant_hug_ids.collect()])
-        return spark.createDataFrame(data=mappings, schema=["name", "id"])
+    async def get_id_name_df(self, ctx):
+        mmap = []
+        for m in ctx.guild.members:
+            mmap.append((common.get_nick_or_name(m), m.id))
+
+        return spark.createDataFrame(data=mmap, schema=["name", "id"])
 
     @commands.group()
     async def stats(self, ctx):
@@ -71,8 +55,8 @@ class Stats(commands.Cog):
         if not await self.check_allow_query(ctx):
             return
         with self.spark_lock:
-            dfa = self.get_messages_by_author(ctx).select("u_time")
-            dft = dfa.groupBy(hour("u_time").alias("hour")).agg(count("u_time").alias("count"))
+            dfa = self.get_messages_by_author(ctx).select("time")
+            dft = dfa.groupBy(hour("time").alias("hour")).agg(count("time").alias("count"))
             dft = dft.orderBy("hour")
             res = get_show_string(dft, n=24)
             await ctx.channel.send(f'```\n{res}total messages: {dfa.count()}```')
@@ -121,9 +105,9 @@ class Stats(commands.Cog):
                     author_mappings.append((common.get_nick_or_name(m), m.id))
             author_mappings_df = spark.createDataFrame(data=author_mappings, schema=["name", "id"])
             # get msg counts
-            dfg = self.get_guild_df(ctx).select("author_id", "u_time")
+            dfg = self.get_guild_df(ctx).select("author_id", "time")
             dft = dfg.join(author_mappings_df.drop("name"), dfg["author_id"] == author_mappings_df["id"]) \
-                .withColumn("date", date_trunc("day", "u_time")) \
+                .withColumn("date", date_trunc("day", "time")) \
                 .groupBy("date", "author_id") \
                 .agg(count("date").alias("count"))
             # fill gaps in data with zeros, replace ids with names
@@ -159,10 +143,7 @@ class Stats(commands.Cog):
                 .count() \
                 .orderBy("count", ascending=False) \
                 .limit(n_limit)
-            relevant_hug_ids = df_hug_counts.select("_1").withColumnRenamed("_1", "author_id") \
-                .union(df_hug_counts.select("_2").withColumnRenamed("_2", "author_id")) \
-                .drop_duplicates()
-            author_mappings = await self.get_names_from_df(ctx, relevant_hug_ids)
+            author_mappings = await self.get_id_name_df(ctx)
             df_hug_counts_names = df_hug_counts.join(author_mappings, df_hug_counts["_1"] == author_mappings["id"]) \
                 .withColumnRenamed("name", "#1").drop("id", "_1") \
                 .join(author_mappings, df_hug_counts["_2"] == author_mappings["id"]) \

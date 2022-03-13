@@ -1,6 +1,12 @@
 from discord.ext import commands
-from misc import owolib
+from misc import owolib, common
 
+
+def contains_alpha(str: str) -> bool:
+    for ltr in str:
+        if ltr.isalpha():
+            return True
+    return False
 
 class Owo(commands.Cog):
 
@@ -10,7 +16,7 @@ class Owo(commands.Cog):
     @commands.command(brief="owofy <msg> nyaa~~")
     async def owofy(self, ctx, *, msg: str):
         owofied = owolib.owofy(msg)
-        await ctx.send(f'```{owofied.replace("`", "")} ```')
+        await ctx.send(f'```{common.sanitize(owofied)} ```')
 
     @commands.command(brief="telwlws you how owo-kawai <msg> is - scowre >= 1 is owo :3")
     async def rate(self, ctx, *, msg: str):
@@ -29,11 +35,7 @@ class Owo(commands.Cog):
                     nmsg.append(word)
             msg = " ".join(nmsg)
             owo_score = owolib.score(msg)
-            is_only_alpha = True
-            for ltr in msg:
-                if ltr.isalpha():
-                    is_only_alpha = False
-            if owo_score < 1 and not is_only_alpha:
-                answer = owolib.owofy(msg)
+            if owo_score < 1 and contains_alpha(msg):
+                owofied = owolib.owofy(msg)
                 await message.channel.send(
-                    f'{owolib.get_random_sorry()} <@{message.author.id}> youw seem to nwot hav owofied ywour text.. h-here lwet me show you:\n```\n{answer.replace("`", "")}\n```')
+                    f'{owolib.get_random_sorry()} <@{message.author.id}> youw seem to nwot hav owofied ywour text.. h-here lwet me show you:\n```\n{common.sanitize(owofied)}\n```')
