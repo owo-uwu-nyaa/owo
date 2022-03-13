@@ -13,6 +13,6 @@ class MsgWriter(commands.Cog):
     async def on_message(self, message):
         if message.author == self.bot.user:
             return
-        self.datalake.put_row("msgs", {'snowflake': message.id, "author_id": message.author.id,
+        self.datalake.put_row("msgs", {"snowflake": message.id, "author_id": message.author.id,
                                                "channel_id": message.channel.id, "guild_id": message.guild.id,
                                                "time": datetime.now(), "msg": message.content})
