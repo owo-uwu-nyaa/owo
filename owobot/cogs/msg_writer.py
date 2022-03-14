@@ -24,8 +24,8 @@ class MsgWriter(commands.Cog):
     async def on_raw_typing(self, payload):
         if Consent.select().where(Consent.snowflake == payload.user_id).exists():
             self.datalake.put_row("typing", {"author_id": payload.user_id,
-                                         "channel_id": payload.channel_id, "guild_id": payload.guild_id,
-                                         "time": payload.when})
+                                             "channel_id": payload.channel_id, "guild_id": payload.guild_id,
+                                             "time": payload.when})
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -43,7 +43,7 @@ class MsgWriter(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
         nmsg = ""
-        if payload.data["content"] != None:
+        if payload.data.get("content") is not None:
             nmsg = payload.data["content"]
         self.datalake.put_row("edit",
                               {"msg_id": payload.message_id, "channel_id": payload.channel_id,
@@ -75,16 +75,17 @@ class MsgWriter(commands.Cog):
 
     @commands.Cog.listener()
     async def on_presence_update(self, before, after):
-        if Consent.select().where(Consent.snowflake == before.id).exists() and (str(before.status) != str(after.status)):
+        if Consent.select().where(Consent.snowflake == before.id).exists() and (
+                str(before.status) != str(after.status)):
             self.datalake.put_row("presence",
                                   {"author_id": before.id, "time": datetime.now(), "before": str(before.status),
                                    "after": str(after.status)})
 
     @commands.group()
-    async def consent(self, ctx):
+    async def collectionconsent(self, ctx):
         pass
 
-    @consent.command(brief="consent that this bot tracks you into oblivion")
+    @collectionconsent.command(brief="consent that this bot tracks you into oblivion")
     async def sellmydata(self, ctx):
         try:
             Consent.create(snowflake=ctx.author.id)
@@ -92,7 +93,7 @@ class MsgWriter(commands.Cog):
         except:
             await common.react_failure(ctx)
 
-    @consent.command(brief="unconsent that this bot tracks you into oblivion")
+    @collectionconsent.command(brief="unconsent that this bot tracks you into oblivion")
     async def unsellmydata(self, ctx):
         try:
             Consent.delete().where(Consent.snowflake == ctx.author.id).execute()
