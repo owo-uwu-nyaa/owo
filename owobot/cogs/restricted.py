@@ -5,6 +5,8 @@ import sys
 import discord
 from discord.ext import commands
 
+import misc.common
+from misc import common
 from misc.db import Owner, HugShort
 
 
@@ -13,7 +15,7 @@ class Restricted(commands.Cog):
         self.bot = bot
 
     async def cog_check(self, ctx):
-        return Owner.select().where(Owner.snowflake == ctx.author.id).exists()
+        return await common.is_owner(ctx)
 
     @commands.command(aliases=["cwash"])
     async def crash(self):
@@ -40,8 +42,16 @@ class Restricted(commands.Cog):
 
     @owner.command(brief="add an owner")
     async def add(self, ctx, member: discord.Member):
-        Owner.create(snowflake=member.id)
+        try:
+            Owner.create(snowflake=member.id)
+            await common.react_success(ctx)
+        except:
+            await common.react_failure(ctx)
 
     @owner.command(brief="remove an owner")
     async def rm(self, ctx, member: discord.Member):
-        Owner.delete().where(Owner.snowflake == member.id).execute()
+        try:
+            Owner.delete().where(Owner.snowflake == member.id).execute()
+            await common.react_success(ctx)
+        except:
+            await common.react_failure(ctx)

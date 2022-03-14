@@ -26,8 +26,11 @@ def sanitize(str: str) -> str:
             str = str.replace(c, f"​{c}")
     return str
 
-def is_owner(ctx):
-    return Owner.select().where(Owner.snowflake == ctx.author.id).exists()
+async def is_owner(ctx):
+    if Owner.select().where(Owner.snowflake == ctx.author.id).exists():
+        return True
+    await react_failure(ctx)
+    return False
 
 async def react_success(ctx):
     await ctx.message.add_reaction("✅")
