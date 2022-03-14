@@ -1,9 +1,6 @@
 import os
-
-import misc.common
-
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell'
-
+import misc.common
 import io
 import threading
 import discord
@@ -96,12 +93,16 @@ class Stats(commands.Cog):
     async def emotes(self, ctx):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
-            dfw = dfa.select(explode(expr("regexp_extract_all(msg, '<a?:[^:<>@*_~]+:\\\\d+>', 0)")).alias("emote")) \
+            dfw = dfa.select(explode(expr("regexp_extract_all(msg, '<a?:[^:<>@*~]+:\\\\d+>', 0)")).alias("emote")) \
                 .groupBy("emote") \
                 .count() \
                 .orderBy("count", ascending=False)
-            res = get_show_string(dfw, n=20, truncate=False)
-            await ctx.channel.send(f'{res}')
+            pd = dfw.toPandas().sort_values(by=["count"])
+            maxlen = len(str(pd["count"].max()))
+            uwu = ["_ _"]
+            for r in pd.itertuples():
+                uwu.append(f"`{str(r[0]).zfill(maxlen)}` | {r[1]}")
+            await ctx.channel.send("\n".join(uwu))
 
     @stats.command(brief="use your ~~words~~ letters")
     async def letters(self, ctx):

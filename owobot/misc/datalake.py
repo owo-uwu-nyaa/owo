@@ -27,16 +27,20 @@ class KuduDataLake(DataLake):
         self.khosts = khosts
         self.kports = kports
         self.client = kudu.connect(khosts, kports)
-        self.session = self.client.new_session()
         self.kudu_writer_lock = threading.Lock()
         self.table_prefix = table_prefix
+        self.session = self.client.new_session()
 
     def put_row(self, table, row):
-        with self.kudu_writer_lock:
-            table = self.client.table(f"{self.table_prefix}.{table}")
-            op = table.new_insert(row)
-            self.session.apply(op)
-            self.session.flush()
+            with self.kudu_writer_lock:
+                self.session = self.client.new_session()
+                try:
+                    table = self.client.table(f"{self.table_prefix}.{table}")
+                    op = table.new_insert(row)
+                    self.session.apply(op)
+                    self.session.flush()
+                except:
+                    print(self.session.get_pending_errors())
 
     def get_df(self, table):
         masters = []
@@ -82,7 +86,7 @@ class CSVDataLake(DataLake):
 
     def get_df(self, table):
         handle = self.writers[table]
-        df = spark.read.schema(handle.schema) \
+        df = spark.read.msg_schema(handle.msg_schema) \
             .options(mode='FAILFAST', multiLine=True, escape='"', header=True) \
             .csv(handle.path)
         if table == "msgs":
