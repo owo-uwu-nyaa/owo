@@ -23,6 +23,7 @@ class Hugs(commands.Cog):
             (HugConsent.snowflake == member.id) & (HugConsent.target == ctx.author.id)).exists()
         bquery = HugConsent.select().where((HugConsent.snowflake == member.id) & (HugConsent.target == 0)).exists()
         if ctx.author.id == member.id or query or bquery:
+
             await ctx.send(f"{common.get_nick_or_name(ctx.author)} sends you a hug, {common.get_nick_or_name(member)}")
             await ctx.send(img_url)
         else:
@@ -149,6 +150,7 @@ class Hugs(commands.Cog):
             await common.react_success(ctx)
         except:
             await common.react_failure(ctx)
+
 
     @consent.command(brief="unconsent to hugs by id")
     async def rm(self, ctx, member: discord.Member):
