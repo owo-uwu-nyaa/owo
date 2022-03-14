@@ -19,8 +19,10 @@ class Hugs(commands.Cog):
         self.bot = bot
 
     async def send_hug(self, ctx, member, img_url: str) -> None:
-        query = HugConsent.select().where(HugConsent.snowflake == member.id and HugConsent.target == ctx.author.id).exists()
-        if ctx.author.id == member.id or query:
+        query = HugConsent.select().where(
+            (HugConsent.snowflake == member.id) & (HugConsent.target == ctx.author.id)).exists()
+        bquery = HugConsent.select().where((HugConsent.snowflake == member.id) & (HugConsent.target == 0)).exists()
+        if ctx.author.id == member.id or query or bquery:
             await ctx.send(f"{common.get_nick_or_name(ctx.author)} sends you a hug, {common.get_nick_or_name(member)}")
             await ctx.send(img_url)
         else:
@@ -131,11 +133,36 @@ class Hugs(commands.Cog):
         except:
             await common.react_failure(ctx)
 
+    @consent.command(brief="blanket consent to hugs")
+    async def all(self, ctx):
+        try:
+            HugConsent.create(snowflake=ctx.author.id, target=0)
+            await common.react_success(ctx)
+        except:
+            await common.react_failure(ctx)
+
+    @consent.command(brief="un-blanket consent to hugs")
+    async def undoall(self, ctx):
+        try:
+            HugConsent.delete().where(
+                (HugConsent.snowflake == ctx.author.id) & (HugConsent.target == 0)).execute()
+            await common.react_success(ctx)
+        except:
+            await common.react_failure(ctx)
+
     @consent.command(brief="unconsent to hugs by id")
     async def rm(self, ctx, member: discord.Member):
         try:
             HugConsent.delete().where(
-                HugConsent.snowflake == ctx.author.id and HugConsent.target == member.id).execute()
+                (HugConsent.snowflake == ctx.author.id) & (HugConsent.target == member.id)).execute()
+            await common.react_success(ctx)
+        except:
+            await common.react_failure(ctx)
+
+    @consent.command(brief="unconsent to all hugs")
+    async def rmrf(self, ctx):
+        try:
+            HugConsent.delete().where(HugConsent.snowflake == ctx.author.id).execute()
             await common.react_success(ctx)
         except:
             await common.react_failure(ctx)
