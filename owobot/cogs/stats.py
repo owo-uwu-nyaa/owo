@@ -1,4 +1,5 @@
 import os
+
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell'
 import misc.common
 import io
@@ -96,12 +97,13 @@ class Stats(commands.Cog):
             dfw = dfa.select(explode(expr("regexp_extract_all(msg, '<a?:[^:<>@*~]+:\\\\d+>', 0)")).alias("emote")) \
                 .groupBy("emote") \
                 .count() \
-                .orderBy("count", ascending=False)
+                .orderBy("count", ascending=False) \
+                .limit(20)
             pd = dfw.toPandas().sort_values(by=["count"])
             maxlen = len(str(pd["count"].max()))
             uwu = ["_ _"]
             for r in pd.itertuples():
-                uwu.append(f"`{str(r[0]).zfill(maxlen)}` | {r[1]}")
+                uwu.append(f"`{str(r[0]).rjust(maxlen, ' ')}` | {r[1]}")
             await ctx.channel.send("\n".join(uwu))
 
     @stats.command(brief="use your ~~words~~ letters")
