@@ -18,6 +18,9 @@ class HugShort(BaseModel):
     key = TextField(primary_key=True)
     val = TextField()
 
+class Consent(BaseModel):
+    snowflake = BigIntegerField(primary_key=True)
+
 def set_db(db: peewee.Database):
     db_prox.initialize(db)
-    db.create_tables([Owner, NsflChan, HugShort])
+    db.create_tables([Owner, NsflChan, HugShort, Consent])

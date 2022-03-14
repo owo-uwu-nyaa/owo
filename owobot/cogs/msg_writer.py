@@ -2,6 +2,9 @@ from datetime import datetime
 
 from discord.ext import commands
 
+from misc import common
+from misc.db import Consent
+
 
 class MsgWriter(commands.Cog):
 
@@ -19,7 +22,8 @@ class MsgWriter(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_typing(self, payload):
-        self.datalake.put_row("typing", {"author_id": payload.user_id,
+        if Consent.select().where(Consent.snowflake == payload.user_id).exists():
+            self.datalake.put_row("typing", {"author_id": payload.user_id,
                                          "channel_id": payload.channel_id, "guild_id": payload.guild_id,
                                          "time": payload.when})
 
@@ -71,6 +75,27 @@ class MsgWriter(commands.Cog):
 
     @commands.Cog.listener()
     async def on_presence_update(self, before, after):
-        if (before.status != after.status):
-            self.datalake.put_row("presence", {"author_id": before.id, "time": datetime.now(), "before": str(before.status),
-                                           "after": str(after.status)})
+        if Consent.select().where(Consent.snowflake == before.id).exists() and (str(before.status) != str(after.status)):
+            self.datalake.put_row("presence",
+                                  {"author_id": before.id, "time": datetime.now(), "before": str(before.status),
+                                   "after": str(after.status)})
+
+    @commands.group()
+    async def consent(self, ctx):
+        pass
+
+    @consent.command(brief="consent that this bot tracks you into oblivion")
+    async def sellmydata(self, ctx):
+        try:
+            Consent.create(snowflake=ctx.author.id)
+            await common.react_success(ctx)
+        except:
+            await common.react_failure(ctx)
+
+    @consent.command(brief="unconsent that this bot tracks you into oblivion")
+    async def unsellmydata(self, ctx):
+        try:
+            Consent.delete().where(Consent.snowflake == ctx.author.id).execute()
+            await common.react_success(ctx)
+        except:
+            await common.react_failure(ctx)
