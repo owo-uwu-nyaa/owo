@@ -45,15 +45,3 @@ class Restricted(commands.Cog):
     @owner.command(brief="remove an owner")
     async def rm(self, ctx, member: discord.Member):
         Owner.delete().where(Owner.snowflake == member.id).execute()
-
-    @commands.group()
-    async def hugconfigure(self, ctx):
-        pass
-
-    @hugconfigure.command(brief="add a tag shorthand")
-    async def add(self, ctx, shorthand: str, tag: str):
-        HugShort.create(key=shorthand, val=tag)
-
-    @hugconfigure.command(brief="add a tag shorthand")
-    async def rm(self, ctx, shorthand: str):
-        HugShort.delete().where(HugShort.key == shorthand).execute()

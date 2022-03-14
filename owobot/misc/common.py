@@ -1,6 +1,8 @@
 import re
 import discord
 
+from misc.db import Owner
+
 
 def get_nick_or_name(user: object) -> str:
     gnick = user.nick if isinstance(user, discord.Member) and not user.nick is None else user.name
@@ -23,3 +25,12 @@ def sanitize(str: str) -> str:
         if c in str:
             str = str.replace(c, f"​{c}")
     return str
+
+def is_owner(ctx):
+    return Owner.select().where(Owner.snowflake == ctx.author.id).exists()
+
+async def react_success(ctx):
+    await ctx.message.add_reaction("✅")
+
+async def react_failure(ctx):
+    await ctx.message.add_reaction("❌")
