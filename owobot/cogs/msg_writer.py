@@ -75,7 +75,7 @@ class MsgWriter(commands.Cog):
 
     @commands.Cog.listener()
     async def on_presence_update(self, before, after):
-        if Consent.select().where(Consent.snowflake == before.id).exists() and (before.status != after.status):
+        if Consent.select().where(Consent.snowflake == before.id).exists() and (str(before.status) != str(after.status)):
             self.datalake.put_row("presence",
                                   {"author_id": before.id, "time": datetime.now(), "before": str(before.status),
                                    "after": str(after.status)})

@@ -23,4 +23,4 @@ class Consent(BaseModel):
 
 def set_db(db: peewee.Database):
     db_prox.initialize(db)
-    db.create_tables([Owner, NsflChan, HugShort])
+    db.create_tables([Owner, NsflChan, HugShort, Consent])
