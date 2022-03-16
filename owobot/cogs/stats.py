@@ -1,4 +1,5 @@
 import os
+from recordclass import RecordClass
 
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell'
 import misc.common
@@ -29,11 +30,24 @@ def count_words(df) -> str:
     return get_show_string(dfw, n=20)
 
 
+class GalleryState(RecordClass):
+    idx: int
+    msg_id: int
+    chan_id: int
+    urls: list[str]
+    embed: discord.Embed
+
+gallery_by_auth: dict[int, GalleryState] = dict()
+gallery_by_msg: dict[int, GalleryState] = dict()
+
 class Stats(commands.Cog):
     def __init__(self, bot, config):
         self.bot = bot
+        self.config = config
         self.spark_lock = threading.Lock()
         self.df_global = config.datalake.get_df("msgs")
+        self.df_attachments = config.datalake.get_df("attachments")
+        self.df_react = config.datalake.get_df("react")
 
     async def cog_check(self, ctx):
         if not self.spark_lock.locked():
@@ -76,6 +90,7 @@ class Stats(commands.Cog):
             res = get_show_string(dft, n=24)
             await ctx.channel.send(f'```\n{res}total messages: {dfa.count()}```')
 
+
     @stats.command(brief="use your words")
     async def words(self, ctx):
         with self.spark_lock:
@@ -83,12 +98,14 @@ class Stats(commands.Cog):
             res = count_words(dfa)
             await ctx.channel.send(f'```\n{misc.common.sanitize(res)}\n```')
 
+
     @stats.command(brief="words, but also use messages from dms/other guilds")
     async def simonwords(self, ctx):
         with self.spark_lock:
             dfa = self.df_global.filter(col("author_id") == ctx.author.id)
             res = count_words(dfa)
             await ctx.channel.send(f'```\n{misc.common.sanitize(res)}\n```')
+
 
     @stats.command(brief="words, but emotes", aliases=["emo"])
     async def emotes(self, ctx):
@@ -106,6 +123,7 @@ class Stats(commands.Cog):
                 uwu.append(f"`{str(r[0]).rjust(maxlen, ' ')}` | {r[1]}")
             await ctx.channel.send("\n".join(uwu))
 
+
     @stats.command(brief="use your ~~words~~ letters")
     async def letters(self, ctx):
         with self.spark_lock:
@@ -117,6 +135,7 @@ class Stats(commands.Cog):
                 .orderBy("count", ascending=False)
             res = get_show_string(dfl, n=20)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
+
 
     @stats.command(brief="make history", aliases=["histowowy"])
     async def history(self, ctx, *members: discord.Member):
@@ -148,9 +167,10 @@ class Stats(commands.Cog):
                 .join(author_mappings_df.toPandas().set_index("id"), on="author_id")
             fig = px.line(dfp, x="date", y="value", color="name")
             img = io.BytesIO()
-            fig.write_image(img, format="png", scale=3)
+            fig.write_image(img, format="p.ng", scale=3)
             img.seek(0)
             await ctx.channel.send(file=discord.File(fp=img, filename="../yeet.png"))
+
 
     @stats.command(brief="see all the lovebirbs #choo choo #ship", aliases=["ships"])
     async def couples(self, ctx):
@@ -178,3 +198,58 @@ class Stats(commands.Cog):
                 .select("#1", "#2", "count")
             res = get_show_string(df_hug_counts_names, n_limit)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
+
+
+    @commands.command(brief="see a gallery with all images you reacted to")
+    async def gallery(self, ctx):
+        df_pics = self.df_attachments.select("msg_id", "attachment")
+        df_reacted = self.df_react.filter((col("added") == True) & (col("author_id") == ctx.author.id)).select("msg_id")
+        df_wanted_pics = df_reacted.join(df_pics, "msg_id").drop("msg_id").dropDuplicates().collect()
+        print(df_wanted_pics)
+        embed = discord.Embed()
+        embed.set_image(url=df_wanted_pics[0][0])
+        sent = await ctx.send(embed=embed)
+        await sent.add_reaction(self.config.left_emo)
+        await sent.add_reaction(self.config.right_emo)
+        st = GalleryState(idx=0, msg_id=sent.id, chan_id=ctx.channel.id, urls=df_wanted_pics, embed=embed)
+        oldst = gallery_by_auth.get(ctx.author.id)
+        if oldst is not None:
+            del gallery_by_msg[oldst.msg_id]
+        gallery_by_msg[sent.id] = st
+        gallery_by_auth[ctx.author.id] = st
+
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        await self.update_gallery(payload)
+
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        await self.update_gallery(payload)
+
+
+    async def update_gallery(self, payload):
+        if payload.user_id == self.bot.user.id:
+            return
+        gallery = gallery_by_msg.get(payload.message_id)
+        emoji = str(payload.emoji)
+        if emoji != self.config.left_emo and emoji != self.config.right_emo:
+            return
+        if gallery is None or gallery.msg_id != payload.message_id:
+            return
+        chan = await self.bot.fetch_channel(payload.channel_id)
+        msg = await chan.fetch_message(payload.message_id)
+        nidx = gallery.idx
+        if emoji == self.config.left_emo:
+            nidx += 1
+        else:
+            nidx -= 1
+        if nidx < 0:
+            nidx = len(gallery.urls) - 1
+        elif nidx >= len(gallery.urls):
+            nidx = 0
+        gallery.idx = nidx
+        embed = gallery.embed
+        embed.set_image(url=gallery.urls[nidx][0])
+        await msg.edit(embed=embed)

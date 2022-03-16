@@ -7,3 +7,4 @@ kaleido
 pandas
 toml
 peewee
+recordclass

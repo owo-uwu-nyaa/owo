@@ -52,6 +52,9 @@ class Config:
         self.command_prefix = str(self.get_key("command_prefix"))
         self.desc = str(self.get_key("desc"))
 
+        self.left_emo = str(self.get_key("gallery", "left_emo"))
+        self.right_emo = str(self.get_key("gallery", "right_emo"))
+
         self.bottom_cmd = str(self.get_key("bottom", "executable"))
 
         self.catapi_token = str(self.get_key("api_tokens", "catapi"))

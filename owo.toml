@@ -2,6 +2,11 @@ command_prefix = "$"
 
 desc = "Pwease end my misewy, nyaaa~"
 
+[gallery]
+
+left_emo = "<:rl:953752216949358692>"
+right_emo = "<:rr:953752217062637588>"
+
 [bottom]
 
 executable = "bottomify"
@@ -22,7 +27,6 @@ dir = "."
 # host = "localhost"
 # user = "uwu"
 # db = "owo"
-
 
 # use kudu as data lake backend, takes precedence over csv
 # [kudu]
