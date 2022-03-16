@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 from discord.ext import commands
@@ -14,6 +15,16 @@ class MsgWriter(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if len(message.attachments) > 0:
+            self.datalake.put_row("attachments", {"msg_id": message.id, "author_id": message.author.id,
+                                              "channel_id": message.channel.id, "guild_id": message.guild.id,
+                                              "time": datetime.now(),
+                                              "attachment": "\n".join(map(lambda a: a.url, message.attachments))})
+        if re.match("(https://[^ ]+.discordapp.[^ ]+/attachments/[^ ]+)|(https://[^ ]+.gelbooru.[^ ]+/images/[^ ]+)", message.content):
+            self.datalake.put_row("attachments", {"msg_id": message.id, "author_id": message.author.id,
+                                                  "channel_id": message.channel.id, "guild_id": message.guild.id,
+                                                  "time": datetime.now(),
+                                                  "attachment": message.content})
         if message.author == self.bot.user:
             return
         self.datalake.put_row("msgs", {"msg_id": message.id, "author_id": message.author.id,
