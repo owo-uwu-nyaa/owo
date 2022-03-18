@@ -8,3 +8,4 @@ pandas
 toml
 peewee
 recordclass
+emoji

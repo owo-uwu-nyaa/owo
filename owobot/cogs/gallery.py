@@ -6,7 +6,7 @@ from discord.ext import commands
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from recordclass import RecordClass
-
+from emoji import UNICODE_EMOJI_ENGLISH
 
 class GalleryState(RecordClass):
     idx: int
@@ -32,7 +32,7 @@ class Gallery(commands.Cog):
         emotes = []
         channels = []
         for arg in args:
-            if re.match(r"<a?:[^:<>@*~]+:\d+>", arg):
+            if re.match(r"<a?:[^:<>@*~]+:\d+>", arg) or arg in UNICODE_EMOJI_ENGLISH:
                 emotes.append(arg)
             elif re.match(r"<#\d+>", arg):
                 channels.append(int(re.search(r"\d+", arg).group(0)))
