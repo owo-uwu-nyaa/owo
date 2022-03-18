@@ -14,6 +14,7 @@ from cogs.simple_commands import Misc
 from cogs.owo import Owo
 from cogs.stats import Stats
 from misc.config import Config
+from cogs.gallery import Gallery
 
 
 def main():
@@ -33,6 +34,7 @@ def main():
     bot.add_cog(Owo(bot))
     bot.add_cog(Restricted(bot))
     bot.add_cog(Admin(bot))
+    bot.add_cog(Gallery(bot, config))
     bot.add_cog(Stats(bot, config))
     bot.add_cog(Bottom(bot, config))
     # bot.add_cog(Quotes(bot))

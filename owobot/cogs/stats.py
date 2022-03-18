@@ -29,28 +29,12 @@ def count_words(df) -> str:
         .orderBy("count", ascending=False)
     return get_show_string(dfw, n=20)
 
-
-class GalleryState(RecordClass):
-    idx: int
-    msg_id: int
-    chan_id: int
-    msg: discord.Message
-    urls: list[str]
-    embed: discord.Embed
-
-
-gallery_by_auth: dict[int, GalleryState] = dict()
-gallery_by_msg: dict[int, GalleryState] = dict()
-
-
 class Stats(commands.Cog):
     def __init__(self, bot, config):
         self.bot = bot
         self.config = config
         self.spark_lock = threading.Lock()
         self.df_global = config.datalake.get_df("msgs")
-        self.df_attachments = config.datalake.get_df("attachments")
-        self.df_react = config.datalake.get_df("react")
 
     async def cog_check(self, ctx):
         if not self.spark_lock.locked():
@@ -176,7 +160,7 @@ class Stats(commands.Cog):
             df_hugs = self.get_guild_df(ctx).select("author_id", "msg") \
                 .withColumn("hug_target",
                             regexp_extract(
-                                col("msg"), "(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug).{0,10})<@!?)\\d{17,19}(?=(>*.))", 0)
+                                col("msg"), "(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug|h).{0,10})<@!?)\\d{17,19}(?=(>*.))", 0)
                             .cast(LongType())) \
                 .drop("msg")
             df_hug_counts = df_hugs.filter(df_hugs["hug_target"].isNotNull()) \
@@ -195,55 +179,3 @@ class Stats(commands.Cog):
                 .select("#1", "#2", "count")
             res = get_show_string(df_hug_counts_names, n_limit)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
-
-    @commands.command(brief="see a gallery with all images you reacted to")
-    async def gallery(self, ctx):
-        df_pics = self.df_attachments.select("msg_id", "attachment")
-        df_reacted = self.df_react.filter((col("added") == True) & (col("author_id") == ctx.author.id)).select("msg_id")
-        df_wanted_pics = df_reacted.join(df_pics, "msg_id").drop("msg_id").dropDuplicates().collect()
-        print(df_wanted_pics)
-        embed = discord.Embed()
-        embed.set_image(url=df_wanted_pics[0][0])
-        embed.set_footer(text=f"1/{len(df_wanted_pics)}")
-        sent = await ctx.send(embed=embed)
-        await sent.add_reaction(self.config.left_emo)
-        await sent.add_reaction(self.config.right_emo)
-        st = GalleryState(idx=0, msg_id=sent.id, chan_id=ctx.channel.id, urls=df_wanted_pics, embed=embed, msg=sent)
-        oldst = gallery_by_auth.get(ctx.author.id)
-        if oldst is not None:
-            del gallery_by_msg[oldst.msg_id]
-        gallery_by_msg[sent.id] = st
-        gallery_by_auth[ctx.author.id] = st
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        await self.update_gallery(payload)
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload):
-        await self.update_gallery(payload)
-
-    async def update_gallery(self, payload):
-        if payload.user_id == self.bot.user.id:
-            return
-        gallery = gallery_by_msg.get(payload.message_id)
-        emoji = str(payload.emoji)
-        if emoji != self.config.left_emo and emoji != self.config.right_emo:
-            return
-        if gallery is None or gallery.msg_id != payload.message_id:
-            return
-        msg = gallery.msg
-        nidx = gallery.idx
-        if emoji == self.config.left_emo:
-            nidx -= 1
-        else:
-            nidx += 1
-        if nidx < 0:
-            nidx = len(gallery.urls) - 1
-        elif nidx >= len(gallery.urls):
-            nidx = 0
-        gallery.idx = nidx
-        embed = discord.Embed()
-        embed.set_image(url=gallery.urls[nidx][0])
-        embed.set_footer(text=f"{nidx + 1}/{len(gallery.urls)}")
-        await msg.edit(embed=embed)
