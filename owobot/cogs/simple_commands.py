@@ -100,6 +100,6 @@ class Misc(commands.Cog):
     async def slap(self, ctx, member: discord.Member):
         name1 = common.get_nick_or_name(ctx.author)
         name2 = common.get_nick_or_name(member)
-        await ctx.send(name1 + " " + owolib.owofy("slaps") + " " + name2)
+        await ctx.send(name1 + " slaps " + name2)
         await ctx.send(
             "https://tenor.com/view/slap-bear-slap-me-you-gif-17942299")
