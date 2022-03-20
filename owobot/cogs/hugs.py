@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from peewee import SQL
 from pygelbooru import Gelbooru
 from misc import common, owolib
 from misc.common import is_owner
@@ -91,19 +90,19 @@ class Hugs(commands.Cog):
     async def hugconfigure(self, ctx):
         pass
 
-    @hugconfigure.command(brief="explain what a short str is translated to")
-    async def explain(self, ctx, short: str):
+    @hugconfigure.command(name="explain", brief="explain what a short str is translated to")
+    async def hugconfigure_explain(self, ctx, short: str):
         query = HugShort.select().where(HugShort.key.in_(list(short)))
         await ctx.channel.send(tags_to_str(query))
 
-    @hugconfigure.command(brief="list tag short")
-    async def list(self, ctx):
+    @hugconfigure.command(name="list", brief="list tag short")
+    async def hugconfigure_list(self, ctx):
         query = HugShort.select()
         await ctx.channel.send(tags_to_str(query))
 
     @commands.check(is_owner)
-    @hugconfigure.command(brief="add a tag short")
-    async def add(self, ctx, short: str, tag: str):
+    @hugconfigure.command(name="add", brief="add a tag short")
+    async def hugconfigure_add(self, ctx, short: str, tag: str):
         if len(short) == 1:
             try:
                 HugShort.create(key=short, val=tag)
@@ -112,20 +111,20 @@ class Hugs(commands.Cog):
                 await common.react_failure(ctx)
 
     @commands.check(is_owner)
-    @hugconfigure.command(brief="rm a tag short")
-    async def rm(self, ctx, short: str):
+    @hugconfigure.command(name="rm", brief="rm a tag short")
+    async def hugconfigure_rm(self, ctx, short: str):
         try:
             HugShort.delete().where(HugShort.key == short).execute()
             await common.react_success(ctx)
         except:
             await common.react_failure(ctx)
 
-    @commands.group()
+    @commands.group(pass_context=True)
     async def consent(self, ctx):
         pass
 
-    @consent.command(brief="consent to hugs by id")
-    async def add(self, ctx, member: discord.Member):
+    @consent.command(name="add", brief="consent to hugs by id")
+    async def consent_add(self, ctx, member: discord.Member):
         if ctx.author.id == member.id:
             await ctx.channel.send("You can always hug yourself :>")
         try:
@@ -134,16 +133,16 @@ class Hugs(commands.Cog):
         except:
             await common.react_failure(ctx)
 
-    @consent.command(brief="blanket consent to hugs")
-    async def all(self, ctx):
+    @consent.command(name="all", brief="blanket consent to hugs")
+    async def consent_all(self, ctx):
         try:
             HugConsent.create(snowflake=ctx.author.id, target=0)
             await common.react_success(ctx)
         except:
             await common.react_failure(ctx)
 
-    @consent.command(brief="un-blanket consent to hugs")
-    async def undoall(self, ctx):
+    @consent.command(name="undoall", brief="un-blanket consent to hugs")
+    async def consent_undoall(self, ctx):
         try:
             HugConsent.delete().where(
                 (HugConsent.snowflake == ctx.author.id) & (HugConsent.target == 0)).execute()
@@ -151,20 +150,13 @@ class Hugs(commands.Cog):
         except:
             await common.react_failure(ctx)
 
+    @consent.command(name="rm", brief="unconsent to hugs by id")
+    async def consent_rm(self, ctx, member: discord.Member):
+        query = HugConsent.delete().where(
+            (HugConsent.snowflake == ctx.author.id) & (HugConsent.target == member.id)).execute()
+        await common.try_exe_cute_query(ctx, query)
 
-    @consent.command(brief="unconsent to hugs by id")
-    async def rm(self, ctx, member: discord.Member):
-        try:
-            HugConsent.delete().where(
-                (HugConsent.snowflake == ctx.author.id) & (HugConsent.target == member.id)).execute()
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
-
-    @consent.command(brief="unconsent to all hugs")
-    async def rmrf(self, ctx):
-        try:
-            HugConsent.delete().where(HugConsent.snowflake == ctx.author.id).execute()
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
+    @consent.command(name="rmrf", brief="unconsent to all hugs")
+    async def consent_rmrf(self, ctx):
+        query = HugConsent.delete().where(HugConsent.snowflake == ctx.author.id)
+        await common.try_exe_cute_query(ctx, query)
