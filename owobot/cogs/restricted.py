@@ -5,9 +5,8 @@ import sys
 import discord
 from discord.ext import commands
 
-import misc.common
 from misc import common
-from misc.db import Owner, HugShort
+from misc.db import Owner
 
 
 class Restricted(commands.Cog):
@@ -40,18 +39,12 @@ class Restricted(commands.Cog):
     async def owner(self, ctx):
         pass
 
-    @owner.command(brief="add an owner")
-    async def add(self, ctx, member: discord.Member):
-        try:
-            Owner.create(snowflake=member.id)
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
+    @owner.command(name="add", brief="add an owner")
+    async def owner_add(self, ctx, member: discord.Member):
+        query = Owner.insert(snowflake=member.id)
+        await common.try_exe_cute_query(ctx, query)
 
-    @owner.command(brief="remove an owner")
-    async def rm(self, ctx, member: discord.Member):
-        try:
-            Owner.delete().where(Owner.snowflake == member.id).execute()
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
+    @owner.command(name="rm", brief="remove an owner")
+    async def owner_rm(self, ctx, member: discord.Member):
+        query = Owner.delete().where(Owner.snowflake == member.id)
+        await common.try_exe_cute_query(ctx, query)

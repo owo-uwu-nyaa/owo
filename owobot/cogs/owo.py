@@ -32,15 +32,14 @@ class Owo(commands.Cog):
         if not OwoChan.select().where(OwoChan.channel == message.channel.id).exists():
             return
         text = message.content
-        owo_score = owolib.score(text)
-        if owo_score > 1 or not contains_alpha(text):
+        if owolib.score(text) > 1 or not contains_alpha(text):
             return
-        owofied = owolib.owofy(text)
         webhooks = await message.channel.webhooks()
         if len(webhooks) > 0:
             webhook = webhooks[0]
         else:
             webhook = await message.channel.create_webhook(name="if you read this you're cute")
+        owofied = owolib.owofy(text)
         author_name = owolib.owofy(message.author.display_name)
         author_avatar_url = message.author.avatar.url
         await webhook.send(
