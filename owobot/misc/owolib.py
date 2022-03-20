@@ -42,20 +42,24 @@ def owofy(text: str) -> str:
     # pro: works
     nmsg = []
     if random.randint(0, 10) > 7:
-        nmsg.append(random.choice(uwu_data.prefixes))
-    for word in str.split(text):
-        if re.match(_do_not_owofy, word):
+        nmsg.append(random.choice(uwu_data.prefixes) + ' ')
+    # returns list of words alternating with whitespace (in this order, word may be empty)
+    split = re.split('(\s+)', text)
+    is_seperator = True
+    for word in split:
+        is_seperator = not is_seperator
+        if is_seperator or word == '' or re.match(_do_not_owofy, word):
             nmsg.append(word)
             continue
         for map in uwu_data.mappings:
             word = word.replace(map[0], map[1])
         if random.randint(0, 10) > 8 and word[0].isalpha():
-            nmsg.append(f"{word[0]}-{word[0]}-{word}")
-        else:
-            nmsg.append(word)
+            word = f"{word[0]}-{word[0]}-{word}"
+        
+        nmsg.append(word)
         if word[-1] in [".", ",", "?"]:
-            nmsg.append(random.choice(uwu_data.int_emote))
-    return " ".join(nmsg)
+            nmsg.append(' ' + random.choice(uwu_data.int_emote))
+    return "".join(nmsg)
 
 
 def get_random_emote() -> str:
