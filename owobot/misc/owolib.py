@@ -1,4 +1,6 @@
 import random
+import re
+
 from misc import uwu_data
 
 """
@@ -14,35 +16,39 @@ these seem to be important modifications as in https://github.com/FernOfSigma/ow
 
 """
 
+_do_not_owofy = r"http*.|<*.>"
 
-def score(msg: str) -> float:
-    msg = msg.lower()
+def score(text: str) -> float:
+    text = re.sub(_do_not_owofy, " ", text).lower()
     spirit_count = 0
     for spirit in uwu_data.good_owo_spirit:
-        if spirit in msg:
+        if spirit in text:
             spirit_count += 1
     map_count = 0
     lost_owo_potential = 0
     for mapping in uwu_data.mappings:
-        if mapping[1] in msg:
+        if mapping[1] in text:
             map_count += 1
-        if mapping[0] in msg:
-           lost_owo_potential += 1
+        if mapping[0] in text:
+            lost_owo_potential += 1
     stuttewing = 0
-    for word in msg.split(" "):
+    for word in text.split():
         stuttewing += word.count("-")
-    return (stuttewing * 20 + map_count * 15 + spirit_count * 10 - lost_owo_potential) / len(msg)
+    return (stuttewing * 20 + map_count * 15 + spirit_count * 10 - lost_owo_potential) / len(text)
 
 
-def owofy(msg: str) -> str:
+def owofy(text: str) -> str:
     # con: not that efficient
     # pro: works
-    for map in uwu_data.mappings:
-        msg = msg.replace(map[0], map[1])
     nmsg = []
     if random.randint(0, 10) > 7:
         nmsg.append(random.choice(uwu_data.prefixes))
-    for word in str.split(msg):
+    for word in str.split(text):
+        if re.match(_do_not_owofy, word):
+            nmsg.append(word)
+            continue
+        for map in uwu_data.mappings:
+            word = word.replace(map[0], map[1])
         if random.randint(0, 10) > 8 and word[0].isalpha():
             nmsg.append(f"{word[0]}-{word[0]}-{word}")
         else:
