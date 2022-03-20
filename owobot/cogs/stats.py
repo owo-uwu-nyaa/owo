@@ -82,14 +82,14 @@ class Stats(commands.Cog):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
             res = count_words(dfa)
-            await ctx.channel.send(f'```\n{misc.common.sanitize(res)}\n```')
+            await ctx.channel.send(f'```\n{misc.common.sanitize_markdown(res)}\n```')
 
     @stats.command(brief="words, but also use messages from dms/other guilds")
     async def simonwords(self, ctx):
         with self.spark_lock:
             dfa = self.df_global.filter(col("author_id") == ctx.author.id)
             res = count_words(dfa)
-            await ctx.channel.send(f'```\n{misc.common.sanitize(res)}\n```')
+            await ctx.channel.send(f'```\n{misc.common.sanitize_markdown(res)}\n```')
 
     @stats.command(brief="words, but emotes", aliases=["emo"])
     async def emotes(self, ctx):

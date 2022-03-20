@@ -17,6 +17,10 @@ class NsflChan(BaseModel):
     channel = BigIntegerField(primary_key=True)
 
 
+class OwoChan(BaseModel):
+    channel = BigIntegerField(primary_key=True)
+
+
 class HugShort(BaseModel):
     key = TextField(primary_key=True)
     val = TextField()
@@ -36,4 +40,4 @@ class HugConsent(BaseModel):
 
 def set_db(db: peewee.Database):
     db_prox.initialize(db)
-    db.create_tables([Owner, NsflChan, HugShort, Consent, HugConsent])
+    db.create_tables([Owner, NsflChan, HugShort, Consent, HugConsent, OwoChan])

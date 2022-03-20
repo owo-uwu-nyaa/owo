@@ -18,7 +18,8 @@ async def author_id_to_obj(bot, author_id, ctx):
 
 markdown_chars = ["~", "_", "*", "`"]
 
-def sanitize(str: str) -> str:
+
+def sanitize_markdown(str: str) -> str:
     # prepend each markdown interpretable char with a zero width space
     # italics with a single * seems to not break codeblocks
     for c in markdown_chars:
@@ -26,14 +27,30 @@ def sanitize(str: str) -> str:
             str = str.replace(c, f"​{c}")
     return str
 
+
+def sanitize_send(str: str) -> str:
+    return re.sub(r"(^[\W])|(@)", "", str)
+
+
 async def is_owner(ctx):
     if Owner.select().where(Owner.snowflake == ctx.author.id).exists():
         return True
     await react_failure(ctx)
     return False
 
+
 async def react_success(ctx):
     await ctx.message.add_reaction("✅")
 
+
 async def react_failure(ctx):
     await ctx.message.add_reaction("❌")
+
+
+async def try_exe_cute_query(ctx, query):
+    try:
+        res = query.execute()
+        await react_success(ctx)
+        return res
+    except:
+        await react_failure(ctx)

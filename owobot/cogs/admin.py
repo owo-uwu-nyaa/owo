@@ -1,6 +1,7 @@
 from discord.ext import commands
 
-from misc.db import NsflChan
+from misc import common
+from misc.db import NsflChan, OwoChan
 
 
 class Admin(commands.Cog):
@@ -11,13 +12,29 @@ class Admin(commands.Cog):
         return ctx.author.guild_permissions.administrator
 
     @commands.group()
-    async def nsfl(self, ctx):
+    async def mark(self, ctx):
         pass
 
-    @nsfl.command(brief="mark this as nsfl channel")
-    async def mark(self, ctx):
-        NsflChan.create(channel=ctx.channel.id)
+    @mark.command(name="nsfl", brief="mark this as nsfl channel")
+    async def mark_nsfl(self, ctx):
+        query = NsflChan.insert(channel=ctx.channel.id)
+        await common.try_exe_cute_query(ctx, query)
 
-    @nsfl.command(brief="unmark this as nsfl channel")
+    @mark.command(name="owo", brief="mark this as a channel that should be owofied")
+    async def mark_owo(self, ctx):
+        query = OwoChan.insert(channel=ctx.channel.id)
+        await common.try_exe_cute_query(ctx, query)
+
+    @commands.group()
     async def unmark(self, ctx):
-        NsflChan.delete().where(NsflChan.channel == ctx.channel.id).execute()
+        pass
+
+    @unmark.command(name="nsfl", brief="unmark this as nsfl channel")
+    async def unmark_nsfl(self, ctx):
+        query = NsflChan.delete().where(NsflChan.channel == ctx.channel.id)
+        await common.try_exe_cute_query(ctx, query)
+
+    @unmark.command(name="owo", brief="unmark this as an owo channel")
+    async def unmark_owo(self, ctx):
+        query = OwoChan.delete().where(OwoChan.channel == ctx.channel.id)
+        await common.try_exe_cute_query(ctx, query)
