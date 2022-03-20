@@ -45,7 +45,10 @@ class Owo(commands.Cog):
                 webhook = message.channel.webhooks()[0]
                 if webhook is None:
                     webhook = await message.channel.create_webhook('if u read this ur gay')
+                authorname = owolib.owofy(message.author.display_name)
+                authorurl = message.author.avatar.url
                 await webhook.send(
                     content = common.sanitize(owofied),
-                    username = owolib.owofy(message.author.display_name),
-                    avatar_url = message.author.avatar.url)
+                    username = authorname,
+                    avatar_url = authorurl)
+                await message.delete()
