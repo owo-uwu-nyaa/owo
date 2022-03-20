@@ -37,5 +37,15 @@ class Owo(commands.Cog):
             owo_score = owolib.score(msg)
             if owo_score < 1 and contains_alpha(msg):
                 owofied = owolib.owofy(msg)
-                await message.channel.send(
-                    f'{owolib.get_random_sorry()} <@{message.author.id}> youw seem to nwot hav owofied ywour text.. h-here lwet me show you:\n```\n{common.sanitize(owofied)}\n```')
+                #   await message.channel.send(
+                #       f'{owolib.get_random_sorry()} <@{message.author.id}> youw seem to nwot hav owofied ywour text.. h-here lwet me show you:\n```\n{common.sanitize(owofied)}\n```')
+                #   ^ on top: previous version of owosend
+                #   🥺 on bottom: funny webhook things, relevant pycord docs: https://docs.pycord.dev/en/master/api.html?highlight=webhook#discord.Webhook
+                #   this should be self-documenting
+                webhook = message.channel.webhooks()[0]
+                if webhook is None:
+                    webhook = await message.channel.create_webhook('if u read this ur gay')
+                await webhook.send(
+                    content = common.sanitize(owofied),
+                    username = owolib.owofy(message.author.display_name),
+                    avatar_url = message.author.avatar.url)
