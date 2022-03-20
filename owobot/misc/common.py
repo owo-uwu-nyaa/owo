@@ -1,5 +1,6 @@
 import re
 import discord
+import emoji
 
 from misc.db import Owner
 
@@ -29,7 +30,9 @@ def sanitize_markdown(str: str) -> str:
 
 
 def sanitize_send(str: str) -> str:
-    return re.sub(r"(^[\W])|(@)", "", str)
+    if str[0] in emoji.EMOJI_UNICODE_ENGLISH:
+        return str
+    return re.sub(r"^[^\w<>()@]+", "", str)
 
 
 async def is_owner(ctx):

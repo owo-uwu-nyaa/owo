@@ -16,7 +16,7 @@ these seem to be important modifications as in https://github.com/FernOfSigma/ow
 
 """
 
-_do_not_owofy = r"http*.|<*.>"
+_do_not_owofy = r"(http.*)|(<.*>)"
 
 def score(text: str) -> float:
     text = re.sub(_do_not_owofy, " ", text).lower()
