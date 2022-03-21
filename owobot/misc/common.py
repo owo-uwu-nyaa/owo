@@ -1,6 +1,7 @@
 import re
 import discord
 import emoji
+from peewee import PeeweeException
 
 from misc.db import Owner
 
@@ -20,19 +21,19 @@ async def author_id_to_obj(bot, author_id, ctx):
 markdown_chars = ["~", "_", "*", "`"]
 
 
-def sanitize_markdown(str: str) -> str:
+def sanitize_markdown(text: str) -> str:
     # prepend each markdown interpretable char with a zero width space
     # italics with a single * seems to not break codeblocks
-    for c in markdown_chars:
-        if c in str:
-            str = str.replace(c, f"​{c}")
-    return str
+    for char in markdown_chars:
+        if char in text:
+            text = text.replace(char, f"​{char}")
+    return text
 
 
-def sanitize_send(str: str) -> str:
-    if str[0] in emoji.EMOJI_UNICODE_ENGLISH:
-        return str
-    return re.sub(r"^[^\w<>()@]+", "", str)
+def sanitize_send(text: str) -> str:
+    if text[0] in emoji.EMOJI_UNICODE_ENGLISH:
+        return text
+    return re.sub(r"^[^\w<>()@]+", "", text)
 
 
 async def is_owner(ctx):
@@ -55,5 +56,5 @@ async def try_exe_cute_query(ctx, query):
         res = query.execute()
         await react_success(ctx)
         return res
-    except:
+    except PeeweeException:
         await react_failure(ctx)

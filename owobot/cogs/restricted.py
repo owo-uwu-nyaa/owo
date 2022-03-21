@@ -1,4 +1,4 @@
-import os.path as path
+from os import path
 import subprocess
 import sys
 
@@ -27,7 +27,7 @@ class Restricted(commands.Cog):
     @commands.command(aliases=["redwepoy"])
     async def redeploy(self, ctx):
         (src_path, _) = path.split(path.realpath(__file__))
-        uwu = subprocess.run(["git", "pull"], capture_output=True, cwd=src_path)
+        uwu = subprocess.run(["git", "pull"], capture_output=True, cwd=src_path, check=False)
         await ctx.send(f"```\n{uwu}\n```")
         sys.exit(0)
 

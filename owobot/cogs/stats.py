@@ -1,33 +1,32 @@
 import os
-from recordclass import RecordClass
 
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell'
-import misc.common
 import io
 import threading
 import discord
 import plotly.express as px
 from discord.ext import commands
 from pyspark.shell import spark
-from pyspark.sql.functions import *
-from pyspark.sql.types import *
+import pyspark.sql.functions as F
+from pyspark.sql.types import LongType
 from misc import common
 
 
 def get_show_string(df, n=20, truncate=True, vertical=False):
     if isinstance(truncate, bool) and truncate:
         return df._jdf.showString(n, 20, vertical)
-    else:
-        return df._jdf.showString(n, int(truncate), vertical)
+    return df._jdf.showString(n, int(truncate), vertical)
 
 
 def count_words(df) -> str:
-    dfw = df.select(explode(
-        split(regexp_replace(regexp_replace(lower(col("msg")), "[^a-z $]", ""), " +", " "), " ")).alias("word")) \
+    dfw = df.select(F.explode(
+        F.split(F.regexp_replace(F.regexp_replace(F.lower(F.col("msg")), "[^a-z $]", ""), " +", " "), " ")).alias(
+        "word")) \
         .groupBy("word") \
         .count() \
         .orderBy("count", ascending=False)
     return get_show_string(dfw, n=20)
+
 
 class Stats(commands.Cog):
     def __init__(self, bot, config):
@@ -39,19 +38,19 @@ class Stats(commands.Cog):
     async def cog_check(self, ctx):
         if not self.spark_lock.locked():
             return True
-        await ctx.channel.send(f"Sorry, another query seems to be running")
+        await ctx.channel.send("Sorry, another query seems to be running")
         return False
 
     def get_messages_by_author(self, ctx):
-        return self.df_global.filter((col("author_id") == ctx.author.id) & (col("guild_id") == ctx.guild.id))
+        return self.df_global.filter((F.col("author_id") == ctx.author.id) & (F.col("guild_id") == ctx.guild.id))
 
     def get_guild_df(self, ctx):
-        return self.df_global.filter(col("guild_id") == ctx.guild.id)
+        return self.df_global.filter(F.col("guild_id") == ctx.guild.id)
 
     async def get_id_name_df(self, ctx):
         mmap = []
-        for m in ctx.guild.members:
-            mmap.append((common.get_nick_or_name(m), m.id))
+        for member in ctx.guild.members:
+            mmap.append((common.get_nick_or_name(member), member.id))
 
         return spark.createDataFrame(data=mmap, schema=["name", "id"])
 
@@ -59,20 +58,11 @@ class Stats(commands.Cog):
     async def stats(self, ctx):
         pass
 
-    @stats.command(brief="how many msgs?")
-    async def count(self, ctx):
-        with self.spark_lock:
-            dfa = self.get_messages_by_author(ctx).select("time")
-            dft = dfa.groupBy(hour("time").alias("hour")).agg(count("time").alias("count"))
-            dft = dft.orderBy("hour")
-            res = get_show_string(dft, n=24)
-            await ctx.channel.send(f'```\n{res}total messages: {dfa.count()}```')
-
     @stats.command(brief="when do you procrastinate?")
     async def activity(self, ctx):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx).select("time")
-            dft = dfa.groupBy(hour("time").alias("hour")).agg(count("time").alias("count"))
+            dft = dfa.groupBy(F.hour("time").alias("hour")).agg(F.count("time").alias("count"))
             dft = dft.orderBy("hour")
             res = get_show_string(dft, n=24)
             await ctx.channel.send(f'```\n{res}total messages: {dfa.count()}```')
@@ -82,39 +72,39 @@ class Stats(commands.Cog):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
             res = count_words(dfa)
-            await ctx.channel.send(f'```\n{misc.common.sanitize_markdown(res)}\n```')
+            await ctx.channel.send(f'```\n{common.sanitize_markdown(res)}\n```')
 
     @stats.command(brief="words, but also use messages from dms/other guilds")
     async def simonwords(self, ctx):
         with self.spark_lock:
-            dfa = self.df_global.filter(col("author_id") == ctx.author.id)
+            dfa = self.df_global.filter(F.col("author_id") == ctx.author.id)
             res = count_words(dfa)
-            await ctx.channel.send(f'```\n{misc.common.sanitize_markdown(res)}\n```')
+            await ctx.channel.send(f'```\n{common.sanitize_markdown(res)}\n```')
 
     @stats.command(brief="words, but emotes", aliases=["emo"])
     async def emotes(self, ctx):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
-            dfw = dfa.select(explode(expr("regexp_extract_all(msg, '<a?:[^:<>@*~]+:\\\\d+>', 0)")).alias("emote")) \
+            dfw = dfa.select(F.explode(F.expr("regexp_extract_all(msg, '<a?:[^:<>@*~]+:\\\\d+>', 0)")).alias("emote")) \
                 .groupBy("emote") \
                 .count() \
                 .orderBy("count", ascending=False) \
                 .limit(20)
-            pd = dfw.toPandas().sort_values(by=["count"])
-            maxlen = len(str(pd["count"].max()))
+            pandas_df = dfw.toPandas().sort_values(by=["count"])
+            maxlen = len(str(pandas_df["count"].max()))
             uwu = ["_ _"]
-            for r in pd.itertuples():
-                uwu.append(f"`{str(r[0]).rjust(maxlen, ' ')}` | {r[1]}")
+            for row in pandas_df.itertuples():
+                uwu.append(f"`{str(row[0]).rjust(maxlen, ' ')}` | {row[1]}")
             await ctx.channel.send("\n".join(uwu))
 
     @stats.command(brief="use your ~~words~~ letters")
     async def letters(self, ctx):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
-            dfl = dfa.select(explode(split(col("msg"), "")).alias("letter")) \
+            dfl = dfa.select(F.explode(F.split(F.col("msg"), "")).alias("letter")) \
                 .groupBy("letter") \
                 .count() \
-                .filter(ascii("letter") != 0) \
+                .filter(F.ascii("letter") != 0) \
                 .orderBy("count", ascending=False)
             res = get_show_string(dfl, n=20)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
@@ -126,19 +116,19 @@ class Stats(commands.Cog):
             author_mappings = []
             if len(members) == 0:
                 dfq = self.get_guild_df(ctx).groupBy("author_id").count().orderBy("count", ascending=False).limit(10)
-                for r in dfq.collect():
+                for row in dfq.collect():
                     author_mappings.append((common.get_nick_or_name(
-                        await common.author_id_to_obj(self.bot, r["author_id"], ctx)), r["author_id"]))
+                        await common.author_id_to_obj(self.bot, row["author_id"], ctx)), row["author_id"]))
             else:
-                for m in members:
-                    author_mappings.append((common.get_nick_or_name(m), m.id))
+                for member in members:
+                    author_mappings.append((common.get_nick_or_name(member), member.id))
             author_mappings_df = spark.createDataFrame(data=author_mappings, schema=["name", "id"])
             # get msg counts
             dfg = self.get_guild_df(ctx).select("author_id", "time")
             dft = dfg.join(author_mappings_df.drop("name"), dfg["author_id"] == author_mappings_df["id"]) \
-                .withColumn("date", date_trunc("day", "time")) \
+                .withColumn("date", F.date_trunc("day", "time")) \
                 .groupBy("date", "author_id") \
-                .agg(count("date").alias("count"))
+                .agg(F.count("date").alias("count"))
             # fill gaps in data with zeros, replace ids with names
             dfp = dft.toPandas() \
                 .pivot(index="date", columns="author_id", values="count") \
@@ -159,8 +149,10 @@ class Stats(commands.Cog):
             n_limit = 30
             df_hugs = self.get_guild_df(ctx).select("author_id", "msg") \
                 .withColumn("hug_target",
-                            regexp_extract(
-                                col("msg"), "(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug|h).{0,10})<@!?)\\d{17,19}(?=(>*.))", 0)
+                            F.regexp_extract(
+                                F.col("msg"),
+                                r"(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug|h).{0,10})<@!?)\\d{17,19}(?=(>*.))",
+                                0)
                             .cast(LongType())) \
                 .drop("msg")
             df_hug_counts = df_hugs.filter(df_hugs["hug_target"].isNotNull()) \

@@ -43,8 +43,7 @@ class Hugs(commands.Cog):
         result = await self.gelbooru.random_post(tags=tags, exclude_tags=blocklist)
         return result
 
-    """Nils: bonking is basically a hug"""
-
+    # Nils: bonking is basically a hug
     @commands.command(brief="bonk")
     async def bonk(self, ctx, member: discord.Member):
         name = common.get_nick_or_name(ctx.author)
@@ -65,11 +64,6 @@ class Hugs(commands.Cog):
     @commands.command(brief="@someone <3 (people hugging)")
     async def ahug(self, ctx, member: discord.Member):
         gelbooru_url = await self.get_hug_gelbooru(ctx, "hug androgynous")
-        await self.send_hug(ctx, member, str(gelbooru_url))
-
-    @commands.command(brief="@someone <3 (2 girls hugging)")
-    async def ghug(self, ctx, member: discord.Member):
-        gelbooru_url = await self.get_hug_gelbooru(ctx, "hug 2girls")
         await self.send_hug(ctx, member, str(gelbooru_url))
 
     @commands.command(brief="@someone <3 (2 girls hugging)")
@@ -103,21 +97,17 @@ class Hugs(commands.Cog):
     @commands.check(is_owner)
     @hugconfigure.command(name="add", brief="add a tag short")
     async def hugconfigure_add(self, ctx, short: str, tag: str):
-        if len(short) == 1:
-            try:
-                HugShort.create(key=short, val=tag)
-                await common.react_success(ctx)
-            except:
-                await common.react_failure(ctx)
+        if len(short) != 1:
+            await common.react_failure(ctx)
+            return
+        query = HugShort.insert(key=short, val=tag)
+        await common.try_exe_cute_query(ctx, query)
 
     @commands.check(is_owner)
     @hugconfigure.command(name="rm", brief="rm a tag short")
     async def hugconfigure_rm(self, ctx, short: str):
-        try:
-            HugShort.delete().where(HugShort.key == short).execute()
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
+        query = HugShort.delete().where(HugShort.key == short)
+        await common.try_exe_cute_query(ctx, query)
 
     @commands.group(pass_context=True)
     async def consent(self, ctx):
@@ -127,28 +117,19 @@ class Hugs(commands.Cog):
     async def consent_add(self, ctx, member: discord.Member):
         if ctx.author.id == member.id:
             await ctx.channel.send("You can always hug yourself :>")
-        try:
-            HugConsent.create(snowflake=ctx.author.id, target=member.id)
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
+            return
+        query = HugConsent.insert(snowflake=ctx.author.id, target=member.id)
+        await common.try_exe_cute_query(ctx, query)
 
     @consent.command(name="all", brief="blanket consent to hugs")
     async def consent_all(self, ctx):
-        try:
-            HugConsent.create(snowflake=ctx.author.id, target=0)
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
+        query = HugConsent.insert(snowflake=ctx.author.id, target=0)
+        await common.try_exe_cute_query(ctx, query)
 
     @consent.command(name="undoall", brief="un-blanket consent to hugs")
     async def consent_undoall(self, ctx):
-        try:
-            HugConsent.delete().where(
-                (HugConsent.snowflake == ctx.author.id) & (HugConsent.target == 0)).execute()
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
+        query = HugConsent.delete().where((HugConsent.snowflake == ctx.author.id) & (HugConsent.target == 0))
+        await common.try_exe_cute_query(ctx, query)
 
     @consent.command(name="rm", brief="unconsent to hugs by id")
     async def consent_rm(self, ctx, member: discord.Member):

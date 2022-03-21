@@ -3,7 +3,7 @@ from datetime import datetime
 
 from discord.ext import commands
 
-from misc import common
+from misc.common import try_exe_cute_query
 from misc.db import Consent
 
 
@@ -17,10 +17,11 @@ class MsgWriter(commands.Cog):
     async def on_message(self, message):
         if len(message.attachments) > 0:
             self.datalake.put_row("attachments", {"msg_id": message.id, "author_id": message.author.id,
-                                              "channel_id": message.channel.id, "guild_id": message.guild.id,
-                                              "time": datetime.now(),
-                                              "attachment": "\n".join(map(lambda a: a.url, message.attachments))})
-        if re.match("(https://[^ ]+.discordapp.[^ ]+/attachments/[^ ]+)|(https://[^ ]+.gelbooru.[^ ]+/images/[^ ]+)", message.content):
+                                                  "channel_id": message.channel.id, "guild_id": message.guild.id,
+                                                  "time": datetime.now(),
+                                                  "attachment": "\n".join(map(lambda a: a.url, message.attachments))})
+        if re.match("(https://[^ ]+.discordapp.[^ ]+/attachments/[^ ]+)|(https://[^ ]+.gelbooru.[^ ]+/images/[^ ]+)",
+                    message.content):
             self.datalake.put_row("attachments", {"msg_id": message.id, "author_id": message.author.id,
                                                   "channel_id": message.channel.id, "guild_id": message.guild.id,
                                                   "time": datetime.now(),
@@ -98,16 +99,10 @@ class MsgWriter(commands.Cog):
 
     @collectionconsent.command(brief="consent that this bot tracks you into oblivion")
     async def sellmydata(self, ctx):
-        try:
-            Consent.create(snowflake=ctx.author.id)
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
+        query = Consent.insert(snowflake=ctx.author.id)
+        await try_exe_cute_query(ctx, query)
 
     @collectionconsent.command(brief="unconsent that this bot tracks you into oblivion")
     async def unsellmydata(self, ctx):
-        try:
-            Consent.delete().where(Consent.snowflake == ctx.author.id).execute()
-            await common.react_success(ctx)
-        except:
-            await common.react_failure(ctx)
+        query = Consent.delete().where(Consent.snowflake == ctx.author.id)
+        await try_exe_cute_query(ctx, query)

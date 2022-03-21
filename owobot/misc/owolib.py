@@ -3,23 +3,24 @@ import re
 
 from misc import uwu_data
 
+_DO_NOT_OWOFY = r"(http.*)|(<.*>)"
+
 """
 wwhat the fuck even is owo/uwu
 
-some definitions: https://github.com/Daniel-Liu-c0deb0t/uwu and https://github.com/FernOfSigma/owoifier/blob/main/owoifier/owoifier.py
+some definitions: https://github.com/Daniel-Liu-c0deb0t/uwu
+and https://github.com/FernOfSigma/owoifier/blob/main/owoifier/owoifier.py
 these seem to be important modifications as in https://github.com/FernOfSigma/owoifier/blob/main/owoifier/owoifier.py:
 - replace r/l with w
 - map some words to other word; e.g. cute -> kawaii~, na -> nya
 - add *creepyasterisks* suffix/prefix, e.g. rawr x3, nuzzles etc.
 - stutter
 - context based replacements: add *cwute* stars,
-
 """
 
-_do_not_owofy = r"(http.*)|(<.*>)"
 
 def score(text: str) -> float:
-    text = re.sub(_do_not_owofy, " ", text).lower()
+    text = re.sub(_DO_NOT_OWOFY, " ", text).lower()
     spirit_count = 0
     for spirit in uwu_data.good_owo_spirit:
         if spirit in text:
@@ -44,18 +45,18 @@ def owofy(text: str) -> str:
     if random.randint(0, 10) > 7:
         nmsg.append(random.choice(uwu_data.prefixes) + ' ')
     # returns list of words alternating with whitespace (in this order, word may be empty)
-    split = re.split('(\s+)', text)
+    split = re.split(r"(\s+)", text)
     is_seperator = True
     for word in split:
         is_seperator = not is_seperator
-        if is_seperator or word == '' or re.match(_do_not_owofy, word):
+        if is_seperator or word == "" or re.match(_DO_NOT_OWOFY, word):
             nmsg.append(word)
             continue
-        for map in uwu_data.mappings:
-            word = word.replace(map[0], map[1])
+        for mapping in uwu_data.mappings:
+            word = word.replace(mapping[0], mapping[1])
         if random.randint(0, 10) > 8 and word[0].isalpha():
             word = f"{word[0]}-{word[0]}-{word}"
-        
+
         nmsg.append(word)
         if word[-1] in [".", ",", "?"]:
             nmsg.append(' ' + random.choice(uwu_data.int_emote))

@@ -6,7 +6,7 @@ from os import path
 from typing import NamedTuple, TextIO
 from pyspark.shell import spark
 from pyspark.sql.functions import from_unixtime
-from pyspark.sql.types import *
+import pyspark.sql.types as T
 
 
 class DataLake(ABC):
@@ -32,15 +32,15 @@ class KuduDataLake(DataLake):
         self.session = self.client.new_session()
 
     def put_row(self, table, row):
-            with self.kudu_writer_lock:
-                self.session = self.client.new_session()
-                try:
-                    table = self.client.table(f"{self.table_prefix}.{table}")
-                    op = table.new_insert(row)
-                    self.session.apply(op)
-                    self.session.flush()
-                except:
-                    print(self.session.get_pending_errors())
+        with self.kudu_writer_lock:
+            self.session = self.client.new_session()
+            try:
+                table = self.client.table(f"{self.table_prefix}.{table}")
+                op = table.new_insert(row)
+                self.session.apply(op)
+                self.session.flush()
+            except:
+                print(self.session.get_pending_errors())
 
     def get_df(self, table):
         masters = []
@@ -55,23 +55,23 @@ class CSVHandle(NamedTuple):
     writer: csv.DictWriter
     file: TextIO
     path: str
-    schema: StructType
+    schema: T.StructType
 
 
 class CSVDataLake(DataLake):
-    def __init__(self, dir):
-        msgspath = path.join(dir, "msgs.csv")
-        msgsfile = open(msgspath, "a", newline='')
+    def __init__(self, directory):
+        msgspath = path.join(directory, "msgs.csv")
+        msgsfile = open(msgspath, "a", newline="", encoding="utf-8")
         msgwriter = csv.DictWriter(msgsfile,
                                    fieldnames=["snowflake", "author_id", "channel_id", "guild_id", "time", "msg"],
                                    quoting=csv.QUOTE_MINIMAL)
-        msgschema = StructType([
-            StructField("snowflake", LongType(), False),
-            StructField("author_id", LongType(), False),
-            StructField("channel_id", LongType(), False),
-            StructField("guild_id", LongType(), False),
-            StructField("time", DoubleType(), False),
-            StructField("msg", StringType(), False)
+        msgschema = T.StructType([
+            T.StructField("snowflake", T.LongType(), False),
+            T.StructField("author_id", T.LongType(), False),
+            T.StructField("channel_id", T.LongType(), False),
+            T.StructField("guild_id", T.LongType(), False),
+            T.StructField("time", T.DoubleType(), False),
+            T.StructField("msg", T.StringType(), False)
         ])
         self.writers = {"msgs": CSVHandle(msgwriter, msgsfile, msgspath, msgschema)}
         self.csv_writer_lock = threading.Lock()

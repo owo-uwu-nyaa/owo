@@ -1,9 +1,7 @@
 import datetime
-import sys
 import discord
-import psycopg2
 from discord.ext import commands
-from psycopg2 import sql, pool
+from psycopg2 import sql
 from misc import common
 
 

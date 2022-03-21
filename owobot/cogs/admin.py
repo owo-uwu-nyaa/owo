@@ -8,7 +8,7 @@ class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_check(self, ctx):
+    def cog_check(self, ctx):
         return ctx.author.guild_permissions.administrator
 
     @commands.group()

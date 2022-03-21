@@ -1,4 +1,4 @@
-import os.path as path
+from os import path
 import sys
 import toml
 from peewee import PostgresqlDatabase, SqliteDatabase
@@ -8,32 +8,30 @@ import misc.db
 
 
 class MissingKeyException(Exception):
-    def __init__(self, *keys: str) -> None:
-        super().__init__(*keys)
+    pass
 
 
-def _get_key(user, default, *path):
+def _get_key(user, default, *key_path):
     if user is None and default is None:
-        raise MissingKeyException(*path)
-    elif len(path) == 0:
+        raise MissingKeyException(*key_path)
+    if len(key_path) == 0:
         return user if user is not None else default
-    else:
-        key = path[0]
-        try:
-            return _get_key(
-                user[key] if user is not None and key in user else None,
-                default[key] if default is not None and key in default else None,
-                *(path[1:])
-            )
-        except MissingKeyException:
-            raise MissingKeyException(*path)
+    key = key_path[0]
+    try:
+        return _get_key(
+            user[key] if user is not None and key in user else None,
+            default[key] if default is not None and key in default else None,
+            *(key_path[1:])
+        )
+    except MissingKeyException as e:
+        raise MissingKeyException(*key_path) from e
 
 
 class Config:
 
     def __init__(self, config_file: str):
         try:
-            self.config = toml.load(open(config_file, mode="r"))
+            self.config = toml.load(open(config_file, mode="r", encoding="utf-8"))
         except OSError as e:
             print(f"unable to open config file {config_file}: {e}")
         except (TypeError, toml.TomlDecodeError) as e:
@@ -43,7 +41,7 @@ class Config:
         self.default_config = None
         if not path.samefile(config_file, default_config_file):
             try:
-                self.default_config = toml.load(open(default_config_file, mode="r"))
+                self.default_config = toml.load(open(default_config_file, mode="r", encoding="utf-8"))
             except OSError as e:
                 print(f"unable to open default config file {default_config_file}: {e}")
             except (TypeError, toml.TomlDecodeError) as e:
@@ -69,8 +67,8 @@ class Config:
                 misc.db.set_db(db)
                 print("Using postgres as DB")
             except Exception as e:
-                sys.stderr.write(f'Could not connect to Postgres: {e}\n')
-                sys.stderr.write(f'Some Cogs may not work properly, continuing...\n')
+                sys.stderr.write(
+                    f"Could not connect to Postgres: {e}\n Some Cogs may not work properly, continuing...\n")
         elif self.has_user_supplied_toplevel_key("sqlite"):
             db = SqliteDatabase(path.join(str(self.get_key("sqlite", "dir")), "owo.sqlite"))
             misc.db.set_db(db)
@@ -79,14 +77,14 @@ class Config:
         self.datalake = None
         if self.has_user_supplied_toplevel_key("kudu"):
             self.datalake = misc.datalake.KuduDataLake(self.get_key("kudu", "host"), self.get_key("kudu", "port"),
-                                                         self.get_key("kudu", "table_prefix"))
+                                                       self.get_key("kudu", "table_prefix"))
             print("Using Kudu as Datastore")
         elif self.has_user_supplied_toplevel_key("csv"):
             self.datalake = misc.datalake.CSVDataLake(self.get_key("csv", "dir"))
             print("Using CSV as Datastore")
 
-    def get_key(self, *path):
-        return _get_key(self.config, self.default_config, *path)
+    def get_key(self, *key_path):
+        return _get_key(self.config, self.default_config, *key_path)
 
     def has_user_supplied_toplevel_key(self, key):
         return key in self.config

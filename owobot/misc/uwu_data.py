@@ -1,4 +1,5 @@
-# This is stolen and merged from owoifier https://github.com/FernOfSigma/owoifier/tree/main/owoifier and https://github.com/Daniel-Liu-c0deb0t/uwu/blob/uwu/src/lib.rs
+# This is stolen and merged from owoifier https://github.com/FernOfSigma/owoifier/tree/main/owoifier
+# and https://github.com/Daniel-Liu-c0deb0t/uwu/blob/uwu/src/lib.rs
 # special thanks goes to https://www.reddit.com/r/creepyasterisks/top/?t=year
 
 prefixes = [
@@ -115,4 +116,3 @@ good_owo_spirit = [
     "neko",
     "kon"
 ]
-

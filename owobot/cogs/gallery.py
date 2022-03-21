@@ -3,10 +3,10 @@ import threading
 
 import discord
 from discord.ext import commands
-from pyspark.sql.functions import *
-from pyspark.sql.types import *
+import pyspark.sql.functions as F
 from recordclass import RecordClass
 from emoji import UNICODE_EMOJI_ENGLISH
+
 
 class GalleryState(RecordClass):
     idx: int
@@ -24,8 +24,8 @@ class Gallery(commands.Cog):
         self.spark_lock = threading.Lock()
         self.df_attachments = config.datalake.get_df("attachments")
         self.df_react = config.datalake.get_df("react")
-        self.gallery_by_auth: dict[int, GalleryState] = dict()
-        self.gallery_by_msg: dict[int, GalleryState] = dict()
+        self.gallery_by_auth: dict[int, GalleryState] = {}
+        self.gallery_by_msg: dict[int, GalleryState] = {}
 
     @commands.command(brief="see a gallery with all images you reacted to")
     async def gallery(self, ctx, *args):
@@ -39,10 +39,10 @@ class Gallery(commands.Cog):
         df_reacted = self.df_react
         df_pics = self.df_attachments
         if len(emotes) > 0:
-            df_reacted = df_reacted.filter(col("emoji").isin(emotes))
+            df_reacted = df_reacted.filter(F.col("emoji").isin(emotes))
         if len(channels) > 0:
-            df_pics = df_pics.filter(col("channel_id").isin(channels))
-        df_reacted = df_reacted.filter((col("added") == True) & (col("author_id") == ctx.author.id)).select("msg_id")
+            df_pics = df_pics.filter(F.col("channel_id").isin(channels))
+        df_reacted = df_reacted.filter((F.col("added") == True) & (F.col("author_id") == ctx.author.id)).select("msg_id")
         df_pics = df_pics.select("msg_id", "attachment")
         df_wanted_pics = df_reacted.join(df_pics, "msg_id").drop("msg_id").dropDuplicates().collect()
         print(df_wanted_pics)
@@ -52,12 +52,12 @@ class Gallery(commands.Cog):
         sent = await ctx.send(embed=embed)
         await sent.add_reaction(self.config.left_emo)
         await sent.add_reaction(self.config.right_emo)
-        st = GalleryState(idx=0, msg_id=sent.id, chan_id=ctx.channel.id, urls=df_wanted_pics, embed=embed, msg=sent)
-        oldst = self.gallery_by_auth.get(ctx.author.id)
-        if oldst is not None:
-            del self.gallery_by_msg[oldst.msg_id]
-        self.gallery_by_msg[sent.id] = st
-        self.gallery_by_auth[ctx.author.id] = st
+        state = GalleryState(idx=0, msg_id=sent.id, chan_id=ctx.channel.id, urls=df_wanted_pics, embed=embed, msg=sent)
+        oldstate = self.gallery_by_auth.get(ctx.author.id)
+        if oldstate is not None:
+            del self.gallery_by_msg[oldstate.msg_id]
+        self.gallery_by_msg[sent.id] = state
+        self.gallery_by_auth[ctx.author.id] = state
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -72,7 +72,7 @@ class Gallery(commands.Cog):
             return
         gallery = self.gallery_by_msg.get(payload.message_id)
         emoji = str(payload.emoji)
-        if emoji != self.config.left_emo and emoji != self.config.right_emo:
+        if emoji not in (self.config.left_emo, self.config.right_emo):
             return
         if gallery is None or gallery.msg_id != payload.message_id:
             return

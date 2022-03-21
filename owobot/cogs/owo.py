@@ -4,8 +4,8 @@ from misc import owolib, common
 from misc.db import OwoChan
 
 
-def contains_alpha(str: str) -> bool:
-    for ltr in str:
+def contains_alpha(text: str) -> bool:
+    for ltr in text:
         if ltr.isalpha():
             return True
     return False

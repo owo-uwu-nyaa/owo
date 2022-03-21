@@ -3,7 +3,6 @@ import asyncio
 import sys
 import discord
 from discord.ext import commands
-
 from cogs.admin import Admin
 from cogs.restricted import Restricted
 from cogs.aww import Aww
