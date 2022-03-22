@@ -4,6 +4,7 @@ import sys
 import discord
 from discord.ext import commands
 from cogs.admin import Admin
+from cogs.e621 import E621
 from cogs.restricted import Restricted
 from cogs.aww import Aww
 from cogs.bottom import Bottom
@@ -36,6 +37,7 @@ def main():
     bot.add_cog(Gallery(bot, config))
     bot.add_cog(Stats(bot, config))
     bot.add_cog(Bottom(bot, config))
+    bot.add_cog(E621(bot, config))
     # bot.add_cog(Quotes(bot))
     loop = asyncio.get_event_loop()
     loop.create_task(bot.start(config.discord_token))

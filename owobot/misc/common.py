@@ -51,6 +51,10 @@ async def react_failure(ctx):
     await ctx.message.add_reaction("❌")
 
 
+async def react_empty(ctx):
+    await ctx.message.add_reaction("🧺")
+
+
 async def try_exe_cute_query(ctx, query):
     try:
         res = query.execute()
