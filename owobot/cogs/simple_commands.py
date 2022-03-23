@@ -100,3 +100,7 @@ class Misc(commands.Cog):
         name2 = common.get_nick_or_name(member)
         await ctx.send(name1 + " slaps " + name2)
         await ctx.send("https://tenor.com/view/slap-bear-slap-me-you-gif-17942299")
+
+    @commands.command(brief="steal an avatar")
+    async def steal(self, ctx, member: discord.Member):
+        await ctx.send(member.avatar.url)
