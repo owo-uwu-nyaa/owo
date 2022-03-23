@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell'
@@ -32,7 +33,7 @@ class Stats(commands.Cog):
     def __init__(self, bot, config):
         self.bot = bot
         self.config = config
-        self.spark_lock = threading.Lock()
+        self.spark_lock = asyncio.Lock()
         self.df_global = config.datalake.get_df("msgs")
 
     async def cog_check(self, ctx):

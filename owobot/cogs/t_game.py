@@ -1,3 +1,4 @@
+import asyncio
 import enum
 import random
 from copy import deepcopy
@@ -94,6 +95,7 @@ class T_game(commands.Cog):
         self.bot = bot
         self.config = config
         self.game_by_auth: dict[int, GameMessage] = {}
+        self.lock = asyncio.Lock()
         self.direction_lookup = {self.config.left_emo: Direction.LEFT,
                                  self.config.right_emo: Direction.RIGHT,
                                  self.config.down_emo: Direction.DOWN,
@@ -104,7 +106,8 @@ class T_game(commands.Cog):
         game = GameState()
         sent = await ctx.send(f"```{str(game)}```\n\n** **")
         state = GameMessage(msg_id=sent.id, chan_id=ctx.channel.id, game=game, msg=sent)
-        self.game_by_auth[ctx.author.id] = state
+        with self.lock:
+            self.game_by_auth[ctx.author.id] = state
         for key in self.direction_lookup.keys():
             await sent.add_reaction(key)
 
@@ -119,7 +122,8 @@ class T_game(commands.Cog):
     async def update_game(self, payload):
         if payload.user_id == self.bot.user.id:
             return
-        state = self.game_by_auth.get(payload.user_id)
+        with self.lock:
+            state = self.game_by_auth.get(payload.user_id)
         emoji = str(payload.emoji)
         direction = self.direction_lookup.get(emoji)
         if direction is None:
