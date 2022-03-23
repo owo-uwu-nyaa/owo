@@ -50,8 +50,10 @@ class Config:
         self.command_prefix = str(self.get_key("command_prefix"))
         self.desc = str(self.get_key("desc"))
 
-        self.left_emo = str(self.get_key("gallery", "left_emo"))
-        self.right_emo = str(self.get_key("gallery", "right_emo"))
+        self.left_emo = str(self.get_key("navigation", "left_emo"))
+        self.right_emo = str(self.get_key("navigation", "right_emo"))
+        self.up_emo = str(self.get_key("navigation", "up_emo"))
+        self.down_emo = str(self.get_key("navigation", "down_emo"))
 
         self.bottom_cmd = str(self.get_key("bottom", "executable"))
 

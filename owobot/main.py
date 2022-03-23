@@ -13,6 +13,7 @@ from cogs.msg_writer import MsgWriter
 from cogs.simple_commands import Misc
 from cogs.owo import Owo
 from cogs.stats import Stats
+from cogs.t_game import T_game
 from misc.config import Config
 from cogs.gallery import Gallery
 
@@ -38,6 +39,7 @@ def main():
     bot.add_cog(Stats(bot, config))
     bot.add_cog(Bottom(bot, config))
     bot.add_cog(E621(bot, config))
+    bot.add_cog(T_game(bot, config))
     # bot.add_cog(Quotes(bot))
     loop = asyncio.get_event_loop()
     loop.create_task(bot.start(config.discord_token))
