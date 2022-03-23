@@ -28,7 +28,7 @@ class KuduDataLake(DataLake):
         self.khosts = khosts
         self.kports = kports
         self.client = kudu.connect(khosts, kports)
-        self.kudu_writer_lock = asyncio.Lock()
+        self.kudu_writer_lock = threading.Lock()
         self.table_prefix = table_prefix
         self.session = self.client.new_session()
 
@@ -75,7 +75,7 @@ class CSVDataLake(DataLake):
             T.StructField("msg", T.StringType(), False)
         ])
         self.writers = {"msgs": CSVHandle(msgwriter, msgsfile, msgspath, msgschema)}
-        self.csv_writer_lock = asyncio.Lock()
+        self.csv_writer_lock = threading.Lock()
 
     def put_row(self, table, row):
         with self.csv_writer_lock:

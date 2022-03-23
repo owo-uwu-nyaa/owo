@@ -1,6 +1,7 @@
 import asyncio
 import enum
 import random
+import threading
 from copy import deepcopy
 
 import discord
@@ -95,7 +96,7 @@ class T_game(commands.Cog):
         self.bot = bot
         self.config = config
         self.game_by_auth: dict[int, GameMessage] = {}
-        self.lock = asyncio.Lock()
+        self.lock = threading.Lock()
         self.direction_lookup = {self.config.left_emo: Direction.LEFT,
                                  self.config.right_emo: Direction.RIGHT,
                                  self.config.down_emo: Direction.DOWN,

@@ -33,7 +33,7 @@ class Stats(commands.Cog):
     def __init__(self, bot, config):
         self.bot = bot
         self.config = config
-        self.spark_lock = asyncio.Lock()
+        self.spark_lock = threading.Lock()
         self.df_global = config.datalake.get_df("msgs")
 
     async def cog_check(self, ctx):
