@@ -34,7 +34,7 @@ class E621(commands.Cog):
         embed.add_field(name="species", value=_sparkles_or_none(" ".join(tags["species"])), inline=True)
         embed.add_field(name="char(s)", value=_sparkles_or_none(" ".join(tags["character"])), inline=True)
         embed.add_field(name="artist(s)", value=_sparkles_or_none(" ".join(tags["artist"])), inline=True)
-        embed.add_field(name="general tags", value=_sparkles_or_none(" ".join(tags["general"][:1023])), inline=True)
+        embed.add_field(name="general tags", value=_sparkles_or_none(" ".join(tags["general"]))[:1023], inline=True)
         embed.set_footer(text=post["description"][:1023])
         await ctx.send(embed=embed)
 
