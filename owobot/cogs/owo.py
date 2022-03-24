@@ -1,3 +1,5 @@
+import io
+
 import discord
 from discord.ext import commands
 from misc import owolib, common
@@ -28,7 +30,7 @@ class Owo(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.bot.user:
+        if message.author == self.bot.user or message.webhook_id is not None:
             return
         if not OwoChan.select().where(OwoChan.channel == message.channel.id).exists():
             return
@@ -40,14 +42,25 @@ class Owo(commands.Cog):
             webhook = webhooks[0]
         else:
             webhook = await message.channel.create_webhook(name="if you read this you're cute")
-        owofied = owolib.owofy(text)
+        for _ in range(0, 5):
+            if owolib.score(text := owolib.owofy(text)) > 1.0:
+                break
         author_name = owolib.owofy(message.author.display_name)
         author_avatar_url = message.author.avatar.url
         mentions = discord.AllowedMentions(everyone=False, roles=False, users=True)
+        # as the original message is deleted, we need to re-upload the attachments
+        files = []
+        for attachment in message.attachments:
+            fp = io.BytesIO()
+            await attachment.save(fp)
+            fp.seek(0)
+            file = discord.File(fp, filename=attachment.filename, description="owo", spoiler=attachment.is_spoiler())
+            files.append(file)
         await webhook.send(
-            content=common.sanitize_send(owofied),
+            content=common.sanitize_send(text),
             username=author_name,
             avatar_url=author_avatar_url,
-            allowed_mentions=mentions
+            allowed_mentions=mentions,
+            files=files
         )
         await message.delete()
