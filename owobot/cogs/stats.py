@@ -118,8 +118,11 @@ class Stats(commands.Cog):
             if len(members) == 0:
                 dfq = self.get_guild_df(ctx).groupBy("author_id").count().orderBy("count", ascending=False).limit(10)
                 for row in dfq.collect():
-                    author_mappings.append((common.get_nick_or_name(
-                        await common.author_id_to_obj(self.bot, row["author_id"], ctx)), row["author_id"]))
+                    try:
+                        name = (await common.author_id_to_obj(self.bot, row["author_id"], ctx)).display_name
+                        author_mappings.append((name, row["author_id"]))
+                    except:
+                        author_mappings.append((str(row["author_id"]), row["author_id"]))
             else:
                 for member in members:
                     author_mappings.append((common.get_nick_or_name(member), member.id))
@@ -140,7 +143,7 @@ class Stats(commands.Cog):
                 .join(author_mappings_df.toPandas().set_index("id"), on="author_id")
             fig = px.line(dfp, x="date", y="value", color="name")
             img = io.BytesIO()
-            fig.write_image(img, format="p.ng", scale=3)
+            fig.write_image(img, format="png", scale=3)
             img.seek(0)
             await ctx.channel.send(file=discord.File(fp=img, filename="../yeet.png"))
 
