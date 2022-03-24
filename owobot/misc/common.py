@@ -33,7 +33,7 @@ def sanitize_markdown(text: str) -> str:
 def sanitize_send(text: str) -> str:
     if text[0] in emoji.EMOJI_UNICODE_ENGLISH:
         return text
-    return re.sub(r"^[^\w<>()@]+", "", text)
+    return re.sub(r"^[^\w<>()@*_~`]+", "", text)
 
 
 async def is_owner(ctx):
