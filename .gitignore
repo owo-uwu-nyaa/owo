@@ -1,1 +1,4 @@
 owobot/**/__pycache__
+.idea/
+resources/**/*
+**/.gitkeep
