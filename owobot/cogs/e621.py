@@ -21,7 +21,8 @@ class E621(commands.Cog):
         self.bot = bot
         self.posts = []
 
-    async def _get_posts(self, url):
+    @staticmethod
+    async def _get_posts(url):
         async with aiohttp.ClientSession(headers={"User-Agent": "owo"}) as sess:
             req = await sess.get(url)
             posts = json.loads(await req.text())
