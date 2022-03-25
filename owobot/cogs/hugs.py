@@ -12,8 +12,8 @@ def tags_to_str(iterable):
 
 class Hugs(commands.Cog):
 
-    def __init__(self, bot, config):
-        self.config = config
+    def __init__(self, bot):
+        self.config = bot.config
         self.gelbooru = Gelbooru()
         self.bot = bot
 

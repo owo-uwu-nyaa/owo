@@ -92,9 +92,9 @@ class GameMessage(RecordClass):
 
 class T_game(commands.Cog):
 
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.config = config
+        self.config = bot.config
         self.game_by_auth: dict[int, GameMessage] = {}
         self.lock = threading.Lock()
         self.direction_lookup = {self.config.left_emo: Direction.LEFT,
