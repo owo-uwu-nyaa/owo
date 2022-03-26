@@ -35,5 +35,3 @@ class UwuBot(BotBase):
                     self.add(new_cog)
                 except:
                     pass
-
-        # TODO: dynamically add cogs to bot
