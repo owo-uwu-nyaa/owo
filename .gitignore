@@ -9,3 +9,4 @@ owobot/**/__pycache__
 resources/**/*
 **/*.sqlite
 **/*.csv
+owobot/**/owo.toml
