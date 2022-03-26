@@ -1,4 +1,4 @@
-#! /bin/python3
+#! /bin/python3.10
 import asyncio
 import sys
 import discord
