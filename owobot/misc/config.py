@@ -2,9 +2,8 @@ from os import path
 import sys
 import toml
 from peewee import PostgresqlDatabase, SqliteDatabase
-
-import misc.datalake
-import misc.db
+from owobot.misc import datalake
+from owobot.misc import database
 
 
 class MissingKeyException(Exception):
@@ -69,23 +68,23 @@ class Config:
                                         user=str(self.get_key("postgres", "user")),
                                         host=str(self.get_key("postgres", "host")),
                                         autorollback=True)
-                misc.db.set_db(db)
+                database.set_db(db)
                 print("Using postgres as DB")
             except Exception as e:
                 sys.stderr.write(
                     f"Could not connect to Postgres: {e}\n Some Cogs may not work properly, continuing...\n")
         elif self.has_toplevel_key("sqlite"):
             db = SqliteDatabase(path.join(str(self.get_key("sqlite", "dir")), "owo.sqlite"))
-            misc.db.set_db(db)
+            database.set_db(db)
             print("Using sqlite as DB")
 
         self.datalake = None
         if self.has_toplevel_key("kudu"):
-            self.datalake = misc.datalake.KuduDataLake(self.get_key("kudu", "host"), self.get_key("kudu", "port"),
+            self.datalake = datalake.KuduDataLake(self.get_key("kudu", "host"), self.get_key("kudu", "port"),
                                                        self.get_key("kudu", "table_prefix"))
             print("Using Kudu as Datastore")
         elif self.has_toplevel_key("csv"):
-            self.datalake = misc.datalake.CSVDataLake(self.get_key("csv", "dir"))
+            self.datalake = datalake.CSVDataLake(self.get_key("csv", "dir"))
             print("Using CSV as Datastore")
 
     def get_key(self, *key_path):

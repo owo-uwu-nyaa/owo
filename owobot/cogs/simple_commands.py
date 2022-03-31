@@ -1,9 +1,8 @@
 import random
 import re
-
 import discord
 from discord.ext import commands
-from misc import common, owolib
+from owobot.misc import common, owolib
 
 
 class SimpleCommands(commands.Cog):

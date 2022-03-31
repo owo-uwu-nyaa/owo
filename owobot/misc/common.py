@@ -2,8 +2,7 @@ import re
 import discord
 import emoji
 from peewee import PeeweeException
-
-from misc.db import Owner
+from owobot.misc.database import Owner
 
 
 def get_nick_or_name(user: object) -> str:

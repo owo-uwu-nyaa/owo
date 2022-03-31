@@ -6,7 +6,7 @@ from discord.ext import commands
 from pyspark.shell import spark
 import pyspark.sql.functions as F
 from pyspark.sql.types import LongType
-from misc import common
+from owobot.misc import common
 
 
 def get_show_string(df, n=20, truncate=True, vertical=False):

@@ -3,7 +3,6 @@ import enum
 import random
 import threading
 from copy import deepcopy
-
 import discord
 from discord.ext import commands
 from recordclass import RecordClass

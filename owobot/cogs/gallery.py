@@ -1,6 +1,5 @@
 import re
 import threading
-
 import discord
 from discord.ext import commands
 import pyspark.sql.functions as F

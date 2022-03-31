@@ -1,7 +1,6 @@
 import random
 import re
-
-from misc import uwu_data
+from owobot.misc import uwu_data
 
 _DO_NOT_OWOFY = r"(http.*)|(<.*>)"
 

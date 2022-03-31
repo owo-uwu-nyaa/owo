@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from misc import common
-from misc.db import NsflChan
+from owobot.misc import common
+from owobot.misc.database import NsflChan
 from furl import furl
 import json
 import aiohttp

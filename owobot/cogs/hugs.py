@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 from pygelbooru import Gelbooru
-from misc import common, owolib
-from misc.common import is_owner
-from misc.db import NsflChan, HugShort, HugConsent
+from owobot.misc import common, owolib
+from owobot.misc.common import is_owner
+from owobot.misc.database import NsflChan, HugShort, HugConsent
 
 
 def tags_to_str(iterable):

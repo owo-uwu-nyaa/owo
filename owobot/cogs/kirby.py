@@ -1,8 +1,8 @@
 import discord
-from cogs.e621 import E621
+from owobot.cogs.e621 import E621
 from discord.ext import commands
-from misc import common
-from misc.db import KirbySpam
+from owobot.misc import common
+from owobot.misc.database import KirbySpam
 
 
 class Kirby(commands.Cog):

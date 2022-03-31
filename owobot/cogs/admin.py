@@ -1,7 +1,6 @@
 from discord.ext import commands
-
-from misc import common
-from misc.db import NsflChan, OwoChan
+from owobot.misc import common
+from owobot.misc.database import NsflChan, OwoChan
 
 
 class Admin(commands.Cog):

@@ -1,6 +1,6 @@
 #!/bin/python3
 import sys
-from owobot import OwOBot
+from owobot.owobot import OwOBot
 
 
 def main():

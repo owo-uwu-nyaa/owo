@@ -1,12 +1,10 @@
 from os import path
 import subprocess
 import sys
-
 import discord
 from discord.ext import commands
-
-from misc import common
-from misc.db import Owner
+from owobot.misc import common
+from owobot.misc.database import Owner
 
 
 class Restricted(commands.Cog):

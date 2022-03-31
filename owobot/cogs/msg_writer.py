@@ -3,8 +3,8 @@ from datetime import datetime
 
 from discord.ext import commands
 
-from misc.common import try_exe_cute_query
-from misc.db import Consent
+from owobot.misc.common import try_exe_cute_query
+from owobot.misc.database import Consent
 
 
 class MsgWriter(commands.Cog):
