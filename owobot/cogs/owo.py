@@ -63,3 +63,7 @@ class Owo(commands.Cog):
             files=files
         )
         await message.delete()
+
+
+def setup(bot):
+    bot.add_cog(Owo(bot))

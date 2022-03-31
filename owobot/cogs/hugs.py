@@ -141,3 +141,7 @@ class Hugs(commands.Cog):
     async def consent_rmrf(self, ctx):
         query = HugConsent.delete().where(HugConsent.snowflake == ctx.author.id)
         await common.try_exe_cute_query(ctx, query)
+
+
+def setup(bot):
+    bot.add_cog(Hugs(bot))

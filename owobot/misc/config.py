@@ -49,6 +49,9 @@ class Config:
 
         self.command_prefix = str(self.get_key("command_prefix"))
         self.desc = str(self.get_key("desc"))
+        self.blocked_cogs = []
+        if self.has_toplevel_key("blocked_cogs"):
+            self.blocked_cogs = list(map(str, self.get_key("blocked_cogs")))
 
         self.left_emo = str(self.get_key("navigation", "left_emo"))
         self.right_emo = str(self.get_key("navigation", "right_emo"))
@@ -60,7 +63,7 @@ class Config:
         self.catapi_token = str(self.get_key("api_tokens", "catapi"))
         self.discord_token = str(self.get_key("api_tokens", "discord"))
 
-        if self.has_user_supplied_toplevel_key("postgres"):
+        if self.has_toplevel_key("postgres"):
             try:
                 db = PostgresqlDatabase(str(self.get_key("postgres", "db")),
                                         user=str(self.get_key("postgres", "user")),
@@ -71,22 +74,22 @@ class Config:
             except Exception as e:
                 sys.stderr.write(
                     f"Could not connect to Postgres: {e}\n Some Cogs may not work properly, continuing...\n")
-        elif self.has_user_supplied_toplevel_key("sqlite"):
+        elif self.has_toplevel_key("sqlite"):
             db = SqliteDatabase(path.join(str(self.get_key("sqlite", "dir")), "owo.sqlite"))
             misc.db.set_db(db)
             print("Using sqlite as DB")
 
         self.datalake = None
-        if self.has_user_supplied_toplevel_key("kudu"):
+        if self.has_toplevel_key("kudu"):
             self.datalake = misc.datalake.KuduDataLake(self.get_key("kudu", "host"), self.get_key("kudu", "port"),
                                                        self.get_key("kudu", "table_prefix"))
             print("Using Kudu as Datastore")
-        elif self.has_user_supplied_toplevel_key("csv"):
+        elif self.has_toplevel_key("csv"):
             self.datalake = misc.datalake.CSVDataLake(self.get_key("csv", "dir"))
             print("Using CSV as Datastore")
 
     def get_key(self, *key_path):
         return _get_key(self.config, self.default_config, *key_path)
 
-    def has_user_supplied_toplevel_key(self, key):
+    def has_toplevel_key(self, key):
         return key in self.config

@@ -1,10 +1,8 @@
-import random
-
 import discord
 from discord.ext import commands
 from misc import common
-from furl import furl
 from misc.db import NsflChan
+from furl import furl
 import json
 import aiohttp
 
@@ -28,7 +26,8 @@ class E621(commands.Cog):
             posts = json.loads(await req.text())
             return posts["posts"]
 
-    async def _pretty_send(self, ctx, post):
+    @staticmethod
+    async def _pretty_send(ctx, post):
         embed = discord.Embed()
         embed.set_image(url=post["file"]["url"])
         tags = post["tags"]
@@ -65,3 +64,7 @@ class E621(commands.Cog):
             return
         post = posts[0]
         await self._pretty_send(ctx, post)
+
+
+def setup(bot):
+    bot.add_cog(E621(bot))

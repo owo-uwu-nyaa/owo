@@ -1,4 +1,3 @@
-import asyncio
 import time
 from abc import ABC, abstractmethod
 import csv

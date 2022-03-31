@@ -23,7 +23,7 @@ class Gallery(commands.Cog):
         self.config = bot.config
         self.spark_lock = threading.Lock()
         self.df_attachments = bot.config.datalake.get_df("attachments")
-        self.df_react = bot.datalake.get_df("react")
+        self.df_react = bot.config.datalake.get_df("react")
         self.gallery_by_auth: dict[int, GalleryState] = {}
         self.gallery_by_msg: dict[int, GalleryState] = {}
 
@@ -92,3 +92,7 @@ class Gallery(commands.Cog):
         embed.set_image(url=gallery.urls[nidx][0])
         embed.set_footer(text=f"{nidx + 1}/{len(gallery.urls)}")
         await msg.edit(embed=embed)
+
+
+def setup(bot):
+    bot.add_cog(Gallery(bot))

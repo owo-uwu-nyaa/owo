@@ -6,7 +6,7 @@ from discord.ext import commands
 from misc import common, owolib
 
 
-class Misc(commands.Cog):
+class SimpleCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -104,3 +104,7 @@ class Misc(commands.Cog):
     @commands.command(brief="steal an avatar")
     async def steal(self, ctx, member: discord.Member):
         await ctx.send(member.avatar.url)
+
+
+def setup(bot):
+    bot.add_cog(SimpleCommands(bot))

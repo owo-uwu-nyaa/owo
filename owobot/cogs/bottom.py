@@ -32,3 +32,7 @@ class Bottom(commands.Cog):
     async def unbottom(self, ctx, *, msg: str):
         uwu = await self.call_bottom("-r", msg)
         await ctx.send(uwu)
+
+
+def setup(bot):
+    bot.add_cog(Bottom(bot))

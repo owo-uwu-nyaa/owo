@@ -133,3 +133,7 @@ class T_game(commands.Cog):
             return
         state.game.move(direction)
         await state.msg.edit(content=f"```\n{str(state.game)}```\n\n** **")
+
+
+def setup(bot):
+    bot.add_cog(T_game(bot))

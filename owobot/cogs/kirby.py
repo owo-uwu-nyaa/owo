@@ -33,3 +33,7 @@ class Kirby(commands.Cog):
         f = E621._create_basefurl().add({"tags": "kirby order:random", "limit": "1"})
         posts = await E621._get_posts(f.url)
         await message.channel.send(posts[0]["file"]["url"])
+
+
+def setup(bot):
+    bot.add_cog(Kirby(bot))

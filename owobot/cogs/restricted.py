@@ -48,3 +48,7 @@ class Restricted(commands.Cog):
     async def owner_rm(self, ctx, member: discord.Member):
         query = Owner.delete().where(Owner.snowflake == member.id)
         await common.try_exe_cute_query(ctx, query)
+
+
+def setup(bot):
+    bot.add_cog(Restricted(bot))

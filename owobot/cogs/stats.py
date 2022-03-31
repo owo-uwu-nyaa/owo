@@ -1,7 +1,3 @@
-import asyncio
-import os
-
-os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell'
 import io
 import threading
 import discord
@@ -175,3 +171,7 @@ class Stats(commands.Cog):
                 .select("#1", "#2", "count")
             res = get_show_string(df_hug_counts_names, n_limit)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
+
+
+def setup(bot):
+    bot.add_cog(Stats(bot))

@@ -13,3 +13,7 @@ class Aww(commands.Cog):
     async def aww(self, ctx):
         res = await asyncio.get_running_loop().create_task(self.catapi.search_images(limit=1))
         await ctx.send(res[0].url)
+
+
+def setup(bot):
+    bot.add_cog(Aww(bot))
