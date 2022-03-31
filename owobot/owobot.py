@@ -4,7 +4,9 @@ os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12
 import discord
 from discord.ext.commands import Bot as BotBase
 from owobot.misc.config import Config
+import logging
 
+log = logging.getLogger(__name__)
 
 class OwOBot(BotBase):
     def __init__(self, config_path):
@@ -26,5 +28,5 @@ class OwOBot(BotBase):
             self.load_extension(f"owobot.cogs.{cog}")
 
     def run(self):
-        print("running bot..")
+        log.info("starting bot")
         super().run(self.config.discord_token, reconnect=True)

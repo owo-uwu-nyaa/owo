@@ -1,3 +1,4 @@
+import logging
 import time
 from abc import ABC, abstractmethod
 import csv
@@ -8,6 +9,7 @@ from pyspark.shell import spark
 from pyspark.sql.functions import from_unixtime
 import pyspark.sql.types as T
 
+log = logging.getLogger(__name__)
 
 class DataLake(ABC):
 
@@ -40,7 +42,7 @@ class KuduDataLake(DataLake):
                 self.session.apply(op)
                 self.session.flush()
             except:
-                print(self.session.get_pending_errors())
+                logging.debug(self.session.get_pending_errors())
 
     def get_df(self, table):
         masters = []

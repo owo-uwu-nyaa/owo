@@ -45,7 +45,6 @@ class Gallery(commands.Cog):
             "msg_id")
         df_pics = df_pics.select("msg_id", "attachment")
         df_wanted_pics = df_reacted.join(df_pics, "msg_id").drop("msg_id").dropDuplicates().collect()
-        print(df_wanted_pics)
         embed = discord.Embed()
         embed.set_image(url=df_wanted_pics[0][0])
         embed.set_footer(text=f"1/{len(df_wanted_pics)}")

@@ -1,3 +1,4 @@
+import logging
 from os import path
 import subprocess
 import sys
@@ -6,6 +7,7 @@ from discord.ext import commands
 from owobot.misc import common
 from owobot.misc.database import Owner
 
+log = logging.getLogger(__name__)
 
 class Restricted(commands.Cog):
     def __init__(self, bot):
@@ -31,7 +33,7 @@ class Restricted(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("Hewoo, my name is", self.bot.user)
+        log.info(f"Hewoo, my name is {self.bot.user}")
 
     @commands.group()
     async def owner(self, ctx):
