@@ -1,10 +1,8 @@
-import random
-
 import discord
 from discord.ext import commands
-from misc import common
+from owobot.misc import common
+from owobot.misc.database import NsflChan
 from furl import furl
-from misc.db import NsflChan
 import json
 import aiohttp
 
@@ -16,8 +14,8 @@ def _sparkles_or_none(text: str) -> str:
 class E621(commands.Cog):
     _create_basefurl = furl("https://e621.net/posts.json/").copy
 
-    def __init__(self, bot, config):
-        self.config = config
+    def __init__(self, bot):
+        self.config = bot.config
         self.bot = bot
         self.posts = []
 
@@ -28,7 +26,8 @@ class E621(commands.Cog):
             posts = json.loads(await req.text())
             return posts["posts"]
 
-    async def _pretty_send(self, ctx, post):
+    @staticmethod
+    async def _pretty_send(ctx, post):
         embed = discord.Embed()
         embed.set_image(url=post["file"]["url"])
         tags = post["tags"]
@@ -65,3 +64,7 @@ class E621(commands.Cog):
             return
         post = posts[0]
         await self._pretty_send(ctx, post)
+
+
+def setup(bot):
+    bot.add_cog(E621(bot))

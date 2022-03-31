@@ -3,15 +3,15 @@ from datetime import datetime
 
 from discord.ext import commands
 
-from misc.common import try_exe_cute_query
-from misc.db import Consent
+from owobot.misc.common import try_exe_cute_query
+from owobot.misc.database import Consent
 
 
 class MsgWriter(commands.Cog):
 
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.datalake = config.datalake
+        self.datalake = bot.config.datalake
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -106,3 +106,7 @@ class MsgWriter(commands.Cog):
     async def unsellmydata(self, ctx):
         query = Consent.delete().where(Consent.snowflake == ctx.author.id)
         await try_exe_cute_query(ctx, query)
+
+
+def setup(bot):
+    bot.add_cog(MsgWriter(bot))

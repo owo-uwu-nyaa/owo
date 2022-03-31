@@ -1,8 +1,8 @@
 import io
 import discord
 from discord.ext import commands
-from misc import owolib, common
-from misc.db import OwoChan
+from owobot.misc import owolib, common
+from owobot.misc.database import OwoChan
 
 
 def contains_alpha(text: str) -> bool:
@@ -63,3 +63,7 @@ class Owo(commands.Cog):
             files=files
         )
         await message.delete()
+
+
+def setup(bot):
+    bot.add_cog(Owo(bot))

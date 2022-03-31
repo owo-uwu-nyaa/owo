@@ -1,5 +1,5 @@
 import peewee
-from peewee import *
+from peewee import DatabaseProxy, Model, BigIntegerField, TextField, CompositeKey
 
 db_prox = DatabaseProxy()
 

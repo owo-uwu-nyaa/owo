@@ -1,7 +1,3 @@
-import asyncio
-import os
-
-os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell'
 import io
 import threading
 import discord
@@ -10,7 +6,7 @@ from discord.ext import commands
 from pyspark.shell import spark
 import pyspark.sql.functions as F
 from pyspark.sql.types import LongType
-from misc import common
+from owobot.misc import common
 
 
 def get_show_string(df, n=20, truncate=True, vertical=False):
@@ -30,11 +26,11 @@ def count_words(df) -> str:
 
 
 class Stats(commands.Cog):
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.config = config
+        self.config = bot.config
         self.spark_lock = threading.Lock()
-        self.df_global = config.datalake.get_df("msgs")
+        self.df_global = bot.config.datalake.get_df("msgs")
 
     async def cog_check(self, ctx):
         if not self.spark_lock.locked():
@@ -175,3 +171,7 @@ class Stats(commands.Cog):
                 .select("#1", "#2", "count")
             res = get_show_string(df_hug_counts_names, n_limit)
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
+
+
+def setup(bot):
+    bot.add_cog(Stats(bot))

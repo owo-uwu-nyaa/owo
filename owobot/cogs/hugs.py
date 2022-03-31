@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 from pygelbooru import Gelbooru
-from misc import common, owolib
-from misc.common import is_owner
-from misc.db import NsflChan, HugShort, HugConsent
+from owobot.misc import common, owolib
+from owobot.misc.common import is_owner
+from owobot.misc.database import NsflChan, HugShort, HugConsent
 
 
 def tags_to_str(iterable):
@@ -12,8 +12,8 @@ def tags_to_str(iterable):
 
 class Hugs(commands.Cog):
 
-    def __init__(self, bot, config):
-        self.config = config
+    def __init__(self, bot):
+        self.config = bot.config
         self.gelbooru = Gelbooru()
         self.bot = bot
 
@@ -141,3 +141,7 @@ class Hugs(commands.Cog):
     async def consent_rmrf(self, ctx):
         query = HugConsent.delete().where(HugConsent.snowflake == ctx.author.id)
         await common.try_exe_cute_query(ctx, query)
+
+
+def setup(bot):
+    bot.add_cog(Hugs(bot))
