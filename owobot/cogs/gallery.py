@@ -18,12 +18,12 @@ class GalleryState(RecordClass):
 
 
 class Gallery(commands.Cog):
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.config = config
+        self.config = bot.config
         self.spark_lock = threading.Lock()
-        self.df_attachments = config.datalake.get_df("attachments")
-        self.df_react = config.datalake.get_df("react")
+        self.df_attachments = bot.config.datalake.get_df("attachments")
+        self.df_react = bot.datalake.get_df("react")
         self.gallery_by_auth: dict[int, GalleryState] = {}
         self.gallery_by_msg: dict[int, GalleryState] = {}
 
@@ -42,7 +42,8 @@ class Gallery(commands.Cog):
             df_reacted = df_reacted.filter(F.col("emoji").isin(emotes))
         if len(channels) > 0:
             df_pics = df_pics.filter(F.col("channel_id").isin(channels))
-        df_reacted = df_reacted.filter((F.col("added") == True) & (F.col("author_id") == ctx.author.id)).select("msg_id")
+        df_reacted = df_reacted.filter((F.col("added") == True) & (F.col("author_id") == ctx.author.id)).select(
+            "msg_id")
         df_pics = df_pics.select("msg_id", "attachment")
         df_wanted_pics = df_reacted.join(df_pics, "msg_id").drop("msg_id").dropDuplicates().collect()
         print(df_wanted_pics)

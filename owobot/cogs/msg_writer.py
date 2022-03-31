@@ -9,9 +9,9 @@ from misc.db import Consent
 
 class MsgWriter(commands.Cog):
 
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.datalake = config.datalake
+        self.datalake = bot.config.datalake
 
     @commands.Cog.listener()
     async def on_message(self, message):

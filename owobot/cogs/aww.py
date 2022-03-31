@@ -5,9 +5,9 @@ from discord.ext import commands
 
 class Aww(commands.Cog):
 
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.catapi = catapi.CatApi(api_key=config.catapi_token)
+        self.catapi = catapi.CatApi(api_key=bot.config.catapi_token)
 
     @commands.command(brief="cat")
     async def aww(self, ctx):

@@ -30,11 +30,11 @@ def count_words(df) -> str:
 
 
 class Stats(commands.Cog):
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.config = config
+        self.config = bot.config
         self.spark_lock = threading.Lock()
-        self.df_global = config.datalake.get_df("msgs")
+        self.df_global = bot.config.datalake.get_df("msgs")
 
     async def cog_check(self, ctx):
         if not self.spark_lock.locked():

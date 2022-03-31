@@ -16,8 +16,8 @@ def _sparkles_or_none(text: str) -> str:
 class E621(commands.Cog):
     _create_basefurl = furl("https://e621.net/posts.json/").copy
 
-    def __init__(self, bot, config):
-        self.config = config
+    def __init__(self, bot):
+        self.config = bot.config
         self.bot = bot
         self.posts = []
 
