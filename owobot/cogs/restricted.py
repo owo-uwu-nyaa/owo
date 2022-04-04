@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from owobot.misc import common
 from owobot.misc.database import Owner
+import asyncio.subprocess as sub
 
 log = logging.getLogger(__name__)
 
@@ -49,6 +50,20 @@ class Restricted(commands.Cog):
         query = Owner.delete().where(Owner.snowflake == member.id)
         await common.try_exe_cute_query(ctx, query)
 
+
+    async def dl(self, arg: str):
+        if arg.startswith("-"):
+            # prepend zero width space to prevent interpretation as command line argument
+            arg = "\ue2808b" + arg
+        process = await sub.create_subprocess_exec(
+            "yt-dlp",
+            f'-x -o "/srv/navidrome/Youtube/%(title)s.%(ext)s" {arg}',
+            stdin=sub.PIPE,
+            stdout=sub.PIPE,
+            stderr=sub.DEVNULL
+        )
+        (uwu, _) = await process.communicate()
+        return uwu.decode("utf-8")
 
 def setup(bot):
     bot.add_cog(Restricted(bot))
