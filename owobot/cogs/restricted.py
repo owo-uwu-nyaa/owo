@@ -63,7 +63,7 @@ class Restricted(commands.Cog):
             stderr=sub.DEVNULL
         )
         (uwu, _) = await process.communicate()
-        ctx.send(uwu.decode("utf-8"))
+        await ctx.send(uwu.decode("utf-8"))
 
 def setup(bot):
     bot.add_cog(Restricted(bot))
