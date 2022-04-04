@@ -51,7 +51,7 @@ class Restricted(commands.Cog):
         await common.try_exe_cute_query(ctx, query)
 
     @commands.command()
-    async def dl(self, arg: str):
+    async def dl(self, ctx, arg: str):
         if arg.startswith("-"):
             # prepend zero width space to prevent interpretation as command line argument
             arg = "\ue2808b" + arg
