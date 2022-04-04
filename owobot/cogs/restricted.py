@@ -50,7 +50,7 @@ class Restricted(commands.Cog):
         query = Owner.delete().where(Owner.snowflake == member.id)
         await common.try_exe_cute_query(ctx, query)
 
-
+    @commands.command()
     async def dl(self, arg: str):
         if arg.startswith("-"):
             # prepend zero width space to prevent interpretation as command line argument
