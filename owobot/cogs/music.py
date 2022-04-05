@@ -44,7 +44,7 @@ class Music(commands.Cog):
             info = ydl.extract_info(link)
             title = ydl.evaluate_outtmpl("%(title)s", info)
             with open(f"{folder}/{playlist}.m3u", "a") as pl:
-                pl.write(f"{title}.opus")
+                pl.write(f"{title}.opus\n")
 
     @commands.command()
     async def dl(self, ctx, arg: str):
