@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 
 
 # TODO fix paths
+# TODO fix playlist
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -41,9 +42,9 @@ class Music(commands.Cog):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download(link)
             info = ydl.extract_info(link)
-            title = ydl.evaluate_outtmpl(outtmpl, info)
-            with open(f"{folder}/{playlist}.m3u8", "a") as pl:
-                pl.write(title)
+            title = ydl.evaluate_outtmpl("%(title)s", info)
+            with open(f"{folder}/{playlist}.m3u", "a") as pl:
+                pl.write(f"{title}.opus")
 
     @commands.command()
     async def dl(self, ctx, arg: str):
