@@ -5,10 +5,11 @@ import sys
 import discord
 from discord.ext import commands
 from owobot.misc import common
-from owobot.misc.database import Owner
-import asyncio.subprocess as sub
+from owobot.misc.database import Owner, MusicChan
+import yt_dlp
 
 log = logging.getLogger(__name__)
+
 
 class Restricted(commands.Cog):
     def __init__(self, bot):
@@ -50,20 +51,20 @@ class Restricted(commands.Cog):
         query = Owner.delete().where(Owner.snowflake == member.id)
         await common.try_exe_cute_query(ctx, query)
 
-    @commands.command()
-    async def dl(self, ctx, arg: str):
-        if arg.startswith("-"):
-            # prepend zero width space to prevent interpretation as command line argument
-            arg = "\ue2808b" + arg
-        process = await sub.create_subprocess_exec(
-            "yt-dlp",
-            f'-x -o "/srv/navidrome/Youtube/%(title)s.%(ext)s" {arg}',
-            stdin=sub.PIPE,
-            stdout=sub.PIPE,
-            stderr=sub.DEVNULL
-        )
-        (uwu, _) = await process.communicate()
-        await ctx.send(uwu.decode("utf-8"))
+    @commands.group()
+    async def music_chan(self, ctx):
+        pass
+
+    @music_chan.command(name="add", brief="add a music_chan")
+    async def music_chan_add(self, ctx):
+        query = MusicChan.insert(channel=ctx.channel.id)
+        await common.try_exe_cute_query(ctx, query)
+
+    @music_chan.command(name="rm", brief="remove a music_chan")
+    async def music_chan_rm(self, ctx):
+        query = MusicChan.delete().where(MusicChan.channel == ctx.channel.id)
+        await common.try_exe_cute_query(ctx, query)
+
 
 def setup(bot):
     bot.add_cog(Restricted(bot))

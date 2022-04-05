@@ -16,6 +16,10 @@ up_emo = "<:up:956234695107035137>"
 
 executable = "bottomify"
 
+[music]
+
+dl_location = "yt"
+
 [api_tokens]
 
 # cute cat pictures nyaaa~
