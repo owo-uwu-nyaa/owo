@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.folder = ""
+        self.folder = bot.config.dl_folder
 
     async def cog_check(self, ctx):
         return await common.is_owner(ctx)
