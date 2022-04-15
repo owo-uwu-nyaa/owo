@@ -9,3 +9,4 @@ toml
 peewee
 recordclass
 emoji
+yt-dlp

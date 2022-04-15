@@ -62,6 +62,8 @@ class Config:
 
         self.bottom_cmd = str(self.get_key("bottom", "executable"))
 
+        self.dl_folder = str(self.get_key("music", "dl_location"))
+
         self.catapi_token = str(self.get_key("api_tokens", "catapi"))
         self.discord_token = str(self.get_key("api_tokens", "discord"))
 
