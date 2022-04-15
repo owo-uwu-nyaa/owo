@@ -11,8 +11,6 @@ from owobot.misc.database import MusicChan
 log = logging.getLogger(__name__)
 
 
-# TODO fix paths
-# TODO fix playlist
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
