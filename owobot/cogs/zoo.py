@@ -19,7 +19,7 @@ class Animal(RecordClass):
     pics: peewee.Model
     users: peewee.Model
 
-
+#TODO somehow dynmaically create tables, maybe ditch ORM?
 class Zoo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -71,7 +71,7 @@ class Zoo(commands.Cog):
         await common.try_exe_cute_query(ctx, query)
 
     @pic.command(name="rm", brief="rm pic from animal list")
-    async def user_rm(self, ctx, table: str, pic: str):
+    async def pic_rm(self, ctx, table: str, pic: str):
         query = self.animals[table].pics.delete().where(self.pic_table.picture == pic)
         await common.try_exe_cute_query(ctx, query)
 
