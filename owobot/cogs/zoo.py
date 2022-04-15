@@ -58,7 +58,7 @@ class Zoo(commands.Cog):
 
     @user.command(name="rm", brief="rm user from animal list")
     async def user_rm(self, ctx, table: str, member: discord.Member):
-        query = self.animals[table].users.delete().where(self.user_table.snowflake == member.id)
+        query = self.animals[table].users.delete().where(self.animals[table].users.snowflake == member.id)
         await common.try_exe_cute_query(ctx, query)
 
     @zoo.group()
@@ -72,7 +72,7 @@ class Zoo(commands.Cog):
 
     @pic.command(name="rm", brief="rm pic from animal list")
     async def pic_rm(self, ctx, table: str, pic: str):
-        query = self.animals[table].pics.delete().where(self.pic_table.picture == pic)
+        query = self.animals[table].pics.delete().where(self.animals[table].pics.picture == pic)
         await common.try_exe_cute_query(ctx, query)
 
 
