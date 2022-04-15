@@ -2,7 +2,7 @@ import discord
 from owobot.cogs.e621 import E621
 from discord.ext import commands
 from owobot.misc import common
-from owobot.misc.database import KirbySpam
+from owobot.misc.database import KirbySpam, NsflChan
 
 
 class Kirby(commands.Cog):
@@ -29,11 +29,12 @@ class Kirby(commands.Cog):
         if (message.author == self.bot.user
                 or not KirbySpam.select().where(KirbySpam.user_id == message.author.id).exists()):
             return
-
-        f = E621._create_basefurl().add({"tags": "kirby order:random", "limit": "1"})
+        tags = ["kirby", "order:random"]
+        if not NsflChan.select().where(NsflChan.channel == message.channel.id).exists():
+            tags.append("rating:safe")
+        f = E621._create_basefurl().add({"tags": " ".join(tags), "limit": "1"})
         posts = await E621._get_posts(f.url)
         await message.channel.send(posts[0]["file"]["url"])
-
 
 def setup(bot):
     bot.add_cog(Kirby(bot))

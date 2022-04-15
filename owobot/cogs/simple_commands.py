@@ -45,8 +45,7 @@ class SimpleCommands(commands.Cog):
                  "https://external-preview.redd.it/PXHSMB68W5TZF2TSaGju44KCR4Iu0r9XWCtyh5I6wrE.jpg?auto=webp&s=5b48fe3de0716400b927c5cc4278a1379e8defc3",
                  "https://i.redd.it/kfjickllacl51.jpg",
                  "https://external-preview.redd.it/SkZuA3VBqvnCFcSUDhmmEIMfFuk_o6TeqNvp9Jlw68E.jpg?auto=webp&s=31dfd9febdaadbe9f33555127fc27cd257b9da64"]
-        # TODO this is very broken if the prefix changes
-        if re.match(r"^\$baaa+$", message.content):
+        if re.match(fr"^[{self.bot.command_prefix}]baaa+$", message.content):
             await message.channel.send("<@898152253330972672>")
             await message.channel.send(random.choice(lambs))
 
@@ -58,17 +57,17 @@ class SimpleCommands(commands.Cog):
     @commands.command()
     async def gumo(self, ctx):
         name = common.get_nick_or_name(ctx.author)
-        await ctx.send(name + " " + owolib.owofy(" wünscht allen einen GuMo!"))
+        await ctx.send(f"{name} {owolib.owofy('wünscht allen einen GuMo!')}")
 
     @commands.command()
     async def gumi(self, ctx):
         name = common.get_nick_or_name(ctx.author)
-        await ctx.send(name + " " + owolib.owofy(" wünscht allen einen Guten Mittach!"))
+        await ctx.send(f"{name} {owolib.owofy('wünscht allen einen Guten Mittach!')}")
 
     @commands.command()
     async def guna(self, ctx):
         name = common.get_nick_or_name(ctx.author)
-        await ctx.send(name + " " + owolib.owofy(" wünscht allen eine GuNa!"))
+        await ctx.send(f"{name} {owolib.owofy('wünscht allen eine GuNa!')}")
 
     def gen_row(self, maxlen: int, cur_row: int):
         ltr = chr(ord('A') + cur_row)
