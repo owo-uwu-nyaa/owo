@@ -30,25 +30,6 @@ class SimpleCommands(commands.Cog):
     async def owo(self, ctx):
         await ctx.send(owolib.get_random_emote())
 
-    @commands.command(brief="lena")
-    async def baaa(self, ctx):
-        """make $baaa appear in the help message"""
-        pass
-
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author == self.bot.user:
-            return
-        lambs = ["https://cdn.discordapp.com/attachments/779413828051664966/943597938687508500/unknown.png",
-                 "https://external-preview.redd.it/wagY3h0C30loblI2uoR9SehYbfFvVQy9B5h3Uj8z558.jpg?auto=webp&s=bb28031f340f704158f57ae0d7cd1e6fd32607e6",
-                 "https://external-preview.redd.it/lCLKqsCtHuBLiT2kGE4iBNVOjKMH5yqMawR4wQ98Ucg.jpg?auto=webp&s=ed9bfff8d26568eab73224829fb00bd0c9deda66",
-                 "https://external-preview.redd.it/PXHSMB68W5TZF2TSaGju44KCR4Iu0r9XWCtyh5I6wrE.jpg?auto=webp&s=5b48fe3de0716400b927c5cc4278a1379e8defc3",
-                 "https://i.redd.it/kfjickllacl51.jpg",
-                 "https://external-preview.redd.it/SkZuA3VBqvnCFcSUDhmmEIMfFuk_o6TeqNvp9Jlw68E.jpg?auto=webp&s=31dfd9febdaadbe9f33555127fc27cd257b9da64"]
-        if re.match(fr"^[{self.bot.command_prefix}]baaa+$", message.content):
-            await message.channel.send("<@898152253330972672>")
-            await message.channel.send(random.choice(lambs))
-
     @commands.command(brief="gif nyaa~")
     async def dance(self, ctx):
         await ctx.send(
