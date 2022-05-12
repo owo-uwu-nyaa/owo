@@ -18,7 +18,7 @@ class Say(Cog):
             self.bot.cogs_ready.ready_up("say ready")
 
     @command()
-    async def say(self, ctx: Context, member: discord.Member, content):
+    async def say(self, ctx: Context, member: discord.Member, *, content):
         """'!say [mention | user_id] content' creates message impersonating the user"""
         guild_webhooks: list[discord.Webhook] = await ctx.guild.webhooks()
         webhooks_filtered: list[discord.Webhook] = [w for w in guild_webhooks if str(ctx.channel.id) in w.name]
@@ -43,6 +43,7 @@ class Say(Cog):
                            avatar_url=member.avatar.url,
                            allowed_mentions=mentions,
                            files=files)
+
 
 def setup(bot):
     bot.add_cog(Say(bot))
