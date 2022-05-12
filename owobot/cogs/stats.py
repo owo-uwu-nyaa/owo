@@ -17,7 +17,7 @@ def get_show_string(df, n=20, truncate=True, vertical=False):
 
 def count_words(df) -> str:
     dfw = df.select(F.explode(
-        F.split(F.regexp_replace(F.regexp_replace(F.lower(F.col("msg")), "[^a-z $]", ""), " +", " "), " ")).alias(
+        F.split(F.regexp_replace(F.regexp_replace(F.lower(F.col("msg")), "[^a-z $]", ""), "[ ]+", " "), " ")).alias(
         "word")) \
         .groupBy("word") \
         .count() \
@@ -45,10 +45,17 @@ class Stats(commands.Cog):
         return self.df_global.filter(F.col("guild_id") == ctx.guild.id)
 
     async def get_id_name_df(self, ctx):
+        author_mappings = []
+        dfq = self.get_guild_df(ctx).groupBy("author_id").count().orderBy("count", ascending=False)
+        for row in dfq.collect():
+            try:
+                name = (await common.author_id_to_obj(self.bot, row["author_id"], ctx)).display_name
+                author_mappings.append((name, row["author_id"]))
+            except:
+                author_mappings.append((str(row["author_id"]), row["author_id"]))
         mmap = []
         for member in ctx.guild.members:
             mmap.append((common.get_nick_or_name(member), member.id))
-
         return spark.createDataFrame(data=mmap, schema=["name", "id"])
 
     @commands.group()
@@ -151,7 +158,7 @@ class Stats(commands.Cog):
                 .withColumn("hug_target",
                             F.regexp_extract(
                                 F.col("msg"),
-                                r"(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug|h).{0,10})<@!?)\\d{17,19}(?=(>*.))",
+                                "(?<=(^\$(hug|hugc|ahug|bhug|ghug|dhug|h).{0,10})<@!?)\\d{17,19}(?=(>*.))",
                                 0)
                             .cast(LongType())) \
                 .drop("msg")
