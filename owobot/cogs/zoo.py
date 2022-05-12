@@ -1,14 +1,11 @@
-import random
 import re
-from copy import deepcopy
-from typing import TypeVar
 
 import discord
 import peewee
 from discord.ext import commands
 from recordclass import RecordClass
 
-from owobot.misc import database, common
+from owobot.misc import common
 from owobot.misc.database import BaaPics, BaaUsers, AwooPics, AwooUsers, RawwrPics, RawwrUsers, MooUsers, MooPics, \
     NyaaPics, NyaaUsers
 
@@ -19,7 +16,7 @@ class Animal(RecordClass):
     pics: peewee.Model
     users: peewee.Model
 
-#TODO somehow dynmaically create tables, maybe ditch ORM?
+
 class Zoo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
