@@ -3,6 +3,7 @@ from peewee import DatabaseProxy, Model, BigIntegerField, TextField, CompositeKe
 
 db_prox = DatabaseProxy()
 
+
 class BaseModel(Model):
     class Meta:
         database = db_prox
@@ -44,36 +45,57 @@ class HugConsent(BaseModel):
     class Meta:
         primary_key = CompositeKey("snowflake", "target")
 
+
 class BaaPics(BaseModel):
     picture = TextField()
+
 
 class MooPics(BaseModel):
     picture = TextField()
 
+
 class AwooPics(BaseModel):
     picture = TextField()
+
 
 class RawwrPics(BaseModel):
     picture = TextField()
 
+
 class NyaaPics(BaseModel):
     picture = TextField()
+
+
+class PikaPics(BaseModel):
+    picture = TextField()
+
 
 class BaaUsers(BaseModel):
     snowflake = BigIntegerField()
 
+
 class MooUsers(BaseModel):
     snowflake = BigIntegerField()
+
 
 class AwooUsers(BaseModel):
     snowflake = BigIntegerField()
 
+
 class RawwrUsers(BaseModel):
     snowflake = BigIntegerField()
+
 
 class NyaaUsers(BaseModel):
     snowflake = BigIntegerField()
 
+
+class PikaUsers(BaseModel):
+    snowflake = BigIntegerField()
+
+
 def set_db(db: peewee.Database):
     db_prox.initialize(db)
-    db.create_tables([Owner, NsflChan, HugShort, Consent, HugConsent, OwoChan, KirbySpam, MusicChan, BaaPics, MooPics, AwooPics, RawwrPics, NyaaPics, BaaUsers, MooUsers, AwooUsers, RawwrUsers, NyaaUsers])
+    db.create_tables(
+        [Owner, NsflChan, HugShort, Consent, HugConsent, OwoChan, KirbySpam, MusicChan, BaaPics, MooPics, AwooPics,
+         RawwrPics, NyaaPics, PikaPics, BaaUsers, MooUsers, AwooUsers, RawwrUsers, NyaaUsers, PikaUsers])

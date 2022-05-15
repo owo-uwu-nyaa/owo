@@ -7,7 +7,7 @@ from recordclass import RecordClass
 
 from owobot.misc import common
 from owobot.misc.database import BaaPics, BaaUsers, AwooPics, AwooUsers, RawwrPics, RawwrUsers, MooUsers, MooPics, \
-    NyaaPics, NyaaUsers
+    NyaaPics, NyaaUsers, PikaUsers, PikaPics
 
 
 class Animal(RecordClass):
@@ -24,7 +24,8 @@ class Zoo(commands.Cog):
                         "awoo": Animal("awoo", "awoo+", AwooPics, AwooUsers),
                         "rawr": Animal("rawwr", "raw+r", RawwrPics, RawwrUsers),
                         "nyaa": Animal("nyaa", "nya+", NyaaPics, NyaaUsers),
-                        "moo": Animal("moo", "moo+", MooPics, MooUsers)}
+                        "moo": Animal("moo", "moo+", MooPics, MooUsers),
+                        "pika": Animal("pika", "pika+", PikaPics, PikaUsers)}
 
     async def cog_check(self, ctx):
         return await common.is_owner(ctx)
