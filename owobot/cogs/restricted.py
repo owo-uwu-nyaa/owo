@@ -1,12 +1,14 @@
+import logging
 from os import path
 import subprocess
 import sys
-
 import discord
 from discord.ext import commands
+from owobot.misc import common
+from owobot.misc.database import Owner, MusicChan
+import yt_dlp
 
-from misc import common
-from misc.db import Owner
+log = logging.getLogger(__name__)
 
 
 class Restricted(commands.Cog):
@@ -33,7 +35,7 @@ class Restricted(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("Hewoo, my name is", self.bot.user)
+        log.info(f"Hewoo, my name is {self.bot.user}")
 
     @commands.group()
     async def owner(self, ctx):
@@ -48,3 +50,21 @@ class Restricted(commands.Cog):
     async def owner_rm(self, ctx, member: discord.Member):
         query = Owner.delete().where(Owner.snowflake == member.id)
         await common.try_exe_cute_query(ctx, query)
+
+    @commands.group()
+    async def music_chan(self, ctx):
+        pass
+
+    @music_chan.command(name="add", brief="add a music_chan")
+    async def music_chan_add(self, ctx):
+        query = MusicChan.insert(channel=ctx.channel.id)
+        await common.try_exe_cute_query(ctx, query)
+
+    @music_chan.command(name="rm", brief="remove a music_chan")
+    async def music_chan_rm(self, ctx):
+        query = MusicChan.delete().where(MusicChan.channel == ctx.channel.id)
+        await common.try_exe_cute_query(ctx, query)
+
+
+def setup(bot):
+    bot.add_cog(Restricted(bot))

@@ -1,6 +1,5 @@
 import re
 import threading
-
 import discord
 from discord.ext import commands
 import pyspark.sql.functions as F
@@ -18,12 +17,12 @@ class GalleryState(RecordClass):
 
 
 class Gallery(commands.Cog):
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.config = config
+        self.config = bot.config
         self.spark_lock = threading.Lock()
-        self.df_attachments = config.datalake.get_df("attachments")
-        self.df_react = config.datalake.get_df("react")
+        self.df_attachments = bot.config.datalake.get_df("attachments")
+        self.df_react = bot.config.datalake.get_df("react")
         self.gallery_by_auth: dict[int, GalleryState] = {}
         self.gallery_by_msg: dict[int, GalleryState] = {}
 
@@ -42,10 +41,10 @@ class Gallery(commands.Cog):
             df_reacted = df_reacted.filter(F.col("emoji").isin(emotes))
         if len(channels) > 0:
             df_pics = df_pics.filter(F.col("channel_id").isin(channels))
-        df_reacted = df_reacted.filter((F.col("added") == True) & (F.col("author_id") == ctx.author.id)).select("msg_id")
+        df_reacted = df_reacted.filter((F.col("added") == True) & (F.col("author_id") == ctx.author.id)).select(
+            "msg_id")
         df_pics = df_pics.select("msg_id", "attachment")
         df_wanted_pics = df_reacted.join(df_pics, "msg_id").drop("msg_id").dropDuplicates().collect()
-        print(df_wanted_pics)
         embed = discord.Embed()
         embed.set_image(url=df_wanted_pics[0][0])
         embed.set_footer(text=f"1/{len(df_wanted_pics)}")
@@ -91,3 +90,7 @@ class Gallery(commands.Cog):
         embed.set_image(url=gallery.urls[nidx][0])
         embed.set_footer(text=f"{nidx + 1}/{len(gallery.urls)}")
         await msg.edit(embed=embed)
+
+
+def setup(bot):
+    bot.add_cog(Gallery(bot))

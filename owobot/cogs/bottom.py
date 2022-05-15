@@ -4,9 +4,9 @@ from discord.ext import commands
 
 class Bottom(commands.Cog):
 
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.bottom_cmd = config.bottom_cmd
+        self.bottom_cmd = bot.config.bottom_cmd
 
     async def call_bottom(self, arg: str, msg: str):
         if msg.startswith("-"):
@@ -32,3 +32,7 @@ class Bottom(commands.Cog):
     async def unbottom(self, ctx, *, msg: str):
         uwu = await self.call_bottom("-r", msg)
         await ctx.send(uwu)
+
+
+def setup(bot):
+    bot.add_cog(Bottom(bot))

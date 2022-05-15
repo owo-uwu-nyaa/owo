@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 from pygelbooru import Gelbooru
-from misc import common, owolib
-from misc.common import is_owner
-from misc.db import NsflChan, HugShort, HugConsent
+from owobot.misc import common, owolib
+from owobot.misc.common import is_owner
+from owobot.misc.database import NsflChan, HugShort, HugConsent
 
 
 def tags_to_str(iterable):
@@ -12,23 +12,23 @@ def tags_to_str(iterable):
 
 class Hugs(commands.Cog):
 
-    def __init__(self, bot, config):
-        self.config = config
+    def __init__(self, bot):
+        self.config = bot.config
         self.gelbooru = Gelbooru()
         self.bot = bot
 
     async def send_hug(self, ctx, member, img_url: str) -> None:
         query = HugConsent.select().where(
-            (HugConsent.snowflake == member.id) & (HugConsent.target == ctx.author.id)).exists()
-        bquery = HugConsent.select().where((HugConsent.snowflake == member.id) & (HugConsent.target == 0)).exists()
-        if ctx.author.id == member.id or query or bquery:
-
+            ((HugConsent.snowflake == member.id) & (HugConsent.target == ctx.author.id)) | (
+                    (HugConsent.snowflake == member.id) & (HugConsent.target == 0))).exists()
+        if ctx.author.id == member.id or query:
             await ctx.send(f"{common.get_nick_or_name(ctx.author)} sends you a hug, {common.get_nick_or_name(member)}")
             await ctx.send(img_url)
         else:
             await ctx.send(f"UwU, Consent is key, {common.get_nick_or_name(ctx.author)}.\n"
                            f"Pwease awsk {common.get_nick_or_name(member)} for consent 🥺👉👈\n"
-                           f"If you want to consent, exe_cute_ `{self.config.command_prefix}consent add {ctx.author.id}`")
+                           f"If you want to consent, exe_cute_ `{self.bot.command_prefix}consent add {ctx.author.id}`\n"
+                           f"Or you can just `{self.bot.command_prefix}consent all`")
         HugConsent.get_or_create(snowflake=ctx.author.id, target=member.id)
 
     # penguin pics
@@ -40,8 +40,11 @@ class Hugs(commands.Cog):
         if not NsflChan.select().where(NsflChan.channel == ctx.channel.id).exists():
             blocklist += ["rating:explicit", "nude"]
             tags.append("rating:safe")
-        result = await self.gelbooru.random_post(tags=tags, exclude_tags=blocklist)
-        return result
+        for i in range(0, 3):
+            result = await self.gelbooru.random_post(tags=tags, exclude_tags=blocklist)
+            if result is not None and result is not []:
+                return result
+        return "Couldn't find a hug for your request :<"
 
     # Nils: bonking is basically a hug
     @commands.command(brief="bonk")
@@ -141,3 +144,7 @@ class Hugs(commands.Cog):
     async def consent_rmrf(self, ctx):
         query = HugConsent.delete().where(HugConsent.snowflake == ctx.author.id)
         await common.try_exe_cute_query(ctx, query)
+
+
+def setup(bot):
+    bot.add_cog(Hugs(bot))

@@ -1,7 +1,6 @@
 from discord.ext import commands
-
-from misc import common
-from misc.db import NsflChan, OwoChan
+from owobot.misc import common
+from owobot.misc.database import NsflChan, OwoChan
 
 
 class Admin(commands.Cog):
@@ -38,3 +37,7 @@ class Admin(commands.Cog):
     async def unmark_owo(self, ctx):
         query = OwoChan.delete().where(OwoChan.channel == ctx.channel.id)
         await common.try_exe_cute_query(ctx, query)
+
+
+def setup(bot):
+    bot.add_cog(Admin(bot))

@@ -1,9 +1,7 @@
-import asyncio
 import enum
 import random
 import threading
 from copy import deepcopy
-
 import discord
 from discord.ext import commands
 from recordclass import RecordClass
@@ -92,9 +90,9 @@ class GameMessage(RecordClass):
 
 class T_game(commands.Cog):
 
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.config = config
+        self.config = bot.config
         self.game_by_auth: dict[int, GameMessage] = {}
         self.lock = threading.Lock()
         self.direction_lookup = {self.config.left_emo: Direction.LEFT,
@@ -133,3 +131,7 @@ class T_game(commands.Cog):
             return
         state.game.move(direction)
         await state.msg.edit(content=f"```\n{str(state.game)}```\n\n** **")
+
+
+def setup(bot):
+    bot.add_cog(T_game(bot))
