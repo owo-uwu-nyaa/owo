@@ -22,7 +22,8 @@ class Hugs(commands.Cog):
             ((HugConsent.snowflake == member.id) & (HugConsent.target == ctx.author.id)) | (
                     (HugConsent.snowflake == member.id) & (HugConsent.target == 0))).exists()
         if ctx.author.id == member.id or query:
-            await ctx.send(f"{common.get_nick_or_name(ctx.author)} sends you a hug, {common.get_nick_or_name(member)}")
+            hug_sender_name=ctx.me.display_name if ctx.author.id==member.id else common.get_nick_or_name(ctx.author)
+            await ctx.send(f"{ hug_sender_name } sends you a hug, {common.get_nick_or_name(member)}")
             await ctx.send(img_url)
         else:
             await ctx.send(f"UwU, Consent is key, {common.get_nick_or_name(ctx.author)}.\n"
