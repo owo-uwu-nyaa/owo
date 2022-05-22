@@ -1,4 +1,4 @@
-# owo 😝💦🍆
+# owo 😝
 
 ## Requirements
 
@@ -34,5 +34,5 @@
 
 ## Notes
 
-- may occasionally be broken on inferior platforms such as windows and
+- may occasionally be broken on inferior platforms such as Windows and
   MacOs
