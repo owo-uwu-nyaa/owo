@@ -21,9 +21,13 @@ class Say(Cog):
     async def say(self, ctx: Context, member: discord.Member, *, content):
         """'!say [mention | user_id] content' creates message impersonating the user"""
         guild_webhooks: list[discord.Webhook] = await ctx.guild.webhooks()
-        webhooks_filtered: list[discord.Webhook] = [w for w in guild_webhooks if str(ctx.channel.id) in w.name]
+        webhooks_filtered: list[discord.Webhook] = [
+            w for w in guild_webhooks if str(ctx.channel.id) in w.name
+        ]
         if not webhooks_filtered:
-            webhook: discord.Webhook = await ctx.channel.create_webhook(name=f'say-cmd-hook-{ctx.channel.id}')
+            webhook: discord.Webhook = await ctx.channel.create_webhook(
+                name=f"say-cmd-hook-{ctx.channel.id}"
+            )
         else:
             webhook: discord.Webhook = webhooks_filtered[0]
 
@@ -32,17 +36,24 @@ class Say(Cog):
             fp = io.BytesIO()
             await attachment.save(fp)
             fp.seek(0)
-            file = discord.File(fp, filename=attachment.filename, description="owo", spoiler=attachment.is_spoiler())
+            file = discord.File(
+                fp,
+                filename=attachment.filename,
+                description="owo",
+                spoiler=attachment.is_spoiler(),
+            )
             files.append(file)
 
         await ctx.message.delete()
 
         mentions = discord.AllowedMentions(everyone=False, roles=False, users=True)
-        await webhook.send(content=common.sanitize_send(content),
-                           username=common.get_nick_or_name(member),
-                           avatar_url=member.avatar.url,
-                           allowed_mentions=mentions,
-                           files=files)
+        await webhook.send(
+            content=common.sanitize_send(content),
+            username=common.get_nick_or_name(member),
+            avatar_url=member.avatar.url,
+            allowed_mentions=mentions,
+            files=files,
+        )
 
 
 def setup(bot):

@@ -34,7 +34,9 @@ def score(text: str) -> float:
     stuttewing = 0
     for word in text.split():
         stuttewing += word.count("-")
-    return (stuttewing * 20 + map_count * 15 + spirit_count * 10 - lost_owo_potential) / len(text)
+    return (
+        stuttewing * 20 + map_count * 15 + spirit_count * 10 - lost_owo_potential
+    ) / len(text)
 
 
 def owofy(text: str) -> str:
@@ -42,7 +44,7 @@ def owofy(text: str) -> str:
     # pro: works
     nmsg = []
     if random.randint(0, 10) > 7:
-        nmsg.append(random.choice(uwu_data.prefixes) + ' ')
+        nmsg.append(random.choice(uwu_data.prefixes) + " ")
     # returns list of words alternating with whitespace (in this order, word may be empty)
     split = re.split(r"(\s+)", text)
     is_seperator = True
@@ -58,7 +60,7 @@ def owofy(text: str) -> str:
 
         nmsg.append(word)
         if word[-1] in [".", ",", "?"]:
-            nmsg.append(' ' + random.choice(uwu_data.int_emote))
+            nmsg.append(" " + random.choice(uwu_data.int_emote))
     return "".join(nmsg)
 
 

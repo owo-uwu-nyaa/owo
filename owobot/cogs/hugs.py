@@ -35,7 +35,7 @@ class Hugs(commands.Cog):
                 else common.get_nick_or_name(ctx.author)
             )
             await ctx.send(
-                f"{ hug_sender_name } sends you a hug, {common.get_nick_or_name(member)}"
+                f"{common.get_nick_or_name(ctx.author)} sends you a hug, {common.get_nick_or_name(member)}"
             )
             await ctx.send(img_url)
         else:

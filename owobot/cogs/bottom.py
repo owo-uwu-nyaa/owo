@@ -3,7 +3,6 @@ from discord.ext import commands
 
 
 class Bottom(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
         self.bottom_cmd = bot.config.bottom_cmd
@@ -18,7 +17,7 @@ class Bottom(commands.Cog):
             msg,
             stdin=sub.PIPE,
             stdout=sub.PIPE,
-            stderr=sub.DEVNULL
+            stderr=sub.DEVNULL,
         )
         (uwu, _) = await process.communicate()
         return uwu.decode("utf-8")
