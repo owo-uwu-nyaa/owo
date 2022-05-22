@@ -29,6 +29,11 @@ class Hugs(commands.Cog):
             .exists()
         )
         if ctx.author.id == member.id or query:
+            hug_sender_name = (
+                ctx.me.display_name
+                if ctx.author.id == member.id
+                else common.get_nick_or_name(ctx.author)
+            )
             await ctx.send(
                 f"{common.get_nick_or_name(ctx.author)} sends you a hug, {common.get_nick_or_name(member)}"
             )
