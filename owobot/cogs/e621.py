@@ -31,10 +31,26 @@ class E621(commands.Cog):
         embed = discord.Embed()
         embed.set_image(url=post["file"]["url"])
         tags = post["tags"]
-        embed.add_field(name="species", value=_sparkles_or_none(" ".join(tags["species"])), inline=True)
-        embed.add_field(name="char(s)", value=_sparkles_or_none(" ".join(tags["character"])), inline=True)
-        embed.add_field(name="artist(s)", value=_sparkles_or_none(" ".join(tags["artist"])), inline=True)
-        embed.add_field(name="general tags", value=_sparkles_or_none(" ".join(tags["general"]))[:1023], inline=True)
+        embed.add_field(
+            name="species",
+            value=_sparkles_or_none(" ".join(tags["species"])),
+            inline=True,
+        )
+        embed.add_field(
+            name="char(s)",
+            value=_sparkles_or_none(" ".join(tags["character"])),
+            inline=True,
+        )
+        embed.add_field(
+            name="artist(s)",
+            value=_sparkles_or_none(" ".join(tags["artist"])),
+            inline=True,
+        )
+        embed.add_field(
+            name="general tags",
+            value=_sparkles_or_none(" ".join(tags["general"]))[:1023],
+            inline=True,
+        )
         embed.set_footer(text=post["description"][:1023])
         await ctx.send(embed=embed)
 
@@ -51,7 +67,9 @@ class E621(commands.Cog):
     @e.command(name="random", brief="random image from e621", aliases=["r"])
     async def e_random(self, ctx):
         if len(self.posts) == 0:
-            self.posts = await self._get_posts(self._create_basefurl().add({"tags": "order:random"}).url)
+            self.posts = await self._get_posts(
+                self._create_basefurl().add({"tags": "order:random"}).url
+            )
         await self._pretty_send(ctx, self.posts.pop())
 
     @e.command(name="tags", brief="tags!", aliases=["t"])

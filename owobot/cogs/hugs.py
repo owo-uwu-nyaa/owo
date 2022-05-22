@@ -11,24 +11,35 @@ def tags_to_str(iterable):
 
 
 class Hugs(commands.Cog):
-
     def __init__(self, bot):
         self.config = bot.config
         self.gelbooru = Gelbooru()
         self.bot = bot
 
     async def send_hug(self, ctx, member, img_url: str) -> None:
-        query = HugConsent.select().where(
-            ((HugConsent.snowflake == member.id) & (HugConsent.target == ctx.author.id)) | (
-                    (HugConsent.snowflake == member.id) & (HugConsent.target == 0))).exists()
+        query = (
+            HugConsent.select()
+            .where(
+                (
+                    (HugConsent.snowflake == member.id)
+                    & (HugConsent.target == ctx.author.id)
+                )
+                | ((HugConsent.snowflake == member.id) & (HugConsent.target == 0))
+            )
+            .exists()
+        )
         if ctx.author.id == member.id or query:
-            await ctx.send(f"{common.get_nick_or_name(ctx.author)} sends you a hug, {common.get_nick_or_name(member)}")
+            await ctx.send(
+                f"{common.get_nick_or_name(ctx.author)} sends you a hug, {common.get_nick_or_name(member)}"
+            )
             await ctx.send(img_url)
         else:
-            await ctx.send(f"UwU, Consent is key, {common.get_nick_or_name(ctx.author)}.\n"
-                           f"Pwease awsk {common.get_nick_or_name(member)} for consent 🥺👉👈\n"
-                           f"If you want to consent, exe_cute_ `{self.bot.command_prefix}consent add {ctx.author.id}`\n"
-                           f"Or you can just `{self.bot.command_prefix}consent all`")
+            await ctx.send(
+                f"UwU, Consent is key, {common.get_nick_or_name(ctx.author)}.\n"
+                f"Pwease awsk {common.get_nick_or_name(member)} for consent 🥺👉👈\n"
+                f"If you want to consent, exe_cute_ `{self.bot.command_prefix}consent add {ctx.author.id}`\n"
+                f"Or you can just `{self.bot.command_prefix}consent all`"
+            )
         HugConsent.get_or_create(snowflake=ctx.author.id, target=member.id)
 
     # penguin pics
@@ -51,7 +62,9 @@ class Hugs(commands.Cog):
     async def bonk(self, ctx, member: discord.Member):
         name = common.get_nick_or_name(ctx.author)
         other = common.get_nick_or_name(member)
-        await ctx.send(f"{name} {owolib.owofy('bonkt')} {other} <:pingbonk:940280394736074763>")
+        await ctx.send(
+            f"{name} {owolib.owofy('bonkt')} {other} <:pingbonk:940280394736074763>"
+        )
 
     @commands.command(brief="@someone <3 (2 boys hugging)")
     async def bhug(self, ctx, member: discord.Member):
@@ -79,7 +92,11 @@ class Hugs(commands.Cog):
         tags = ""
         if len(short) > 0:
             query = HugShort.select().where(HugShort.key.in_(list(short[0])))
-            tags = " ".join(map(lambda x: str(x.val), list(query))) + " " + " ".join(short[1:])
+            tags = (
+                " ".join(map(lambda x: str(x.val), list(query)))
+                + " "
+                + " ".join(short[1:])
+            )
         gelbooru_url = await self.get_hug_gelbooru(ctx, tags)
         await self.send_hug(ctx, member, str(gelbooru_url))
 
@@ -87,7 +104,9 @@ class Hugs(commands.Cog):
     async def hugconfigure(self, ctx):
         pass
 
-    @hugconfigure.command(name="explain", brief="explain what a short str is translated to")
+    @hugconfigure.command(
+        name="explain", brief="explain what a short str is translated to"
+    )
     async def hugconfigure_explain(self, ctx, short: str):
         query = HugShort.select().where(HugShort.key.in_(list(short)))
         await ctx.channel.send(tags_to_str(query))
@@ -131,13 +150,21 @@ class Hugs(commands.Cog):
 
     @consent.command(name="undoall", brief="un-blanket consent to hugs")
     async def consent_undoall(self, ctx):
-        query = HugConsent.delete().where((HugConsent.snowflake == ctx.author.id) & (HugConsent.target == 0))
+        query = HugConsent.delete().where(
+            (HugConsent.snowflake == ctx.author.id) & (HugConsent.target == 0)
+        )
         await common.try_exe_cute_query(ctx, query)
 
     @consent.command(name="rm", brief="unconsent to hugs by id")
     async def consent_rm(self, ctx, member: discord.Member):
-        query = HugConsent.delete().where(
-            (HugConsent.snowflake == ctx.author.id) & (HugConsent.target == member.id)).execute()
+        query = (
+            HugConsent.delete()
+            .where(
+                (HugConsent.snowflake == ctx.author.id)
+                & (HugConsent.target == member.id)
+            )
+            .execute()
+        )
         await common.try_exe_cute_query(ctx, query)
 
     @consent.command(name="rmrf", brief="unconsent to all hugs")

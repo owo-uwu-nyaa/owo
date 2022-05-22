@@ -6,8 +6,20 @@ from discord.ext import commands
 from recordclass import RecordClass
 
 from owobot.misc import common
-from owobot.misc.database import BaaPics, BaaUsers, AwooPics, AwooUsers, RawwrPics, RawwrUsers, MooUsers, MooPics, \
-    NyaaPics, NyaaUsers, PikaUsers, PikaPics
+from owobot.misc.database import (
+    BaaPics,
+    BaaUsers,
+    AwooPics,
+    AwooUsers,
+    RawwrPics,
+    RawwrUsers,
+    MooUsers,
+    MooPics,
+    NyaaPics,
+    NyaaUsers,
+    PikaUsers,
+    PikaPics,
+)
 
 
 class Animal(RecordClass):
@@ -20,12 +32,14 @@ class Animal(RecordClass):
 class Zoo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.animals = {"baa": Animal("baa", "baa+", BaaPics, BaaUsers),
-                        "awoo": Animal("awoo", "awoo+", AwooPics, AwooUsers),
-                        "rawr": Animal("rawwr", "raw+r", RawwrPics, RawwrUsers),
-                        "nyaa": Animal("nyaa", "nya+", NyaaPics, NyaaUsers),
-                        "moo": Animal("moo", "moo+", MooPics, MooUsers),
-                        "pika": Animal("pika", "pika+", PikaPics, PikaUsers)}
+        self.animals = {
+            "baa": Animal("baa", "baa+", BaaPics, BaaUsers),
+            "awoo": Animal("awoo", "awoo+", AwooPics, AwooUsers),
+            "rawr": Animal("rawwr", "raw+r", RawwrPics, RawwrUsers),
+            "nyaa": Animal("nyaa", "nya+", NyaaPics, NyaaUsers),
+            "moo": Animal("moo", "moo+", MooPics, MooUsers),
+            "pika": Animal("pika", "pika+", PikaPics, PikaUsers),
+        }
 
     async def cog_check(self, ctx):
         return await common.is_owner(ctx)
@@ -35,7 +49,9 @@ class Zoo(commands.Cog):
         if message.author == self.bot.user:
             return
         for animal in self.animals.values():
-            if re.match(fr"^[{self.bot.command_prefix}]{animal.sound_regex}$", message.content):
+            if re.match(
+                rf"^[{self.bot.command_prefix}]{animal.sound_regex}$", message.content
+            ):
                 pingpong = animal.users.select().order_by(peewee.fn.Random()).get()
                 pic = animal.pics.select().order_by(peewee.fn.Random()).get().picture
                 await message.channel.send(f"<@{pingpong.snowflake}>")
@@ -56,7 +72,11 @@ class Zoo(commands.Cog):
 
     @user.command(name="rm", brief="rm user from animal list")
     async def user_rm(self, ctx, table: str, member: discord.Member):
-        query = self.animals[table].users.delete().where(self.animals[table].users.snowflake == member.id)
+        query = (
+            self.animals[table]
+            .users.delete()
+            .where(self.animals[table].users.snowflake == member.id)
+        )
         await common.try_exe_cute_query(ctx, query)
 
     @zoo.group()
@@ -70,7 +90,11 @@ class Zoo(commands.Cog):
 
     @pic.command(name="rm", brief="rm pic from animal list")
     async def pic_rm(self, ctx, table: str, pic: str):
-        query = self.animals[table].pics.delete().where(self.animals[table].pics.picture == pic)
+        query = (
+            self.animals[table]
+            .pics.delete()
+            .where(self.animals[table].pics.picture == pic)
+        )
         await common.try_exe_cute_query(ctx, query)
 
 

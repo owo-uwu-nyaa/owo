@@ -16,7 +16,7 @@ class Direction(enum.Enum):
     RIGHT = 3
 
 
-class GameState():
+class GameState:
     def __init__(self):
         self.board = [[0] * SIDE_LEN for _ in range(SIDE_LEN)]
 
@@ -77,8 +77,15 @@ class GameState():
         return sum(map(sum, self.board))
 
     def __str__(self):
-        return "\n\n".join(map(lambda row: " ".join(map(lambda tile: str(tile).ljust(4), row)), self.board)) \
-               + f"\n\nScore: {str(self._score())}\nCan make move: {self._has_died()}"
+        return (
+            "\n\n".join(
+                map(
+                    lambda row: " ".join(map(lambda tile: str(tile).ljust(4), row)),
+                    self.board,
+                )
+            )
+            + f"\n\nScore: {str(self._score())}\nCan make move: {self._has_died()}"
+        )
 
 
 class GameMessage(RecordClass):
@@ -89,16 +96,17 @@ class GameMessage(RecordClass):
 
 
 class T_game(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
         self.config = bot.config
         self.game_by_auth: dict[int, GameMessage] = {}
         self.lock = threading.Lock()
-        self.direction_lookup = {self.config.left_emo: Direction.LEFT,
-                                 self.config.right_emo: Direction.RIGHT,
-                                 self.config.down_emo: Direction.DOWN,
-                                 self.config.up_emo: Direction.UP}
+        self.direction_lookup = {
+            self.config.left_emo: Direction.LEFT,
+            self.config.right_emo: Direction.RIGHT,
+            self.config.down_emo: Direction.DOWN,
+            self.config.up_emo: Direction.UP,
+        }
 
     @commands.command(name="2048", brief="play a round of 2048")
     async def t_game(self, ctx):
