@@ -6,17 +6,20 @@ from owobot.misc import common, owolib
 
 
 class SimpleCommands(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
     async def obamamedal(self, ctx):
-        await ctx.send("https://media.discordapp.net/attachments/798609300955594782/816701722818117692/obama.jpg")
+        await ctx.send(
+            "https://media.discordapp.net/attachments/798609300955594782/816701722818117692/obama.jpg"
+        )
 
     @commands.command()
     async def owobamamedal(self, ctx):
-        await ctx.send("https://cdn.discordapp.com/attachments/938102328282722345/939605208999264367/Unbenannt.png")
+        await ctx.send(
+            "https://cdn.discordapp.com/attachments/938102328282722345/939605208999264367/Unbenannt.png"
+        )
 
     @commands.command(aliases=["hewwo"])
     async def hello(self, ctx):
@@ -33,7 +36,8 @@ class SimpleCommands(commands.Cog):
     @commands.command(brief="gif nyaa~")
     async def dance(self, ctx):
         await ctx.send(
-            "https://cdn.discordapp.com/attachments/779413828051664966/944648168627372133/48561229-large.gif")
+            "https://cdn.discordapp.com/attachments/779413828051664966/944648168627372133/48561229-large.gif"
+        )
 
     @commands.command()
     async def gumo(self, ctx):
@@ -51,7 +55,7 @@ class SimpleCommands(commands.Cog):
         await ctx.send(f"{name} {owolib.owofy('wünscht allen eine GuNa!')}")
 
     def gen_row(self, maxlen: int, cur_row: int):
-        ltr = chr(ord('A') + cur_row)
+        ltr = chr(ord("A") + cur_row)
         opad = maxlen - cur_row - 1
         if cur_row == 0:
             return f"{'.' * opad}{ltr}{'.' * opad}"
@@ -60,17 +64,21 @@ class SimpleCommands(commands.Cog):
     @commands.command()
     async def diamond(self, ctx, nrows: int):
         if nrows > 22:
-            await ctx.send(f"{owolib.get_random_sorry()}, thiws is too mwuch fow me to take nyaaa~")
+            await ctx.send(
+                f"{owolib.get_random_sorry()}, thiws is too mwuch fow me to take nyaaa~"
+            )
             return
         if nrows < 1:
-            await ctx.send(f"{owolib.get_random_sorry()}, thiws is nwot enough fow me, give me more nyaaa~")
+            await ctx.send(
+                f"{owolib.get_random_sorry()}, thiws is nwot enough fow me, give me more nyaaa~"
+            )
             return
         result = []
         for i in range(0, nrows - 1):
             result.append(self.gen_row(nrows, i))
         for i in range(nrows - 1, -1, -1):
             result.append(self.gen_row(nrows, i))
-        diamond = '\n'.join(result)
+        diamond = "\n".join(result)
         await ctx.send(f"```\n{diamond}\n```")
 
     @commands.command()

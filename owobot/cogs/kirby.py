@@ -6,7 +6,6 @@ from owobot.misc.database import KirbySpam, NsflChan
 
 
 class Kirby(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -26,8 +25,12 @@ class Kirby(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if (message.author == self.bot.user
-                or not KirbySpam.select().where(KirbySpam.user_id == message.author.id).exists()):
+        if (
+            message.author == self.bot.user
+            or not KirbySpam.select()
+            .where(KirbySpam.user_id == message.author.id)
+            .exists()
+        ):
             return
         tags = ["kirby", "order:random"]
         if not NsflChan.select().where(NsflChan.channel == message.channel.id).exists():
@@ -35,6 +38,7 @@ class Kirby(commands.Cog):
         f = E621._create_basefurl().add({"tags": " ".join(tags), "limit": "1"})
         posts = await E621._get_posts(f.url)
         await message.channel.send(posts[0]["file"]["url"])
+
 
 def setup(bot):
     bot.add_cog(Kirby(bot))

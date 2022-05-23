@@ -97,5 +97,26 @@ class PikaUsers(BaseModel):
 def set_db(db: peewee.Database):
     db_prox.initialize(db)
     db.create_tables(
-        [Owner, NsflChan, HugShort, Consent, HugConsent, OwoChan, KirbySpam, MusicChan, BaaPics, MooPics, AwooPics,
-         RawwrPics, NyaaPics, PikaPics, BaaUsers, MooUsers, AwooUsers, RawwrUsers, NyaaUsers, PikaUsers])
+        [
+            Owner,
+            NsflChan,
+            HugShort,
+            Consent,
+            HugConsent,
+            OwoChan,
+            KirbySpam,
+            MusicChan,
+            BaaPics,
+            MooPics,
+            AwooPics,
+            RawwrPics,
+            NyaaPics,
+            PikaPics,
+            BaaUsers,
+            MooUsers,
+            AwooUsers,
+            RawwrUsers,
+            NyaaUsers,
+            PikaUsers,
+        ]
+    )

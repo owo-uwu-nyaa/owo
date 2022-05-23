@@ -16,7 +16,7 @@ prefixes = [
     "*gives you headpats*",
     "*wags tail*",
     "*pets you*",
-    "*tips fedora*"
+    "*tips fedora*",
 ]
 
 mappings = [
@@ -37,7 +37,7 @@ mappings = [
     ["meow", "nya~"],
     ["ee", "ew"],
     ["at", "awt"],
-    ["oops", "oopsie woopsie"]
+    ["oops", "oopsie woopsie"],
 ]
 
 int_emote = [
@@ -84,7 +84,7 @@ int_emote = [
     "(/ =ω=)/",
     ">///<",
     "-w-",
-    "QwQ"
+    "QwQ",
 ]
 
 sowwy = [
@@ -96,7 +96,7 @@ sowwy = [
     "nani?",
     "s-s-sadwy you cwannot dow that",
     "i w-want to compwy, mwaster, but i cwannot",
-    "Baka!"
+    "Baka!",
 ]
 
 good_owo_spirit = [
@@ -114,5 +114,5 @@ good_owo_spirit = [
     "haj",
     "wolf",
     "neko",
-    "kon"
+    "kon",
 ]
