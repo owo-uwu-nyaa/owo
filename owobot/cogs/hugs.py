@@ -51,15 +51,14 @@ class Hugs(commands.Cog):
     # random.choice(["https://tenor.com/view/chibird-penguin-hug-gif-14248948", "https://tenor.com/view/cuddle-group-group-hug-friends-penguin-gif-13295520"])
     async def get_hug_gelbooru(self, ctx, tags):
         tags = tags.split(" ")
-        tags.append("hug")
+        tags += ["hug", "sort:random"]
         blocklist = ["loli", "futanari", "shota"]
         if not NsflChan.select().where(NsflChan.channel == ctx.channel.id).exists():
-            blocklist += ["rating:explicit", "nude"]
-            tags.append("rating:safe")
+            blocklist += ["nude", "rating:questionable", "rating:explicit"]
         for i in range(0, 3):
-            result = await self.gelbooru.random_post(tags=tags, exclude_tags=blocklist)
+            result = await self.gelbooru.search_posts(tags=tags, exclude_tags=blocklist)
             if result is not None and result is not []:
-                return result
+                return result[0]
         return "Couldn't find a hug for your request :<"
 
     # Nils: bonking is basically a hug
