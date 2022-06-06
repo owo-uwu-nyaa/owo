@@ -92,6 +92,16 @@ class SimpleCommands(commands.Cog):
     async def steal(self, ctx, member: discord.Member):
         await ctx.send(member.avatar.url)
 
+    sad_words = {"trauer", "schmerz", "leid"}
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author == self.bot.user:
+            return
+        word = message.content[1:].lower()
+        if message.content[0] == self.bot.command_prefix and word in self.sad_words:
+            sad_words_minus = self.sad_words - {word}
+            send_word = random.choice(tuple(sad_words_minus))
+            await message.channel.send(send_word)
 
 def setup(bot):
     bot.add_cog(SimpleCommands(bot))
