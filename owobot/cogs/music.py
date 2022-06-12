@@ -23,19 +23,20 @@ class Music(commands.Cog):
     def download_audio(link: str, folder: str, playlist: str):
         outtmpl = "%(title)s.%(ext)s"
         ydl_opts = {
-            'format': 'bestaudio/best',
-            'outtmpl': f"{folder}/{outtmpl}",
-            'postprocessors': [
+            "format": "bestaudio/best",
+            "outtmpl": f"{folder}/{outtmpl}",
+            "postprocessors": [
                 {
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'best',
-                    'preferredquality': 'best',
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "best",
+                    "preferredquality": "best",
                 },
                 {
-                    'key': 'FFmpegMetadata',
-                    'add_chapters': True,
-                    'add_metadata': True,
-                }],
+                    "key": "FFmpegMetadata",
+                    "add_chapters": True,
+                    "add_metadata": True,
+                },
+            ],
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download(link)
@@ -46,19 +47,28 @@ class Music(commands.Cog):
 
     @commands.command()
     async def dl(self, ctx, arg: str):
-        p = Process(target=self.download_audio, args=(arg, self.folder, str(ctx.author.id)))
+        p = Process(
+            target=self.download_audio, args=(arg, self.folder, str(ctx.author.id))
+        )
         p.start()
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author == self.bot.user or message.webhook_id is not None:
             return
-        if not MusicChan.select().where(MusicChan.channel == message.channel.id).exists():
+        if (
+            not MusicChan.select()
+            .where(MusicChan.channel == message.channel.id)
+            .exists()
+        ):
             return
         content = message.content
         links = re.findall(r"([^ ]*youtu.be/[^ ]*)|([^ ]*youtube.com/[^ ]*)", content)
         for link in filter(lambda l: l != "", itertools.chain(*links)):
-            p = Process(target=self.download_audio, args=(link, self.folder, str(message.author.id)))
+            p = Process(
+                target=self.download_audio,
+                args=(link, self.folder, str(message.author.id)),
+            )
             p.start()
 
 

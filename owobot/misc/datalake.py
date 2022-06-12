@@ -11,8 +11,8 @@ import pyspark.sql.types as T
 
 log = logging.getLogger(__name__)
 
-class DataLake(ABC):
 
+class DataLake(ABC):
     @abstractmethod
     def put_row(self, table, row):
         pass
@@ -26,6 +26,7 @@ class KuduDataLake(DataLake):
     def __init__(self, khosts, kports, table_prefix):
         # use local import as installing kudu-python requires 50GB of Diskspace and compiling for a few hours
         import kudu
+
         self.khosts = khosts
         self.kports = kports
         self.client = kudu.connect(khosts, kports)
@@ -48,9 +49,11 @@ class KuduDataLake(DataLake):
         masters = []
         for i in range(0, len(self.khosts)):
             masters.append(f"{self.khosts[i]}:{self.kports[i]}")
-        optdict = {"kudu.master": ",".join(masters),
-                   "kudu.table": f"{self.table_prefix}.{table}"}
-        return spark.read.format('org.apache.kudu.spark.kudu').options(**optdict).load()
+        optdict = {
+            "kudu.master": ",".join(masters),
+            "kudu.table": f"{self.table_prefix}.{table}",
+        }
+        return spark.read.format("org.apache.kudu.spark.kudu").options(**optdict).load()
 
 
 class CSVHandle(NamedTuple):
@@ -64,17 +67,28 @@ class CSVDataLake(DataLake):
     def __init__(self, directory):
         msgspath = path.join(directory, "msgs.csv")
         msgsfile = open(msgspath, "a", newline="", encoding="utf-8")
-        msgwriter = csv.DictWriter(msgsfile,
-                                   fieldnames=["snowflake", "author_id", "channel_id", "guild_id", "time", "msg"],
-                                   quoting=csv.QUOTE_MINIMAL)
-        msgschema = T.StructType([
-            T.StructField("snowflake", T.LongType(), False),
-            T.StructField("author_id", T.LongType(), False),
-            T.StructField("channel_id", T.LongType(), False),
-            T.StructField("guild_id", T.LongType(), False),
-            T.StructField("time", T.DoubleType(), False),
-            T.StructField("msg", T.StringType(), False)
-        ])
+        msgwriter = csv.DictWriter(
+            msgsfile,
+            fieldnames=[
+                "snowflake",
+                "author_id",
+                "channel_id",
+                "guild_id",
+                "time",
+                "msg",
+            ],
+            quoting=csv.QUOTE_MINIMAL,
+        )
+        msgschema = T.StructType(
+            [
+                T.StructField("snowflake", T.LongType(), False),
+                T.StructField("author_id", T.LongType(), False),
+                T.StructField("channel_id", T.LongType(), False),
+                T.StructField("guild_id", T.LongType(), False),
+                T.StructField("time", T.DoubleType(), False),
+                T.StructField("msg", T.StringType(), False),
+            ]
+        )
         self.writers = {"msgs": CSVHandle(msgwriter, msgsfile, msgspath, msgschema)}
         self.csv_writer_lock = threading.Lock()
 
@@ -88,9 +102,11 @@ class CSVDataLake(DataLake):
 
     def get_df(self, table):
         handle = self.writers[table]
-        df = spark.read.msg_schema(handle.msg_schema) \
-            .options(mode='FAILFAST', multiLine=True, escape='"', header=True) \
+        df = (
+            spark.read.msg_schema(handle.msg_schema)
+            .options(mode="FAILFAST", multiLine=True, escape='"', header=True)
             .csv(handle.path)
+        )
         if table == "msgs":
             df = df.withColumn("time", from_unixtime("time"))
         return df
