@@ -197,7 +197,7 @@ class Stats(commands.Cog):
             )
             fig = px.line(dfp, x="date", y="value", color="name")
             img = io.BytesIO()
-            fig.write_image(img, format="svg", scale=3)
+            fig.write_image(img, format="png", scale=3)
             img.seek(0)
             await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
 
