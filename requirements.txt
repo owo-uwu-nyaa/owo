@@ -1,4 +1,4 @@
-py-cord
+py-cord == 2.0.0rc1
 catapi.py
 pygelbooru
 pyspark
