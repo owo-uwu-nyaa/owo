@@ -68,9 +68,14 @@ class Rainbow(commands.Cog):
     async def top(self, ctx):
         num_roles = len(ctx.guild.roles)
         roles = {}
+        highest = 0
+        for role in ctx.guild.me.roles:
+            pos = role.position
+            if pos > highest:
+                highest = pos
         for role in ctx.guild.roles:
             if role.name.startswith("rainbowify"):
-                roles[role] = num_roles - 2
+                roles[role] = highest - 1
         print(roles)
         await ctx.guild.edit_role_positions(roles)
         await common.react_success(ctx)
