@@ -1,7 +1,8 @@
 import random
-import re
+
 import discord
 from discord.ext import commands
+
 from owobot.misc import common, owolib
 
 
@@ -93,6 +94,7 @@ class SimpleCommands(commands.Cog):
         await ctx.send(member.avatar.url)
 
     sad_words = {"trauer", "schmerz", "leid"}
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author == self.bot.user:
@@ -102,6 +104,7 @@ class SimpleCommands(commands.Cog):
             sad_words_minus = self.sad_words - {word}
             send_word = random.choice(tuple(sad_words_minus))
             await message.channel.send(send_word)
+
 
 def setup(bot):
     bot.add_cog(SimpleCommands(bot))

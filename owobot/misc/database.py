@@ -1,12 +1,12 @@
 import peewee
 from peewee import DatabaseProxy, Model, BigIntegerField, TextField, CompositeKey
 
-db_prox = DatabaseProxy()
+db = DatabaseProxy()
 
 
 class BaseModel(Model):
     class Meta:
-        database = db_prox
+        database = db
 
 
 class Owner(BaseModel):
@@ -94,8 +94,12 @@ class PikaUsers(BaseModel):
     snowflake = BigIntegerField()
 
 
-def set_db(db: peewee.Database):
-    db_prox.initialize(db)
+class RainbowGuild(BaseModel):
+    snowflake = BigIntegerField()
+
+
+def set_db(real_db: peewee.Database):
+    db.initialize(real_db)
     db.create_tables(
         [
             Owner,
@@ -118,5 +122,6 @@ def set_db(db: peewee.Database):
             RawwrUsers,
             NyaaUsers,
             PikaUsers,
+            RainbowGuild
         ]
     )

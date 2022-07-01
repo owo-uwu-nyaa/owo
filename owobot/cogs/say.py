@@ -4,6 +4,7 @@ import io
 import discord
 import discord.ext
 from discord.ext.commands import Cog, command, Context
+from typing import List
 
 from owobot.misc import common
 
@@ -12,16 +13,11 @@ class Say(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_ready(self):
-        if not self.bot.ready:
-            self.bot.cogs_ready.ready_up("say ready")
-
     @command()
     async def say(self, ctx: Context, member: discord.Member, *, content):
         """'!say [mention | user_id] content' creates message impersonating the user"""
-        guild_webhooks: list[discord.Webhook] = await ctx.guild.webhooks()
-        webhooks_filtered: list[discord.Webhook] = [
+        guild_webhooks: List[discord.Webhook] = await ctx.guild.webhooks()
+        webhooks_filtered: List[discord.Webhook] = [
             w for w in guild_webhooks if str(ctx.channel.id) in w.name
         ]
         if not webhooks_filtered:

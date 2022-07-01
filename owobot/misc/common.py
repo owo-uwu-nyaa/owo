@@ -1,3 +1,4 @@
+import datetime
 import re
 import discord
 import emoji
@@ -17,7 +18,7 @@ def get_nick_or_name(user: object) -> str:
 async def author_id_to_obj(bot, author_id, ctx):
     author = ctx.guild.get_member(author_id)
     if author is None:
-            author = await bot.fetch_user(author_id)
+        author = await bot.fetch_user(author_id)
     return author
 
 
@@ -65,3 +66,13 @@ async def try_exe_cute_query(ctx, query):
         return res
     except PeeweeException:
         await react_failure(ctx)
+
+#from https://github.com/janin-s/ki_pybot/blob/8d1cf55aaafe991bd8e021c8d72e5df5e0ee42de/lib/utils/trading_utils.py#L247
+def seconds_until(hours: int, minutes: int) -> float:
+    given_time = datetime.time(hours, minutes)
+    now = datetime.datetime.now()
+    future_exec = datetime.datetime.combine(now, given_time)
+    if (future_exec - now).days < 0:  # If we are past the execution, it will take place tomorrow
+        future_exec = datetime.datetime.combine(now + datetime.timedelta(days=1), given_time)  # days always >= 0
+
+    return (future_exec - now).total_seconds()
