@@ -31,6 +31,8 @@ class Rainbow(commands.Cog):
                 Rainbow.wrap(rand + (1.0 / num_colors) * i), 0.52, 1.0
             )
             colors.append([int(255 * x) for x in rgb])
+        if random.randint(0, 1):
+            colors = list(reversed(colors))
         return colors
 
     @commands.group()
