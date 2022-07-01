@@ -100,18 +100,18 @@ class Rainbow(commands.Cog):
     @tasks.loop(hours=24)
     async def schedule_refresh_rainbow(self):
         await asyncio.sleep(common.seconds_until(4, 30))
-        await self.refresh_rainbow()
-
-    async def refresh_rainbow(self):
-        for rgb_id in RainbowGuild.select():
+        for rgb_id in RainbowGuild.select().iterator():
             guild = self.bot.get_guild(rgb_id.snowflake)
-            await self._deactivate(guild)
-            await self._activate(guild)
-            await self._top(guild)
+            await self.refresh_rainbow(guild)
+
+    async def refresh_rainbow(self, guild):
+        await self._deactivate(guild)
+        await self._activate(guild)
+        await self._top(guild)
 
     @rainbowroles.command(name="refresh", brief="refresh rainbow roles")
     async def refresh(self, ctx):
-        await self.refresh_rainbow()
+        await self.refresh_rainbow(ctx.guild)
 
 
 def setup(bot):
