@@ -1,6 +1,6 @@
 from discord.ext import commands
 from owobot.misc import common
-from owobot.misc.database import NsflChan, OwoChan
+from owobot.misc.database import NsflChan, OwoChan, RainbowGuild
 
 
 class Admin(commands.Cog):
@@ -24,6 +24,11 @@ class Admin(commands.Cog):
         query = OwoChan.insert(channel=ctx.channel.id)
         await common.try_exe_cute_query(ctx, query)
 
+    @mark.command(name="rainbow", brief="mark this guild as a rainbow guild")
+    async def mark_rainbow(self, ctx):
+        query = RainbowGuild.insert(snowflake=ctx.guild.id)
+        await common.try_exe_cute_query(ctx, query)
+
     @commands.group()
     async def unmark(self, ctx):
         pass
@@ -38,6 +43,10 @@ class Admin(commands.Cog):
         query = OwoChan.delete().where(OwoChan.channel == ctx.channel.id)
         await common.try_exe_cute_query(ctx, query)
 
+    @unmark.command(name="rainbow", brief="unmark this guild as a rainbow guild")
+    async def unmark_rainbow(self, ctx):
+        query = OwoChan.delete().where(RainbowGuild.snowflake == ctx.guild.id)
+        await common.try_exe_cute_query(ctx, query)
 
 def setup(bot):
     bot.add_cog(Admin(bot))
