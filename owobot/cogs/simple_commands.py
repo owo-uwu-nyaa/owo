@@ -91,7 +91,7 @@ class SimpleCommands(commands.Cog):
 
     @commands.command(brief="steal an avatar")
     async def steal(self, ctx, member: discord.Member):
-        await ctx.send(member.avatar.url)
+        await ctx.send(member.display_avatar.url)
 
     sad_words = {"trauer", "schmerz", "leid"}
 
