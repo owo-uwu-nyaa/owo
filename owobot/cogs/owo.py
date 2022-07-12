@@ -1,5 +1,6 @@
 import io
 import discord
+import functools as ft
 from discord.ext import commands
 from owobot.misc import owolib, common
 from owobot.misc.database import OwoChan
@@ -12,7 +13,7 @@ def contains_alpha(text: str) -> bool:
     return False
 
 
-class Owo(commands.Cog):
+class OwO(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -26,10 +27,10 @@ class Owo(commands.Cog):
     )
     async def rate(self, ctx, *, msg: str):
         score = owolib.score(msg)
-        await ctx.send(f"S-Senpai ywou scwored a {score:.2f}")
+        await ctx.send(f"S-Senpai y-y-you scowed a {score:.2f}")
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.message):
         if message.author == self.bot.user or message.webhook_id is not None:
             return
         if not OwoChan.select().where(OwoChan.channel == message.channel.id).exists():
@@ -48,11 +49,16 @@ class Owo(commands.Cog):
             webhook = await message.channel.create_webhook(
                 name="if you read this you're cute"
             )
-        for _ in range(0, 5):
+        for _ in range(5):
             if owolib.score(text := owolib.owofy(text)) > 1.0:
                 break
+        text = common.sanitize_send(text)
+        if len(text) > 2000:
+            # content may be at most 2000 characters
+            # https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
+            return
         author_name = owolib.owofy(message.author.display_name)
-        author_avatar_url = message.author.avatar.url
+        author_avatar_url = message.author.display_avatar.url
         mentions = discord.AllowedMentions(everyone=False, roles=False, users=True)
         # as the original message is deleted, we need to re-upload the attachments
         files = []
@@ -67,15 +73,29 @@ class Owo(commands.Cog):
                 spoiler=attachment.is_spoiler(),
             )
             files.append(file)
-        await webhook.send(
-            content=common.sanitize_send(text),
+        # webhooks don't support real replies
+        reply_embed = (
+            await common.message_as_embedded_reply(
+                await message.channel.fetch_message(message.reference.message_id)
+            )
+            if message.reference
+            else None
+        )
+
+        send = ft.partial(
+            webhook.send,
             username=author_name,
             avatar_url=author_avatar_url,
             allowed_mentions=mentions,
-            files=files,
         )
+        # send the "reply" and the actual message separately,
+        # which lets Discord automatically (re)generate the embeds from the message body in the second message
+        # (there is no way to send anything except 'rich' embeds through the API)
+        if reply_embed is not None:
+            await send(embed=reply_embed)
+        await send(content=text, files=files)
         await message.delete()
 
 
 def setup(bot):
-    bot.add_cog(Owo(bot))
+    bot.add_cog(OwO(bot))
