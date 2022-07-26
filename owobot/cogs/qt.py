@@ -14,7 +14,7 @@ class Qt(commands.Cog):
         pass
 
     @qt.command(name="activate", brief="prepare for qt")
-    async def activate(self, ctx):
+    async def qt_activate(self, ctx):
         for member in ctx.guild.members:
             try:
                 role = await ctx.guild.create_role(
@@ -29,7 +29,7 @@ class Qt(commands.Cog):
         await ctx.channel.send("uwu")
 
     @qt.command(name="deactivate", brief="revert names")
-    async def deactivate(self, ctx):
+    async def qt_deactivate(self, ctx):
         for member in ctx.guild.members:
             for role in member.roles:
                 rn = role.name
@@ -42,7 +42,7 @@ class Qt(commands.Cog):
         await ctx.channel.send("reverted names")
 
     @qt.command(name="yeet", brief="delete nameroles")
-    async def deactivate(self, ctx):
+    async def qt_yeet(self, ctx):
         for member in ctx.guild.members:
             for role in member.roles:
                 rn = role.name
