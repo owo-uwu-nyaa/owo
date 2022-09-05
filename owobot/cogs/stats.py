@@ -7,6 +7,7 @@ from pyspark.shell import spark
 import pyspark.sql.functions as F
 from pyspark.sql.types import LongType
 from owobot.misc import common
+from typing import List
 
 
 def get_show_string(df, n=20, truncate=True, vertical=False):
@@ -150,7 +151,7 @@ class Stats(commands.Cog):
 
     @stats.command(brief="make history", aliases=["histowowy"])
     @common.long_running_command
-    async def history(self, ctx, *members: discord.Member):
+    async def history(self, ctx, members: common.Annotated[List[discord.Member], commands.Greedy[discord.Member]]):
         with self.spark_lock:
             # gather relevant authors
             author_mappings = []
