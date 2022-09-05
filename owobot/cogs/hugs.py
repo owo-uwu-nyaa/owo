@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from pygelbooru import Gelbooru
 from owobot.misc import common, owolib
-from owobot.misc.common import is_owner
+from owobot.misc.common import is_owner, Variadic
 from owobot.misc.database import NsflChan, HugShort, HugConsent
 
 
@@ -57,12 +57,12 @@ class Hugs(commands.Cog):
             blocklist += ["nude", "rating:questionable", "rating:explicit"]
         for i in range(0, 3):
             result = await self.gelbooru.search_posts(tags=tags, exclude_tags=blocklist)
-            if result is not None and result is not []:
+            if result:  # not None and not empty
                 return result[0]
         return "Couldn't find a hug for your request :<"
 
     # Nils: bonking is basically a hug
-    @commands.command(brief="bonk")
+    @commands.hybrid_command(brief="bonk")
     async def bonk(self, ctx, member: discord.Member):
         name = common.get_nick_or_name(ctx.author)
         other = common.get_nick_or_name(member)
@@ -70,29 +70,29 @@ class Hugs(commands.Cog):
             f"{name} {owolib.owofy('bonkt')} {other} <:pingbonk:940280394736074763>"
         )
 
-    @commands.command(brief="@someone <3 (2 boys hugging)")
+    @commands.hybrid_command(brief="@someone <3 (2 boys hugging)")
     async def bhug(self, ctx, member: discord.Member):
         gelbooru_url = await self.get_hug_gelbooru(ctx, "hug 2boys")
         await self.send_hug(ctx, member, str(gelbooru_url))
 
-    @commands.command(brief="@someone <3 (customize your hug!)", aliases=["hugc"])
-    async def hug(self, ctx, member: discord.Member, *tags: str):
-        # convert tags to a space separated string, as thats what get_hug_gelbooru expects
+    @commands.hybrid_command(brief="@someone <3 (customize your hug!)", aliases=["hugc"])
+    async def hug(self, ctx, member: discord.Member, tags: Variadic):
+        # convert tags to a space separated string, as that's what get_hug_gelbooru expects
         gelbooru_url = await self.get_hug_gelbooru(ctx, " ".join(tags))
         await self.send_hug(ctx, member, str(gelbooru_url))
 
-    @commands.command(brief="@someone <3 (people hugging)")
+    @commands.hybrid_command(brief="@someone <3 (people hugging)")
     async def ahug(self, ctx, member: discord.Member):
         gelbooru_url = await self.get_hug_gelbooru(ctx, "hug androgynous")
         await self.send_hug(ctx, member, str(gelbooru_url))
 
-    @commands.command(brief="@someone <3 (2 girls hugging)")
+    @commands.hybrid_command(brief="@someone <3 (2 girls hugging)")
     async def ghug(self, ctx, member: discord.Member):
         gelbooru_url = await self.get_hug_gelbooru(ctx, "hug 2girls")
         await self.send_hug(ctx, member, str(gelbooru_url))
 
-    @commands.command(brief="Use the tag shorthands uwu :)")
-    async def h(self, ctx, member: discord.Member, *short: str):
+    @commands.hybrid_command(brief="Use the tag shorthands uwu :)")
+    async def h(self, ctx, member: discord.Member, short: Variadic):
         tags = ""
         if len(short) > 0:
             query = HugShort.select().where(HugShort.key.in_(list(short[0])))
@@ -104,7 +104,7 @@ class Hugs(commands.Cog):
         gelbooru_url = await self.get_hug_gelbooru(ctx, tags)
         await self.send_hug(ctx, member, str(gelbooru_url))
 
-    @commands.group()
+    @commands.hybrid_group()
     async def hugconfigure(self, ctx):
         pass
 
@@ -135,7 +135,7 @@ class Hugs(commands.Cog):
         query = HugShort.delete().where(HugShort.key == short)
         await common.try_exe_cute_query(ctx, query)
 
-    @commands.group(pass_context=True)
+    @commands.hybrid_group(pass_context=True)
     async def consent(self, ctx):
         pass
 
@@ -178,4 +178,4 @@ class Hugs(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Hugs(bot))
+    return bot.add_cog(Hugs(bot))

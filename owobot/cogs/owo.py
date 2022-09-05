@@ -7,22 +7,19 @@ from owobot.misc.database import OwoChan
 
 
 def contains_alpha(text: str) -> bool:
-    for ltr in text:
-        if ltr.isalpha():
-            return True
-    return False
+    return all(ltr.isalpha() for ltr in text)
 
 
 class OwO(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(brief="owofy <msg> nyaa~~")
+    @commands.hybrid_command(brief="owofy <msg> nyaa~~")
     async def owofy(self, ctx, *, msg: str):
         owofied = owolib.owofy(msg)
         await ctx.send(f"```{common.sanitize_markdown(owofied)} ```")
 
-    @commands.command(
+    @commands.hybrid_command(
         brief="telwlws you how owo-kawai <msg> is - scowre >= 1 is owo :3"
     )
     async def rate(self, ctx, *, msg: str):
@@ -98,4 +95,4 @@ class OwO(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(OwO(bot))
+    return bot.add_cog(OwO(bot))

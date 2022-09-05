@@ -108,7 +108,7 @@ class T_game(commands.Cog):
             self.config.up_emo: Direction.UP,
         }
 
-    @commands.command(name="2048", brief="play a round of 2048")
+    @commands.hybrid_command(name="2048", brief="play a round of 2048")
     async def t_game(self, ctx):
         game = GameState()
         sent = await ctx.send(f"```{str(game)}```\n\n** **")
@@ -142,4 +142,4 @@ class T_game(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(T_game(bot))
+    return bot.add_cog(T_game(bot))

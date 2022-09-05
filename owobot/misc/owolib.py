@@ -19,6 +19,8 @@ these seem to be important modifications as in https://github.com/FernOfSigma/ow
 
 
 def score(text: str) -> float:
+    if not text:
+        return 0
     text = re.sub(_DO_NOT_OWOFY, " ", text).lower()
     spirit_count = 0
     for spirit in uwu_data.good_owo_spirit:

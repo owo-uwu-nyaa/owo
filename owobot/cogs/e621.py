@@ -57,10 +57,12 @@ class E621(commands.Cog):
     async def cog_check(self, ctx):
         res = NsflChan.select().where(NsflChan.channel == ctx.channel.id).exists()
         if not res:
-            await common.react_failure(ctx)
+            await common.react_failure(
+                ctx, details="command can only be used in an NSFW channel"
+            )
         return res
 
-    @commands.group()
+    @commands.hybrid_group()
     async def e(self, ctx):
         pass
 
@@ -73,8 +75,8 @@ class E621(commands.Cog):
         await self._pretty_send(ctx, self.posts.pop())
 
     @e.command(name="tags", brief="tags!", aliases=["t"])
-    async def e_tag(self, ctx, *tags: str):
-        tags = ["order:random"] + list(tags)
+    async def e_tag(self, ctx, tags: common.Variadic):
+        tags = ["order:random"] + tags
         f = self._create_basefurl().add({"tags": " ".join(tags), "limit": "1"})
         posts = await self._get_posts(f.url)
         if len(posts) == 0:
@@ -85,4 +87,4 @@ class E621(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(E621(bot))
+    return bot.add_cog(E621(bot))

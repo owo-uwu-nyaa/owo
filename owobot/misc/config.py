@@ -62,8 +62,6 @@ class Config:
         self.up_emo = str(self.get_key("navigation", "up_emo"))
         self.down_emo = str(self.get_key("navigation", "down_emo"))
 
-        self.bottom_cmd = str(self.get_key("bottom", "executable"))
-
         self.dl_folder = str(self.get_key("music", "dl_location"))
 
         self.catapi_token = str(self.get_key("api_tokens", "catapi"))

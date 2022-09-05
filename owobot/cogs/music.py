@@ -45,12 +45,14 @@ class Music(commands.Cog):
             with open(f"{folder}/{playlist}.m3u", "a") as pl:
                 pl.write(f"{title}.opus\n")
 
-    @commands.command()
-    async def dl(self, ctx, arg: str):
+    @commands.hybrid_command()
+    async def dl(self, ctx, url: str):
         p = Process(
-            target=self.download_audio, args=(arg, self.folder, str(ctx.author.id))
+            target=self.download_audio, args=(url, self.folder, str(ctx.author.id))
         )
         p.start()
+        # we should actually wait for the process and react accordingly
+        await common.react_success(ctx)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -73,4 +75,4 @@ class Music(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Music(bot))
+    return bot.add_cog(Music(bot))

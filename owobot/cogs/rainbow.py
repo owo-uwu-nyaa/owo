@@ -35,12 +35,13 @@ class Rainbow(commands.Cog):
             colors = list(reversed(colors))
         return colors
 
-    @commands.group()
+    @commands.hybrid_group()
     async def rainbowroles(self, ctx):
         pass
 
     @rainbowroles.command(name="activate", brief="taste the rainbow")
-    async def activate(self, ctx):
+    @common.long_running_command
+    async def activate(self, ctx: commands.Context):
         await self._activate(ctx.guild)
         await common.react_success(ctx)
         await ctx.channel.send("Created roles, awaiting topping")
@@ -63,7 +64,8 @@ class Rainbow(commands.Cog):
                 print(f"{color}, aaaa, {ex}")
 
     @rainbowroles.command(name="deactivate", brief="delete all rainbow roles")
-    async def deactivate(self, ctx):
+    @common.long_running_command
+    async def deactivate(self, ctx: commands.Context):
         await self._deactivate(ctx.guild)
         await common.react_success(ctx)
         await ctx.channel.send("Until the next rainbow :>")
@@ -80,22 +82,27 @@ class Rainbow(commands.Cog):
     @rainbowroles.command(
         name="top", brief="shuffle all rainbow roles to the second topmost position"
     )
-    async def top(self, ctx):
+    @common.long_running_command
+    async def top(self, ctx: commands.Context):
         await self._top(ctx.guild)
         await common.react_success(ctx)
         await ctx.channel.send("Successfully did the topping, please come again!")
 
     @staticmethod
-    async def _top(guild):
+    async def _top(guild: discord.Guild):
         roles = {}
-        highest = 0
+        highest = None
         for role in guild.me.roles:
-            pos = role.position
-            if pos > highest:
-                highest = pos
+            print(role, role.position)
+            # Multiple roles can have the same position number. As a consequence of this,
+            # comparing via role position is prone to subtle bugs if checking for role hierarchy.
+            # The recommended and correct way to compare for roles in the hierarchy is
+            # using the comparison operators on the role objects themselves. (Discord.py docs)
+            if highest is None or role > highest:
+                highest = role
         for role in guild.roles:
             if role.name.startswith("rainbowify"):
-                roles[role] = highest - 1
+                roles[role] = highest.position - 1
         print(roles)
         await guild.edit_role_positions(roles)
 
@@ -112,9 +119,10 @@ class Rainbow(commands.Cog):
         await self._top(guild)
 
     @rainbowroles.command(name="refresh", brief="refresh rainbow roles")
-    async def refresh(self, ctx):
+    @common.long_running_command
+    async def refresh(self, ctx: commands.Context):
         await self.refresh_rainbow(ctx.guild)
 
 
 def setup(bot):
-    bot.add_cog(Rainbow(bot))
+    return bot.add_cog(Rainbow(bot))

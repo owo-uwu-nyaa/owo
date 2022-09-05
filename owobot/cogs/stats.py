@@ -78,11 +78,12 @@ class Stats(commands.Cog):
             mmap.append((common.get_nick_or_name(member), member.id))
         return spark.createDataFrame(data=mmap, schema=["name", "id"])
 
-    @commands.group()
+    @commands.hybrid_group()
     async def stats(self, ctx):
         pass
 
     @stats.command(brief="when do you procrastinate?")
+    @common.long_running_command
     async def activity(self, ctx):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx).select("time")
@@ -94,6 +95,7 @@ class Stats(commands.Cog):
             await ctx.channel.send(f"```\n{res}total messages: {dfa.count()}```")
 
     @stats.command(brief="use your words")
+    @common.long_running_command
     async def words(self, ctx):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
@@ -101,6 +103,7 @@ class Stats(commands.Cog):
             await ctx.channel.send(f"```\n{common.sanitize_markdown(res)}\n```")
 
     @stats.command(brief="words, but also use messages from dms/other guilds")
+    @common.long_running_command
     async def simonwords(self, ctx):
         with self.spark_lock:
             dfa = self.df_global.filter(F.col("author_id") == ctx.author.id)
@@ -108,6 +111,7 @@ class Stats(commands.Cog):
             await ctx.channel.send(f"```\n{common.sanitize_markdown(res)}\n```")
 
     @stats.command(brief="words, but emotes", aliases=["emo"])
+    @common.long_running_command
     async def emotes(self, ctx):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
@@ -130,6 +134,7 @@ class Stats(commands.Cog):
             await ctx.channel.send("\n".join(uwu))
 
     @stats.command(brief="use your ~~words~~ letters")
+    @common.long_running_command
     async def letters(self, ctx):
         with self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
@@ -144,6 +149,7 @@ class Stats(commands.Cog):
             await ctx.channel.send(f'```\n{res.replace("`", "")}\n```')
 
     @stats.command(brief="make history", aliases=["histowowy"])
+    @common.long_running_command
     async def history(self, ctx, *members: discord.Member):
         with self.spark_lock:
             # gather relevant authors
@@ -202,6 +208,7 @@ class Stats(commands.Cog):
             await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
 
     @stats.command(brief="see all the lovebirbs #choo choo #ship", aliases=["ships"])
+    @common.long_running_command
     async def couples(self, ctx):
         with self.spark_lock:
             n_limit = 30
@@ -245,4 +252,4 @@ class Stats(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Stats(bot))
+    return bot.add_cog(Stats(bot))

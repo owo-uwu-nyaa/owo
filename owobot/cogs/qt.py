@@ -9,12 +9,13 @@ class Qt(commands.Cog):
     async def cog_check(self, ctx):
         return await common.is_owner(ctx)
 
-    @commands.group()
+    @commands.hybrid_group()
     async def qt(self, ctx):
         pass
 
     @qt.command(name="activate", brief="prepare for qt")
-    async def qt_activate(self, ctx):
+    @common.long_running_command
+    async def qt_activate(self, ctx: commands.Context):
         for member in ctx.guild.members:
             try:
                 role = await ctx.guild.create_role(
@@ -29,20 +30,22 @@ class Qt(commands.Cog):
         await ctx.channel.send("uwu")
 
     @qt.command(name="deactivate", brief="revert names")
-    async def qt_deactivate(self, ctx):
+    @common.long_running_command
+    async def qt_deactivate(self, ctx: commands.Context):
         for member in ctx.guild.members:
             for role in member.roles:
                 rn = role.name
                 if rn.startswith("qt_"):
                     try:
-                        member.edit(nick=rn[3:])
+                        await member.edit(nick=rn[3:])
                     except Exception as ex:
                         print(f"aaa {ex}")
         await common.react_success(ctx)
         await ctx.channel.send("reverted names")
 
     @qt.command(name="yeet", brief="delete nameroles")
-    async def qt_yeet(self, ctx):
+    @common.long_running_command
+    async def qt_yeet(self, ctx: commands.Context):
         for member in ctx.guild.members:
             for role in member.roles:
                 rn = role.name
@@ -55,5 +58,6 @@ class Qt(commands.Cog):
         await common.react_success(ctx)
         await ctx.channel.send("reverted and yeeted roles")
 
+
 def setup(bot):
-    bot.add_cog(Qt(bot))
+    return bot.add_cog(Qt(bot))

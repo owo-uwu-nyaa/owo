@@ -1,10 +1,19 @@
 import datetime
+import functools
 import re
 import itertools as it
+
 import discord
 import emoji
+from discord.ext import commands
 from peewee import PeeweeException
 from owobot.misc.database import Owner
+from typing import List, Optional
+
+try:
+    from typing import Annotated
+except ImportError:
+    from typing_extensions import Annotated
 
 
 def get_nick_or_name(user: object) -> str:
@@ -91,32 +100,44 @@ def sanitize_send(text: str) -> str:
     return re.sub(r"^[^\w<>()@*_~`]+", "", text)
 
 
-async def is_owner(ctx):
+async def is_owner(ctx: commands.Context):
     if Owner.select().where(Owner.snowflake == ctx.author.id).exists():
         return True
     await react_failure(ctx)
     return False
 
 
-async def react_success(ctx):
-    await ctx.message.add_reaction("✅")
+def remove_prefix(*, prefix: str, content: str) -> Optional[str]:
+    if content.startswith(prefix):
+        return content[len(prefix):]
 
 
-async def react_failure(ctx):
-    await ctx.message.add_reaction("❌")
+async def react(ctx: commands.Context, reaction, details=None):
+    if ctx.message.type == discord.MessageType.default:
+        await ctx.message.add_reaction(reaction)
+    elif ctx.interaction:
+        await ctx.send(reaction + (" " + details if details is not None else ""))
 
 
-async def react_empty(ctx):
-    await ctx.message.add_reaction("🧺")
+async def react_success(ctx: commands.Context, details="success"):
+    await react(ctx, "✅", details)
 
 
-async def try_exe_cute_query(ctx, query):
+async def react_failure(ctx: commands.Context, details="an error occurred"):
+    await react(ctx, "❌", details)
+
+
+async def react_empty(ctx: commands.Context, details="empty"):
+    await react(ctx, "🧺", details)
+
+
+async def try_exe_cute_query(ctx: commands.Context, query):
     try:
         res = query.execute()
         await react_success(ctx)
         return res
-    except PeeweeException:
-        await react_failure(ctx)
+    except PeeweeException as e:
+        await react_failure(ctx, str(e))
 
 
 # from https://github.com/janin-s/ki_pybot/blob/8d1cf55aaafe991bd8e021c8d72e5df5e0ee42de/lib/utils/trading_utils.py#L247
@@ -128,3 +149,25 @@ def seconds_until(hours: int, minutes: int) -> float:
         future_exec = datetime.datetime.combine(now + datetime.timedelta(days=1), given_time)  # days always >= 0
 
     return (future_exec - now).total_seconds()
+
+
+class IdentityConverter(commands.Converter):
+    """
+    Variadic arguments are not supported in slash commands, and probably never will be
+    (because discord, see https://github.com/discord/discord-api-docs/discussions/3286).
+    Use :class:`commands.Greedy[IdentityConverter] <commands.Greedy>` to simulate variadic arguments
+    that work in both slash and regular commands."""
+    async def convert(self, ctx: commands.Context, argument: str):
+        return argument
+
+
+Variadic = Annotated[List[str], commands.Greedy[IdentityConverter]]
+
+
+def long_running_command(f):
+    """Commands annotated with `long_running_command` will show a typing indicator for their entire duration."""
+    @functools.wraps(f)
+    async def wrapper(self, ctx: commands.Context, *args, **kwargs):
+        async with ctx.typing():
+            await f(self, ctx, *args, **kwargs)
+    return wrapper

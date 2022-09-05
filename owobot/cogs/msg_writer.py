@@ -167,7 +167,7 @@ class MsgWriter(commands.Cog):
                 },
             )
 
-    @commands.group()
+    @commands.hybrid_group()
     async def collectionconsent(self, ctx):
         pass
 
@@ -183,4 +183,4 @@ class MsgWriter(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(MsgWriter(bot))
+    return bot.add_cog(MsgWriter(bot))

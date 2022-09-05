@@ -1,4 +1,4 @@
-command_prefix = "$"
+command_prefix = "!"
 
 desc = "Pwease end my misewy, nyaaa~"
 
@@ -11,10 +11,6 @@ left_emo = "<:rl:953752216949358692>"
 right_emo = "<:rr:953752217062637588>"
 down_emo = "<:down:956234695526449212>"
 up_emo = "<:up:956234695107035137>"
-
-[bottom]
-
-executable = "bottomify"
 
 [music]
 
