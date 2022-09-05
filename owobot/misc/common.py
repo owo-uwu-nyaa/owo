@@ -1,4 +1,5 @@
 import datetime
+import functools
 import re
 import itertools as it
 
@@ -161,3 +162,12 @@ class IdentityConverter(commands.Converter):
 
 
 Variadic = Annotated[List[str], commands.Greedy[IdentityConverter]]
+
+
+def long_running_command(f):
+    """Commands annotated with `long_running_command` will show a typing indicator for their entire duration."""
+    @functools.wraps(f)
+    async def wrapper(self, ctx: commands.Context, *args, **kwargs):
+        async with ctx.typing():
+            await f(self, ctx, *args, **kwargs)
+    return wrapper

@@ -40,11 +40,11 @@ class Rainbow(commands.Cog):
         pass
 
     @rainbowroles.command(name="activate", brief="taste the rainbow")
+    @common.long_running_command
     async def activate(self, ctx: commands.Context):
-        async with ctx.typing():
-            await self._activate(ctx.guild)
-            await common.react_success(ctx)
-            await ctx.channel.send("Created roles, awaiting topping")
+        await self._activate(ctx.guild)
+        await common.react_success(ctx)
+        await ctx.channel.send("Created roles, awaiting topping")
 
     @staticmethod
     async def _activate(guild):
@@ -64,11 +64,11 @@ class Rainbow(commands.Cog):
                 print(f"{color}, aaaa, {ex}")
 
     @rainbowroles.command(name="deactivate", brief="delete all rainbow roles")
+    @common.long_running_command
     async def deactivate(self, ctx: commands.Context):
-        async with ctx.typing():
-            await self._deactivate(ctx.guild)
-            await common.react_success(ctx)
-            await ctx.channel.send("Until the next rainbow :>")
+        await self._deactivate(ctx.guild)
+        await common.react_success(ctx)
+        await ctx.channel.send("Until the next rainbow :>")
 
     @staticmethod
     async def _deactivate(guild):
@@ -82,11 +82,11 @@ class Rainbow(commands.Cog):
     @rainbowroles.command(
         name="top", brief="shuffle all rainbow roles to the second topmost position"
     )
+    @common.long_running_command
     async def top(self, ctx: commands.Context):
-        async with ctx.typing():
-            await self._top(ctx.guild)
-            await common.react_success(ctx)
-            await ctx.channel.send("Successfully did the topping, please come again!")
+        await self._top(ctx.guild)
+        await common.react_success(ctx)
+        await ctx.channel.send("Successfully did the topping, please come again!")
 
     @staticmethod
     async def _top(guild: discord.Guild):
@@ -119,9 +119,9 @@ class Rainbow(commands.Cog):
         await self._top(guild)
 
     @rainbowroles.command(name="refresh", brief="refresh rainbow roles")
+    @common.long_running_command
     async def refresh(self, ctx: commands.Context):
-        async with ctx.typing():
-            await self.refresh_rainbow(ctx.guild)
+        await self.refresh_rainbow(ctx.guild)
 
 
 def setup(bot):
