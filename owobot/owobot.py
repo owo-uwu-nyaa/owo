@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 
 
 class OwOBot(Bot):
-
     def __init__(self, config_path, *args, **options):
         config = Config(config_path)
 
@@ -29,7 +28,7 @@ class OwOBot(Bot):
             description=config.desc,
             intents=intents,
             allowed_mentions=allowed_mentions,
-            **options
+            **options,
         )
         self.config = config
         self._token = config.discord_token
@@ -39,7 +38,11 @@ class OwOBot(Bot):
             for file in (Path(__file__).parent / "cogs").iterdir():
                 cog_name = file.stem
 
-                if not cog_name.startswith("_") and file.suffix == ".py" and file.is_file():
+                if (
+                    not cog_name.startswith("_")
+                    and file.suffix == ".py"
+                    and file.is_file()
+                ):
                     total += 1
                 else:
                     continue
@@ -64,7 +67,9 @@ class OwOBot(Bot):
                     log.error(str(stderr))
                     errors += 1
 
-            log.info(f"done loading cogs (skipped = {skipped}, errors = {errors}, ok = {ok} out of {total} found cog(s))")
+            log.info(
+                f"done loading cogs (skipped = {skipped}, errors = {errors}, ok = {ok} out of {total} found cog(s))"
+            )
 
         self._load_cogs = load_cogs
 

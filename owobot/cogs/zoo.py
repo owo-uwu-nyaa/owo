@@ -56,7 +56,9 @@ class _ZooConverter(commands.Converter):
         if animal is not None:
             return animal
         else:
-            await common.react_failure(ctx, f"old macdonald didn't have that animal on his farm :(")
+            await common.react_failure(
+                ctx, f"old macdonald didn't have that animal on his farm :("
+            )
             raise commands.BadArgument(sound)
 
 
@@ -75,7 +77,9 @@ class Zoo(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        sound = common.remove_prefix(prefix=self.bot.command_prefix, content=message.content)
+        sound = common.remove_prefix(
+            prefix=self.bot.command_prefix, content=message.content
+        )
         if sound is None:
             return
 
@@ -102,11 +106,7 @@ class Zoo(commands.Cog):
 
     @user.command(name="rm", brief="rm user from animal list")
     async def user_rm(self, ctx, animal: _AnimalT, member: discord.Member):
-        query = (
-            animal
-            .users.delete()
-            .where(animal.users.snowflake == member.id)
-        )
+        query = animal.users.delete().where(animal.users.snowflake == member.id)
         await common.try_exe_cute_query(ctx, query)
 
     @zoo.group()
@@ -120,11 +120,7 @@ class Zoo(commands.Cog):
 
     @pic.command(name="rm", brief="rm pic from animal list")
     async def pic_rm(self, ctx, animal: _AnimalT, pic: str):
-        query = (
-            animal
-            .pics.delete()
-            .where(animal.pics.picture == pic)
-        )
+        query = animal.pics.delete().where(animal.pics.picture == pic)
         await common.try_exe_cute_query(ctx, query)
 
 

@@ -58,12 +58,16 @@ class Restricted(commands.Cog):
         pass
 
     @music_chan.command(name="add", brief="add a music_chan")
-    async def music_chan_add(self, ctx, channel: Optional[discord.TextChannel] = commands.CurrentChannel):
+    async def music_chan_add(
+        self, ctx, channel: Optional[discord.TextChannel] = commands.CurrentChannel
+    ):
         query = MusicChan.insert(channel=channel.id)
         await common.try_exe_cute_query(ctx, query)
 
     @music_chan.command(name="rm", brief="remove a music_chan")
-    async def music_chan_rm(self, ctx, channel: Optional[discord.TextChannel] = commands.CurrentChannel):
+    async def music_chan_rm(
+        self, ctx, channel: Optional[discord.TextChannel] = commands.CurrentChannel
+    ):
         query = MusicChan.delete().where(MusicChan.channel == channel.id)
         await common.try_exe_cute_query(ctx, query)
 

@@ -44,7 +44,7 @@ class Qt(commands.Cog):
             await ctx.channel.send("reverted names")
 
     @qt.command(name="yeet", brief="delete nameroles")
-    async def qt_yeet(self,  ctx: commands.Context):
+    async def qt_yeet(self, ctx: commands.Context):
         async with ctx.typing():
             for member in ctx.guild.members:
                 for role in member.roles:

@@ -53,7 +53,9 @@ class Admin(commands.Cog):
     async def sync(self, ctx: commands.Context):
         self.bot.tree.copy_global_to(guild=ctx.guild)
         synced = await self.bot.tree.sync(guild=ctx.guild)
-        await ctx.send(f"Synced {len(synced)} slash command(s) to **{ctx.guild.name}**.")
+        await ctx.send(
+            f"Synced {len(synced)} slash command(s) to **{ctx.guild.name}**."
+        )
 
 
 def setup(bot):

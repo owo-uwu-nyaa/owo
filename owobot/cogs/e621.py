@@ -57,7 +57,9 @@ class E621(commands.Cog):
     async def cog_check(self, ctx):
         res = NsflChan.select().where(NsflChan.channel == ctx.channel.id).exists()
         if not res:
-            await common.react_failure(ctx, details="command can only be used in an NSFW channel")
+            await common.react_failure(
+                ctx, details="command can only be used in an NSFW channel"
+            )
         return res
 
     @commands.hybrid_group()
