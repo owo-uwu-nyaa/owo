@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 from owobot.misc import common
 from owobot.misc.database import Owner, MusicChan
-import yt_dlp
+from typing import Optional
 
 log = logging.getLogger(__name__)
 
@@ -18,15 +18,15 @@ class Restricted(commands.Cog):
     async def cog_check(self, ctx):
         return await common.is_owner(ctx)
 
-    @commands.command(aliases=["cwash"])
-    async def crash(self):
+    @commands.hybrid_command(aliases=["cwash"])
+    async def crash(self, ctx):
         sys.exit(0)
 
-    @commands.command()
+    @commands.hybrid_command()
     async def parrot(self, ctx, *, msg: str):
         await ctx.send(msg)
 
-    @commands.command(aliases=["redwepoy"])
+    @commands.hybrid_command(aliases=["redwepoy"])
     async def redeploy(self, ctx):
         (src_path, _) = path.split(path.realpath(__file__))
         uwu = subprocess.run(
@@ -39,7 +39,7 @@ class Restricted(commands.Cog):
     async def on_ready(self):
         log.info(f"Hewoo, my name is {self.bot.user}")
 
-    @commands.group()
+    @commands.hybrid_group()
     async def owner(self, ctx):
         pass
 
@@ -53,20 +53,20 @@ class Restricted(commands.Cog):
         query = Owner.delete().where(Owner.snowflake == member.id)
         await common.try_exe_cute_query(ctx, query)
 
-    @commands.group()
+    @commands.hybrid_group()
     async def music_chan(self, ctx):
         pass
 
     @music_chan.command(name="add", brief="add a music_chan")
-    async def music_chan_add(self, ctx):
-        query = MusicChan.insert(channel=ctx.channel.id)
+    async def music_chan_add(self, ctx, channel: Optional[discord.TextChannel] = commands.CurrentChannel):
+        query = MusicChan.insert(channel=channel.id)
         await common.try_exe_cute_query(ctx, query)
 
     @music_chan.command(name="rm", brief="remove a music_chan")
-    async def music_chan_rm(self, ctx):
-        query = MusicChan.delete().where(MusicChan.channel == ctx.channel.id)
+    async def music_chan_rm(self, ctx, channel: Optional[discord.TextChannel] = commands.CurrentChannel):
+        query = MusicChan.delete().where(MusicChan.channel == channel.id)
         await common.try_exe_cute_query(ctx, query)
 
 
 def setup(bot):
-    bot.add_cog(Restricted(bot))
+    return bot.add_cog(Restricted(bot))

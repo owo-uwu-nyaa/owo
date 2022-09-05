@@ -1,4 +1,4 @@
-py-cord == 2.0.0rc1
+discord.py == 2.0.1
 catapi.py
 pygelbooru
 pyspark
@@ -10,3 +10,4 @@ peewee
 recordclass
 emoji
 yt-dlp
+bottomify

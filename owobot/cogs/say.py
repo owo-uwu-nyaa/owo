@@ -3,7 +3,7 @@ import io
 
 import discord
 import discord.ext
-from discord.ext.commands import Cog, command, Context
+from discord.ext.commands import Cog, hybrid_command, Context
 from typing import List
 
 from owobot.misc import common
@@ -13,7 +13,7 @@ class Say(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @command()
+    @hybrid_command()
     async def say(self, ctx: Context, member: discord.Member, *, content):
         """'!say [mention | user_id] content' creates message impersonating the user"""
         guild_webhooks: List[discord.Webhook] = await ctx.guild.webhooks()
@@ -40,7 +40,9 @@ class Say(Cog):
             )
             files.append(file)
 
-        await ctx.message.delete()
+        # slash commands will just appear as unanswered
+        if ctx.message.type == discord.MessageType.default:
+            await ctx.message.delete()
 
         mentions = discord.AllowedMentions(everyone=False, roles=False, users=True)
         await webhook.send(
@@ -53,4 +55,4 @@ class Say(Cog):
 
 
 def setup(bot):
-    bot.add_cog(Say(bot))
+    return bot.add_cog(Say(bot))

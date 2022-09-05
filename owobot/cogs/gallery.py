@@ -5,6 +5,8 @@ from discord.ext import commands
 import pyspark.sql.functions as F
 from recordclass import RecordClass
 from emoji import UNICODE_EMOJI_ENGLISH
+from typing import List, Dict
+from owobot.misc.common import Variadic
 
 
 class GalleryState(RecordClass):
@@ -12,7 +14,7 @@ class GalleryState(RecordClass):
     msg_id: int
     chan_id: int
     msg: discord.Message
-    urls: list[str]
+    urls: List[str]
     embed: discord.Embed
 
 
@@ -23,11 +25,11 @@ class Gallery(commands.Cog):
         self.spark_lock = threading.Lock()
         self.df_attachments = bot.config.datalake.get_df("attachments")
         self.df_react = bot.config.datalake.get_df("react")
-        self.gallery_by_auth: dict[int, GalleryState] = {}
-        self.gallery_by_msg: dict[int, GalleryState] = {}
+        self.gallery_by_auth: Dict[int, GalleryState] = {}
+        self.gallery_by_msg: Dict[int, GalleryState] = {}
 
-    @commands.command(brief="see a gallery with all images you reacted to")
-    async def gallery(self, ctx, *args):
+    @commands.hybrid_command(brief="see a gallery with all images you reacted to")
+    async def gallery(self, ctx, args: Variadic):
         emotes = []
         channels = []
         for arg in args:
@@ -103,4 +105,4 @@ class Gallery(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Gallery(bot))
+    return bot.add_cog(Gallery(bot))

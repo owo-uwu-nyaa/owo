@@ -78,13 +78,13 @@ class Stats(commands.Cog):
             mmap.append((common.get_nick_or_name(member), member.id))
         return spark.createDataFrame(data=mmap, schema=["name", "id"])
 
-    @commands.group()
+    @commands.hybrid_group()
     async def stats(self, ctx):
         pass
 
     @stats.command(brief="when do you procrastinate?")
     async def activity(self, ctx):
-        with self.spark_lock:
+        async with ctx.typing(), self.spark_lock:
             dfa = self.get_messages_by_author(ctx).select("time")
             dft = dfa.groupBy(F.hour("time").alias("hour")).agg(
                 F.count("time").alias("count")
@@ -95,21 +95,21 @@ class Stats(commands.Cog):
 
     @stats.command(brief="use your words")
     async def words(self, ctx):
-        with self.spark_lock:
+        async with ctx.typing(), self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
             res = count_words(dfa)
             await ctx.channel.send(f"```\n{common.sanitize_markdown(res)}\n```")
 
     @stats.command(brief="words, but also use messages from dms/other guilds")
     async def simonwords(self, ctx):
-        with self.spark_lock:
+        async with ctx.typing(), self.spark_lock:
             dfa = self.df_global.filter(F.col("author_id") == ctx.author.id)
             res = count_words(dfa)
             await ctx.channel.send(f"```\n{common.sanitize_markdown(res)}\n```")
 
     @stats.command(brief="words, but emotes", aliases=["emo"])
     async def emotes(self, ctx):
-        with self.spark_lock:
+        async with ctx.typing(), self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
             dfw = (
                 dfa.select(
@@ -131,7 +131,7 @@ class Stats(commands.Cog):
 
     @stats.command(brief="use your ~~words~~ letters")
     async def letters(self, ctx):
-        with self.spark_lock:
+        async with ctx.typing(), self.spark_lock:
             dfa = self.get_messages_by_author(ctx)
             dfl = (
                 dfa.select(F.explode(F.split(F.col("msg"), "")).alias("letter"))
@@ -145,7 +145,7 @@ class Stats(commands.Cog):
 
     @stats.command(brief="make history", aliases=["histowowy"])
     async def history(self, ctx, *members: discord.Member):
-        with self.spark_lock:
+        async with ctx.typing(), self.spark_lock:
             # gather relevant authors
             author_mappings = []
             if len(members) == 0:
@@ -203,7 +203,7 @@ class Stats(commands.Cog):
 
     @stats.command(brief="see all the lovebirbs #choo choo #ship", aliases=["ships"])
     async def couples(self, ctx):
-        with self.spark_lock:
+        async with ctx.typing(), self.spark_lock:
             n_limit = 30
             df_hugs = (
                 self.get_guild_df(ctx)
@@ -245,4 +245,4 @@ class Stats(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Stats(bot))
+    return bot.add_cog(Stats(bot))

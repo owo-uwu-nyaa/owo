@@ -8,7 +8,7 @@ class Aww(commands.Cog):
         self.bot = bot
         self.catapi = catapi.CatApi(api_key=bot.config.catapi_token)
 
-    @commands.command(brief="cat")
+    @commands.hybrid_command(brief="cat")
     async def aww(self, ctx):
         res = await asyncio.get_running_loop().create_task(
             self.catapi.search_images(limit=1)
@@ -17,4 +17,4 @@ class Aww(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Aww(bot))
+    return bot.add_cog(Aww(bot))

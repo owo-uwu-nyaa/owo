@@ -1,17 +1,18 @@
 from discord.ext import commands
+from discord.ext.commands import Bot
 from owobot.misc import common
 from owobot.misc.database import NsflChan, OwoChan, RainbowGuild
 
 
 class Admin(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
 
     def cog_check(self, ctx):
         return ctx.author.guild_permissions.administrator
 
-    @commands.group()
-    async def mark(self, ctx):
+    @commands.hybrid_group()
+    async def mark(self, ctx: commands.Context):
         pass
 
     @mark.command(name="nsfl", brief="mark this as nsfl channel")
@@ -29,7 +30,7 @@ class Admin(commands.Cog):
         query = RainbowGuild.insert(snowflake=ctx.guild.id)
         await common.try_exe_cute_query(ctx, query)
 
-    @commands.group()
+    @commands.hybrid_group()
     async def unmark(self, ctx):
         pass
 
@@ -48,5 +49,12 @@ class Admin(commands.Cog):
         query = OwoChan.delete().where(RainbowGuild.snowflake == ctx.guild.id)
         await common.try_exe_cute_query(ctx, query)
 
+    @commands.hybrid_command(brief="sync slash commands to the current guild")
+    async def sync(self, ctx: commands.Context):
+        self.bot.tree.copy_global_to(guild=ctx.guild)
+        synced = await self.bot.tree.sync(guild=ctx.guild)
+        await ctx.send(f"Synced {len(synced)} slash command(s) to **{ctx.guild.name}**.")
+
+
 def setup(bot):
-    bot.add_cog(Admin(bot))
+    return bot.add_cog(Admin(bot))

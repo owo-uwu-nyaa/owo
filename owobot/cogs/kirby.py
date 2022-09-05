@@ -9,7 +9,7 @@ class Kirby(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group()
+    @commands.hybrid_group()
     async def kirby(self, ctx):
         pass
 
@@ -41,4 +41,4 @@ class Kirby(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Kirby(bot))
+    return bot.add_cog(Kirby(bot))
