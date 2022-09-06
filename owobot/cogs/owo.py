@@ -7,7 +7,7 @@ from owobot.misc.database import OwoChan
 
 
 def contains_alpha(text: str) -> bool:
-    return all(ltr.isalpha() for ltr in text)
+    return any(char.isalpha() for char in text)
 
 
 class OwO(commands.Cog):
