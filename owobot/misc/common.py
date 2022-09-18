@@ -171,3 +171,7 @@ def long_running_command(f):
         async with ctx.typing():
             await f(self, ctx, *args, **kwargs)
     return wrapper
+
+
+def nullable_dict(**kwargs):
+    return dict((k, v) for k, v in kwargs.items() if v is not None)
