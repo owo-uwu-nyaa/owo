@@ -2,6 +2,7 @@ import datetime
 import functools
 import re
 import itertools as it
+from collections import namedtuple
 
 import discord
 import emoji
@@ -171,3 +172,75 @@ def long_running_command(f):
         async with ctx.typing():
             await f(self, ctx, *args, **kwargs)
     return wrapper
+
+
+_DISCORD_LINK_RE = re.compile(r".*?(?P<scheme>https?)://(?P<netloc>\S{2,})")
+linkify_result = namedtuple("linkify_result", ("scheme", "netloc", "start", "end"))
+
+
+def discord_linkify_likely(s: str) -> Optional[linkify_result]:
+    """
+    python link handling is wack
+
+    - scheme may only be http or https
+    - any text may precede the ``http(s)://`` (scheme), it will not be part of the link
+    - any text may follow after the scheme, it will be part of the link
+    - the link continues until whitespace, except a ``)`` at the last position
+    - unless there is (at least one) ``(`` somewhere after the scheme (they don't need to be match correctly)
+    - the text after the scheme must be at least two characters long, but if the last character is a ``)`` as above,
+      the link can end up being only a single character
+    - this is all wrong, because then discord processes the link some more??
+    - ``https://.x`` -> ``https://.x`` but ``https://.()`` -> ``https://./()``
+      and ``https://1$`` -> ``https://1/$`` but ``https://!$`` -> ``None``
+    - ``https://x@y`` -> ``https://y``
+    - ``https://$/1`` -> ``None``, ``https://^^`` -> ``None``
+    """
+    match = _DISCORD_LINK_RE.fullmatch(s)
+    if match:
+        scheme, netloc = match.group("scheme", "netloc")
+        start = match.start("scheme")
+        end = match.end("netloc")
+
+        # last character is a bracket: check if all preceding opening brackets are closed
+        if netloc[-1] == ")":  # len(netloc) >= 2, indexing is safe
+            bracket_count = 0
+            for c in netloc[:-1]:
+                if c == "(":
+                    bracket_count += 1
+                elif c == ")" and bracket_count > 0:
+                    bracket_count -= 1
+            if not bracket_count:
+                # last bracket is not part of link
+                netloc = netloc[:-1]
+                end -= 1
+
+        return linkify_result(scheme=scheme, netloc=netloc, start=start, end=end)
+
+
+def _anext(iterator, *args):
+    """for python < 3.10, from
+    https://github.com/python/cpython/blob/487135a396a504482ae3a7e9c7f80a44627a5a3f/Lib/test/test_asyncgen.py#L54"""
+    if len(args) > 1:
+        raise TypeError(f"anext expected at most 2 arguments, got {len(args) + 1}")
+
+    try:
+        __anext__ = type(iterator).__anext__
+    except AttributeError:
+        raise TypeError(f'{iterator!r} is not an async iterator')
+
+    if not args:
+        return __anext__(iterator)
+
+    async def anext_impl():
+        try:
+            return await __anext__(iterator)
+        except StopAsyncIteration:
+            return args[0]
+
+    return anext_impl()
+
+
+try:
+    anext = anext
+except NameError:
+    anext = _anext

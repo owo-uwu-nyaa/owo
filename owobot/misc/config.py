@@ -2,6 +2,7 @@ import logging
 from os import path
 import toml
 from peewee import PostgresqlDatabase, SqliteDatabase
+from playhouse.migrate import PostgresqlMigrator, SqliteMigrator
 from owobot.misc import datalake
 from owobot.misc import database
 
@@ -75,7 +76,7 @@ class Config:
                     host=str(self.get_key("postgres", "host")),
                     autorollback=True,
                 )
-                database.set_db(db)
+                database.set_db(db, PostgresqlMigrator(db))
                 log.info("Using postgres as DB")
             except Exception as e:
                 log.error(
@@ -85,7 +86,7 @@ class Config:
             db = SqliteDatabase(
                 path.join(str(self.get_key("sqlite", "dir")), "owo.sqlite")
             )
-            database.set_db(db)
+            database.set_db(db, SqliteMigrator(db))
             log.info("Using sqlite as DB")
 
         self.datalake = None

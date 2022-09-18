@@ -1,7 +1,26 @@
 import peewee
 from peewee import DatabaseProxy, Model, BigIntegerField, TextField, CompositeKey
+from playhouse.migrate import migrate, SchemaMigrator, Field
+from playhouse.reflection import Introspector
 
 db = DatabaseProxy()
+
+
+def _model_meta(model):
+    # this field *is* documented
+    return model._meta
+
+
+def _add_column(model: Model, column: Field, introspector: Introspector, migrator: SchemaMigrator):
+    table_name = _model_meta(model).name
+    column_name = column.column_name
+    models = introspector.generate_models(table_names=[table_name])
+    # table doesn't exist yet, will be created normally
+    if table_name not in models:
+        return
+    if column_name not in _model_meta(models[table_name]).columns:
+        # column needs to be added
+        yield migrator.add_column(table_name, column_name, column)
 
 
 class BaseModel(Model):
@@ -19,6 +38,13 @@ class NsflChan(BaseModel):
 
 class OwoChan(BaseModel):
     channel = BigIntegerField(primary_key=True)
+    last_author = BigIntegerField(null=True)
+    last_message = BigIntegerField(null=True)
+
+
+def _owochan_last_author_migration(introspector: Introspector, migrator: SchemaMigrator):
+    yield from _add_column(OwoChan, OwoChan.last_author, introspector, migrator)
+    yield from _add_column(OwoChan, OwoChan.last_message, introspector, migrator)
 
 
 class MusicChan(BaseModel):
@@ -98,8 +124,13 @@ class RainbowGuild(BaseModel):
     snowflake = BigIntegerField()
 
 
-def set_db(real_db: peewee.Database):
+def set_db(real_db: peewee.Database, migrator: SchemaMigrator):
     db.initialize(real_db)
+    introspector = Introspector.from_database(db)
+    with db.atomic():
+        migrate(
+            *_owochan_last_author_migration(introspector, migrator)
+        )
     db.create_tables(
         [
             Owner,
