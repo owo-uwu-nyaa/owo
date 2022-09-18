@@ -1,5 +1,6 @@
 import random
 import re
+from owobot.misc.common import discord_linkify_likely
 from owobot.misc import uwu_data
 
 _DO_NOT_OWOFY = r"(http.*)|(<.*>)"
@@ -52,7 +53,7 @@ def owofy(text: str) -> str:
     is_seperator = True
     for word in split:
         is_seperator = not is_seperator
-        if is_seperator or word == "" or re.match(_DO_NOT_OWOFY, word):
+        if is_seperator or word == "" or re.match(_DO_NOT_OWOFY, word) or discord_linkify_likely(word):
             nmsg.append(word)
             continue
         for mapping in uwu_data.mappings:

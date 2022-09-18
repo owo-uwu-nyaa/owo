@@ -67,13 +67,13 @@ class OwOBot(Bot):
                     with contextlib.redirect_stderr(stderr), contextlib.redirect_stdout(stdout):
                         await self.load_extension(f"owobot.cogs.{cog_name}")
                     log.info(f"loaded cog '{cog_name}'")
-                    log.debug(str(stdout))
-                    log.debug(str(stderr))
+                    log.debug(f"stdout:{stdout.getvalue()}")
+                    log.debug(f"stderr:{stderr.getvalue()}")
                     ok += 1
                 except Exception as e:
                     log.error(f"Could not load cog '{cog_name}' from {file}: {e}")
-                    log.error(str(stdout))
-                    log.error(str(stderr))
+                    log.error(f"stdout:{stdout.getvalue()}")
+                    log.error(f"stderr:{stderr.getvalue()}")
                     errors += 1
 
             log.info(
