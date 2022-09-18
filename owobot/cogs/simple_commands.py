@@ -2,12 +2,13 @@ import random
 
 import discord
 from discord.ext import commands
+from owobot.owobot import OwOBot
 
 from owobot.misc import common, owolib
 
 
 class SimpleCommands(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: OwOBot):
         self.bot = bot
 
     @commands.hybrid_command(name="obamamedal")
@@ -96,11 +97,12 @@ class SimpleCommands(commands.Cog):
     sad_words = {"trauer", "schmerz", "leid"}
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
             return
         word = message.content[1:].lower()
         if message.content and message.content[0] == self.bot.command_prefix and word in self.sad_words:
+            self.bot.handle_dynamic(message)
             sad_words_minus = self.sad_words - {word}
             send_word = random.choice(tuple(sad_words_minus))
             await message.channel.send(send_word)
