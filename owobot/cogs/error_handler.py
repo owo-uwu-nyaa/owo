@@ -14,7 +14,7 @@ from owobot.misc import owolib
 from owobot.misc.common import nullable_dict
 from owobot.owobot import OwOBot
 
-from typing import Optional, Iterable
+from typing import Optional, List
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ async def _reply_on_error(reply_to, message: str):
     )
 
 
-def _format_suggested_commands(text, suggestions: Iterable[OwOBot.command_suggestion]):
+def _format_suggested_commands(text, suggestions: List[OwOBot.command_suggestion]):
     esc = discord.utils.escape_markdown
     return (
         f"Command `{esc(text)}` not found"
@@ -51,9 +51,9 @@ def _format_suggested_commands(text, suggestions: Iterable[OwOBot.command_sugges
                 + (
                     f"command `{esc(suggestion.name)}`"
                     if suggestion.name == suggestion.command.name
-                    else f"`{esc(suggestion.name)}` (alias for `{esc(suggestion.command.name)}`)"
+                    else f"`{esc(suggestion.name)}` (alias for command `{esc(suggestion.command.name)}`)"
                 )
-                + (f"(*{esc(suggestion.command.brief)}*)" if suggestion.command.brief else "")
+                + (f"{' ' * 8}*{esc(suggestion.command.brief)}*" if suggestion.command.brief else "")
                 for suggestion in suggestions
             )
             if suggestions
