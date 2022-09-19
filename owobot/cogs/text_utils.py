@@ -42,7 +42,7 @@ class TextUtils(commands.Cog):
     @commands.hybrid_command(brief="sends you your message as rendered by figlet")
     async def figlet(self, ctx: commands.Context, text: str, font: str = None, direction: str = None, justify: str = None, width: int = None):
         try:
-            f = fg.Figlet(nullable_dict(font=font, direction=direction, justify=justify, width=width))
+            f = fg.Figlet(**nullable_dict(font=font, direction=direction, justify=justify, width=width))
         except fg.FontNotFound:
             await common.react_failure(ctx, "font not found")
             return
