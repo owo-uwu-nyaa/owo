@@ -50,7 +50,7 @@ class OwO(commands.Cog):
             last_message is not None
             and datetime.now(timezone.utc) - last_message.created_at < timedelta(minutes=7)
             and last_message.webhook_id is not None
-            and owo_chan.last_author == message.author.id and owo_chan.last_message == message.id
+            and owo_chan.last_author == message.author.id and owo_chan.last_message == last_message.id
         )
 
         def update_last_owo(owo_author=None, owo_message=None):
@@ -62,7 +62,7 @@ class OwO(commands.Cog):
 
         tokens = [tok for tok in text.split(" ") if tok.strip()]
         # which messages should not be uwu *rawr xd*
-        nowo = (
+        nowo = bool(
             owolib.score(text) >= 1
             or not contains_alpha(text)
             or (not text and message.attachments)
@@ -78,6 +78,7 @@ class OwO(commands.Cog):
         for channel_webhook in await message.channel.webhooks():
             if channel_webhook.user == self.bot.user and channel_webhook.auth_token is not None:
                 webhook = channel_webhook
+                break
         if webhook is None:
             webhook = await message.channel.create_webhook(name="if you read this you're cute")
 
