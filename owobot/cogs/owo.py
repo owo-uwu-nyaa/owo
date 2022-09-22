@@ -1,6 +1,7 @@
 import io
 import functools as ft
 from datetime import datetime, timezone, timedelta
+import cgi
 
 import discord
 from discord.ext import commands
@@ -39,7 +40,20 @@ class OwO(commands.Cog):
         owo_chan = OwoChan.select().where(OwoChan.channel == message.channel.id).get_or_none()
         if not owo_chan:
             return
+        attachments = list(message.attachments)
         text = message.content
+        if (not text) and attachments:
+            text_from = attachments[0]
+            media_type, params = cgi.parse_header(text_from.content_type)
+            if media_type.startswith("text/"):
+                content = io.BytesIO()
+                await text_from.save(fp=content)
+                try:
+                    text = content.getvalue().decode(params.get("charset", "utf-8"))
+                    attachments.pop(0)
+                except UnicodeDecodeError:
+                    # incorrect encoding declared?
+                    attachments.insert(0, text_from)
 
         if text.startswith(self.bot.command_prefix):
             return
@@ -87,11 +101,6 @@ class OwO(commands.Cog):
                 if owolib.score(text := owolib.owofy(text)) > 1.0:
                     break
         text = common.sanitize_send(text)
-        if len(text) > 2000:
-            # content may be at most 2000 characters
-            # https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
-            update_last_owo()
-            return
 
         if keep_last_owauthor:
             author_name = last_message.author.display_name
@@ -102,7 +111,7 @@ class OwO(commands.Cog):
         mentions = discord.AllowedMentions(everyone=False, roles=False, users=True)
         # as the original message is deleted, we need to re-upload the attachments
         files = []
-        for attachment in message.attachments:
+        for attachment in attachments:
             fp = io.BytesIO()
             await attachment.save(fp)
             fp.seek(0)
@@ -134,7 +143,14 @@ class OwO(commands.Cog):
         if reply_embed is not None:
             # wait=True so messages don't get sent out-of-order
             await send(embed=reply_embed, wait=True)
-        last_msg = await send(content=text, files=files, wait=True)
+
+        # content may be at most 2000 characters
+        # https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
+        pages = list(common.paginate(text, 2000))
+        for page in pages[:-1]:
+            await send(content=page, wait=True)
+        last_msg = await send(content=pages[-1], files=files, wait=True)
+
         await message.delete()
 
         update_last_owo(owo_author=message.author, owo_message=last_msg)
