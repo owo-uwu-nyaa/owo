@@ -7,6 +7,7 @@ import re
 import io
 import itertools as it
 from collections import namedtuple
+import textwrap
 
 import discord
 import emoji
@@ -44,6 +45,78 @@ def ellipsize(msg, max_length, overflow="..."):
         if len(msg) > max_length
         else msg
     )
+
+
+def ellipsize_sub(pattern: re.Pattern | str,
+                  replacement: str | callable,
+                  text: str,
+                  max_length: int,
+                  overflow="...",
+                  safe_replacement=None):
+    """like ``re.sub``, but limit to ``max_length``, including ``overflow`` if truncated"""
+    if max_length < len(overflow):
+        return ""
+    replace = replacement if callable(replacement) else (lambda m: m.expand(replacement))
+    safe_replace = (
+        (safe_replacement if callable(safe_replacement) else (lambda m: m.expand(safe_replacement)))
+        if safe_replacement is not None
+        else lambda m: ""
+    )
+
+    parts = []
+    prev_result_end = 0
+    for match in re.finditer(pattern, text):
+        parts.append((text[prev_result_end:match.start()], replace(match), match))
+        prev_result_end = match.end()
+    parts.append((text[prev_result_end:], "", None))
+    total_length = sum(len(p) + len(r) for p, r, _ in parts)
+
+    def make_result(r_parts, r_safe=()):
+        return "".join(it.chain(it.chain.from_iterable((p, r) for p, r, _ in r_parts), r_safe))
+    if total_length <= max_length:
+        return make_result(parts)
+
+    max_length = max_length - len(overflow)
+    safes = []
+    while total_length > max_length:
+        plain, repl, match = parts.pop()
+        item_len = len(repl) + len(plain)
+        safes.extend((safe_replace(match) if match is not None else "", plain))
+        if total_length - item_len <= max_length:
+            break
+        total_length -= item_len
+    return make_result(parts, reversed(safes))[:max_length] + overflow
+
+
+def paginate(msg, max_page_len):
+    # TODO: breaks markdown
+    """Result is an iterator of pages. Each page will be at most ``max_page_len`` long."""
+    pages = [[]]
+    page_len = 0
+    for paragraph in msg.split("\n"):
+        # add length of last page to account for newlines after adding to page
+        if len(pages[-1]) + page_len + len(paragraph) > max_page_len:
+            pages.append([])
+            page_len = 0
+
+        if len(paragraph) > max_page_len:
+            # here, we are always at the beginning of a page
+            assert page_len == 0
+            w_pages = textwrap.wrap(
+                paragraph,
+                width=max_page_len,
+                placeholder="",
+                expand_tabs=False,
+                replace_whitespace=False,
+                drop_whitespace=False,
+            )
+            pages.extend(w_pages)
+            page_len = len(w_pages[-1])
+        else:
+            pages[-1].append(paragraph)
+            page_len += len(paragraph)
+
+    return ("\n".join(page) for page in pages)
 
 
 _media_embed_types = ("image", "video", "gifv")
