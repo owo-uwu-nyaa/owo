@@ -23,8 +23,7 @@ class OwO(commands.Cog):
 
     @commands.hybrid_command(brief="owofy <msg> nyaa~~")
     async def owofy(self, ctx, *, msg: str):
-        owofied = owolib.owofy(msg)
-        await ctx.send(f"```{common.sanitize_markdown(owofied)} ```")
+        await common.send_paginated(ctx, owolib.owofy(msg), page_length=2000)
 
     @commands.hybrid_command(
         brief="telwlws you how owo-kawai <msg> is - scowre >= 1 is owo :3"
@@ -84,6 +83,7 @@ class OwO(commands.Cog):
         )
 
         # if the last message is in an owo-streak, always send from an owo-user to preserve the streak
+        # but otherwise, return
         if not keep_last_owauthor and nowo:
             update_last_owo()
             return
@@ -96,11 +96,7 @@ class OwO(commands.Cog):
         if webhook is None:
             webhook = await message.channel.create_webhook(name="if you read this you're cute")
 
-        if not nowo:
-            for _ in range(5):
-                if owolib.score(text := owolib.owofy(text)) > 1.0:
-                    break
-        text = common.sanitize_send(text)
+        text = owolib.owofy(text)
 
         if keep_last_owauthor:
             author_name = last_message.author.display_name
@@ -131,8 +127,12 @@ class OwO(commands.Cog):
             else None
         )
 
+        # content may be at most 2000 characters
+        # https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
         send = ft.partial(
-            webhook.send,
+            common.send_paginated,
+            webhook,
+            page_length=2000,
             username=author_name,
             avatar_url=author_avatar_url,
             allowed_mentions=mentions,
@@ -144,13 +144,7 @@ class OwO(commands.Cog):
             # wait=True so messages don't get sent out-of-order
             await send(embed=reply_embed, wait=True)
 
-        # content may be at most 2000 characters
-        # https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
-        pages = list(common.paginate(text, 2000))
-        for page in pages[:-1]:
-            await send(content=page, wait=True)
-        last_msg = await send(content=pages[-1], files=files, wait=True)
-
+        last_msg = (await send(text, files=files, wait=True))[-1]
         await message.delete()
 
         update_last_owo(owo_author=message.author, owo_message=last_msg)
