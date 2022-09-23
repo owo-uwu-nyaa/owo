@@ -95,13 +95,15 @@ def paginate(msg, max_page_len):
     page_len = 0
     for paragraph in msg.split("\n"):
         # add length of last page to account for newlines after adding to page
-        if len(pages[-1]) + page_len + len(paragraph) > max_page_len:
+        if len(pages[-1]) + page_len + len(paragraph) > max_page_len and page_len > 0:
             pages.append([])
             page_len = 0
 
         if len(paragraph) > max_page_len:
             # here, we are always at the beginning of a page
             assert page_len == 0
+            # remove the empty page
+            pages.pop()
             w_pages = textwrap.wrap(
                 paragraph,
                 width=max_page_len,
@@ -110,13 +112,35 @@ def paginate(msg, max_page_len):
                 replace_whitespace=False,
                 drop_whitespace=False,
             )
-            pages.extend(w_pages)
+            pages.extend([p] for p in w_pages)
             page_len = len(w_pages[-1])
         else:
             pages[-1].append(paragraph)
             page_len += len(paragraph)
 
     return ("\n".join(page) for page in pages)
+
+
+async def send_paginated(to: discord.abc.Messageable, *args, page_length=2000, **kwargs):
+    if len(args) > 1:
+        raise ValueError("unexpected argument")
+    pages = list(paginate(args[0], page_length)) if args else (discord.utils.MISSING, )
+    first_only = ("thread_name", )
+    last_only = ("file", "files", "embed", "embeds", "view", "wait")
+    first_message_kwargs = {k: v for k, v in kwargs.items() if k in first_only}
+    last_message_kwargs = {k: v for k, v in kwargs.items() if k in last_only}
+    per_message_kwargs = {k: v for k, v in kwargs.items() if k not in first_only and k not in last_only}
+    messages = []
+    last_index = len(pages) - 1
+    for i, page in enumerate(pages):
+        messages.append(await to.send(
+            page,
+            **nullable_dict(wait=True if i < last_index and isinstance(to, discord.Webhook) else None),
+            **per_message_kwargs,
+            **(first_message_kwargs if i == 0 else dict()),
+            **(last_message_kwargs if i == last_index else dict())
+        ))
+    return messages if kwargs.get("wait", False) else None
 
 
 _media_embed_types = ("image", "video", "gifv")
@@ -160,16 +184,13 @@ async def message_as_embedded_reply(message, max_length=256):
     return reply_embed
 
 
-markdown_chars = ["~", "_", "*", "`"]
+markdown_chars_re = re.compile(r"[~_*`]")
 
 
 def sanitize_markdown(text: str) -> str:
     # prepend each markdown interpretable char with a zero width space
     # italics with a single * seems to not break codeblocks
-    for char in markdown_chars:
-        if char in text:
-            text = text.replace(char, f"​{char}")
-    return text
+    return markdown_chars_re.sub(r"​\0", text)
 
 
 def sanitize_send(text: str) -> str:

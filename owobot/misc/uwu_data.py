@@ -2,7 +2,9 @@
 # and https://github.com/Daniel-Liu-c0deb0t/uwu/blob/uwu/src/lib.rs
 # special thanks goes to https://www.reddit.com/r/creepyasterisks/top/?t=year
 
-prefixes = [
+import re
+
+prefixes = (
     "OwO",
     "OwO what's this?",
     "*nuzzles*",
@@ -17,30 +19,35 @@ prefixes = [
     "*wags tail*",
     "*pets you*",
     "*tips fedora*",
-]
+)
 
-mappings = [
-    ["r", "w"],
-    ["l", "w"],
-    ["na", "nya"],
-    ["ni", "nyi"],
-    ["nu", "nyu"],
-    ["ne", "nye"],
-    ["no", "nyo"],
-    ["ove", "uv"],
-    ["small", "smol"],
-    ["cute", "kawaii~"],
-    ["fluff", "floof"],
-    ["love", "luv"],
-    ["stupid", "baka"],
-    ["what", "nani"],
-    ["meow", "nya~"],
-    ["ee", "ew"],
-    ["at", "awt"],
-    ["oops", "oopsie woopsie"],
-]
 
-int_emote = [
+def rgl(match, group, value) -> str:
+    return len(match.group(group)) * value
+
+
+mappings0 = (
+    # ("l", "wl"),
+    ("r", "w"),
+    ("(?<=[aeiou])l+", lambda m: "w" + rgl(m, 0, "l"), "wl+"),
+    # ("(?<!w)l", "w"),  # l, not preceded by w
+    ("n(a+|e+|i+|o+|u+)", lambda m: "ny" + rgl(m, 1, m.group(1)), "ny(a+|e+|i+|o+|u+)"),
+    (r"(?<=\w)ove", "uv"),
+    ("small", "smol"),
+    ("cute", "kawaii~"),
+    ("fluff", "floof"),
+    ("love", "luv"),
+    ("stupid", "baka"),
+    ("what", "nani"),
+    ("meow", "nya~"),
+    ("(e+)e", lambda m: rgl(m, 1, "e") + "w", "e+w"),
+    # ("at", "awt"),
+    ("oops", "oopsie woopsie"),
+)
+mappings = tuple((re.compile(m[0]), m[1], re.compile(m[-1])) for m in mappings0)
+
+
+int_emote = (
     "rawr x3",
     "OwO",
     "UwU",
@@ -76,18 +83,18 @@ int_emote = [
     "(◕ᴥ◕)",
     "ʕ•ᴥ•ʔ",
     "ʕ￫ᴥ￩ʔ",
-    "(*^ω^)",
+    # "(*^ω^)",
     "(◕‿◕✿)",
-    "(*^.^*)",
-    "(*￣з￣)",
+    # "(*^.^*)",
+    # "(*￣з￣)",
     "(つ✧ω✧)つ",
     "(/ =ω=)/",
     ">///<",
     "-w-",
     "QwQ",
-]
+)
 
-sowwy = [
+sowwy = (
     "sowwy",
     "owo nowww",
     "nowo",
@@ -97,9 +104,9 @@ sowwy = [
     "s-s-sadwy you cwannot dow that",
     "i w-want to compwy, mwaster, but i cwannot",
     "Baka!",
-]
+)
 
-good_owo_spirit = [
+good_owo_spirit = (
     "umu",
     "owo",
     "uwu",
@@ -115,4 +122,4 @@ good_owo_spirit = [
     "wolf",
     "neko",
     "kon",
-]
+)
