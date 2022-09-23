@@ -29,7 +29,8 @@ def rgl(match, group, value) -> str:
 mappings0 = (
     # ("l", "wl"),
     ("r", "w"),
-    ("(?<=[aeiou])l+", lambda m: "w" + rgl(m, 0, "l"), "wl+"),
+    ("(?<=[aeiou])l(l+)", r"w\1", "wl+"),
+    ("(?<=[aeiou])l", "wl"),
     # ("(?<!w)l", "w"),  # l, not preceded by w
     ("n(a+|e+|i+|o+|u+)", lambda m: "ny" + rgl(m, 1, m.group(1)), "ny(a+|e+|i+|o+|u+)"),
     (r"(?<=\w)ove", "uv"),
