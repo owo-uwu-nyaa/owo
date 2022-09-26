@@ -7,6 +7,7 @@ from recordclass import RecordClass
 from typing import Optional
 
 from owobot.misc import common
+from owobot.owobot import OwOBot
 from owobot.misc.database import (
     BaaPics,
     BaaUsers,
@@ -66,14 +67,14 @@ _AnimalT = common.Annotated[Animal, _ZooConverter]
 
 
 class Zoo(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: OwOBot):
         self.bot = bot
 
     async def cog_check(self, ctx):
         return await common.is_owner(ctx)
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
             return
 
@@ -85,6 +86,7 @@ class Zoo(commands.Cog):
 
         animal = _get_animal_by_sound(sound)
         if animal is not None:
+            self.bot.handle_dynamic(message)
             pingpong = animal.users.select().order_by(peewee.fn.Random()).get()
             pic = animal.pics.select().order_by(peewee.fn.Random()).get().picture
             await message.channel.send(f"<@{pingpong.snowflake}>")
