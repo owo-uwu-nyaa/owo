@@ -11,3 +11,5 @@ recordclass
 emoji
 yt-dlp
 bottomify
+pyfiglet
+cowsay

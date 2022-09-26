@@ -56,33 +56,6 @@ class SimpleCommands(commands.Cog):
         name = common.get_nick_or_name(ctx.author)
         await ctx.send(f"{name} {owolib.owofy('wünscht allen eine GuNa!')}")
 
-    def gen_row(self, maxlen: int, cur_row: int):
-        ltr = chr(ord("A") + cur_row)
-        opad = maxlen - cur_row - 1
-        if cur_row == 0:
-            return f"{'.' * opad}{ltr}{'.' * opad}"
-        return f"{'.' * opad}{ltr}{'.' * ((cur_row * 2) - 1)}{ltr}{'.' * opad}"
-
-    @commands.hybrid_command()
-    async def diamond(self, ctx, nrows: int):
-        if nrows > 22:
-            await ctx.send(
-                f"{owolib.get_random_sorry()}, thiws is too mwuch fow me to take nyaaa~"
-            )
-            return
-        if nrows < 1:
-            await ctx.send(
-                f"{owolib.get_random_sorry()}, thiws is nwot enough fow me, give me more nyaaa~"
-            )
-            return
-        result = []
-        for i in range(0, nrows - 1):
-            result.append(self.gen_row(nrows, i))
-        for i in range(nrows - 1, -1, -1):
-            result.append(self.gen_row(nrows, i))
-        diamond = "\n".join(result)
-        await ctx.send(f"```\n{diamond}\n```")
-
     @commands.hybrid_command()
     async def slap(self, ctx, member: discord.Member):
         name1 = common.get_nick_or_name(ctx.author)
@@ -93,6 +66,11 @@ class SimpleCommands(commands.Cog):
     @commands.hybrid_command(brief="steal an avatar")
     async def steal(self, ctx, member: discord.Member):
         await ctx.send(member.display_avatar.url)
+
+    @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
+                                   "featuring simple graphics.")
+    async def ping(self, ctx: commands.Context):
+        await ctx.send(f":ping_pong: ping pong! (`{round(self.bot.latency * 1000)}ms`)")
 
     sad_words = {"trauer", "schmerz", "leid"}
 
