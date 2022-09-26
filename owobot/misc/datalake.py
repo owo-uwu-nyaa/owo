@@ -70,7 +70,7 @@ class CSVDataLake(DataLake):
         msgwriter = csv.DictWriter(
             msgsfile,
             fieldnames=[
-                "snowflake",
+                "msg_id",
                 "author_id",
                 "channel_id",
                 "guild_id",
@@ -81,7 +81,7 @@ class CSVDataLake(DataLake):
         )
         msgschema = T.StructType(
             [
-                T.StructField("snowflake", T.LongType(), False),
+                T.StructField("msg_id", T.LongType(), False),
                 T.StructField("author_id", T.LongType(), False),
                 T.StructField("channel_id", T.LongType(), False),
                 T.StructField("guild_id", T.LongType(), False),
@@ -93,6 +93,8 @@ class CSVDataLake(DataLake):
         self.csv_writer_lock = threading.Lock()
 
     def put_row(self, table, row):
+        if table not in self.writers:
+            return
         with self.csv_writer_lock:
             handle = self.writers[table]
             if table == "msgs":
