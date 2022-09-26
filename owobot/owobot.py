@@ -1,15 +1,24 @@
 import contextlib
+# import functools
 import io
 import os
+from pathlib import Path
+from datetime import datetime, timezone, timedelta
+from difflib import SequenceMatcher
+import heapq
+from typing import NamedTuple
 
 os.environ[
     "PYSPARK_SUBMIT_ARGS"
 ] = "--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell"
-from pathlib import Path
 import discord
-from discord.ext.commands import Bot
+from discord.ext import tasks
+from discord.ext.commands import Bot, Command
 from owobot.misc.config import Config
 import logging
+
+from typing import MutableMapping
+
 
 log = logging.getLogger(__name__)
 
@@ -72,6 +81,46 @@ class OwOBot(Bot):
             )
 
         self._load_cogs = load_cogs
+
+        self._dynamic_commands: MutableMapping[discord.PartialMessage, OwOBot.dynamic_command] = dict()
+
+    dynamic_command = NamedTuple("dynamic_command", [("timestamp", datetime), ("name", str)])
+
+    def handle_dynamic(self, msg: discord.PartialMessage, name=None):
+        self._dynamic_commands[msg] = OwOBot.dynamic_command(timestamp=datetime.now(timezone.utc), name=name)
+
+    def check_dynamic(self, msg: discord.PartialMessage):
+        return self._dynamic_commands.pop(msg, None)
+
+    @tasks.loop(minutes=10)
+    async def _cleanup_handled_dynamic_commands(self):
+        now = datetime.now(timezone.utc)
+        for msg, cmd in self._dynamic_commands.items():
+            if now - cmd.timestamp > timedelta(minutes=1):
+                self._dynamic_commands.pop(msg)
+                log.warning(f"dynamic command was handled, but no error handler processed it (from message {msg.id})")
+
+    command_suggestion = NamedTuple("command_suggestion", [("command", Command), ("name", str), ("ratio", float)])
+
+    def suggest_commands(self, text, n=3, cutoff=0.6):
+        result = []
+        s = SequenceMatcher()
+        s.set_seq2(text)
+        for cmd_or_group in self.commands:
+            best_ratio, best_name = None, None
+            for name in (cmd_or_group.name, *cmd_or_group.aliases):
+                min_ratio = cutoff if best_ratio is None else best_ratio
+                s.set_seq1(name)
+                if (
+                    s.real_quick_ratio() >= min_ratio
+                    and s.quick_ratio() >= min_ratio
+                    and s.ratio() >= min_ratio
+                ):
+                    best_ratio, best_name = s.ratio(), name
+            if best_ratio is not None:
+                result.append(OwOBot.command_suggestion(command=cmd_or_group, name=name, ratio=best_ratio))
+
+        return heapq.nlargest(n, result, key=lambda suggestion: suggestion.ratio)
 
     async def setup_hook(self):
         await self._load_cogs()

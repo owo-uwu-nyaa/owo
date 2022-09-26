@@ -1,6 +1,8 @@
+import contextlib
 import datetime
 import functools
 import re
+import io
 import itertools as it
 
 import discord
@@ -175,3 +177,14 @@ def long_running_command(f):
 
 def nullable_dict(**kwargs):
     return dict((k, v) for k, v in kwargs.items() if v is not None)
+
+
+def redirect_string_io_std_streams():
+    stdout, stderr = io.StringIO(), io.StringIO()
+
+    @contextlib.contextmanager
+    def manager():
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            yield
+
+    return stdout, stderr, manager
