@@ -17,7 +17,7 @@ const node = document.querySelector("[id^='emoji-picker-grid'] [class^='scroller
 
 const result = await (async (node) => {
     const result = new Set();
-    for (let y = 0.9 * node.scrollHeight; y <= node.scrollHeight; y += node.offsetHeight) {
+    for (let y = 0; y <= node.scrollHeight; y += node.offsetHeight) {
         console.log(y);
         node.scroll(0, y);
         await delay(1000);
