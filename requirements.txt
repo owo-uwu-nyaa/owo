@@ -8,7 +8,8 @@ pandas
 toml
 peewee
 recordclass
-emoji
+emoji >= 2.0.0
+suffix-trees == 0.3.0
 yt-dlp
 bottomify
 pyfiglet
