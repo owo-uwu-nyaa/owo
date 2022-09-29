@@ -74,9 +74,10 @@ class OwO(commands.Cog):
             ).execute()
 
         tokens = [tok for tok in text.split(" ") if tok.strip()]
+        owo_score = owolib.score(text)
         # which messages should not be uwu *rawr xd*
         nowo = bool(
-            owolib.score(text) >= 1
+            owo_score >= 1
             or not contains_alpha(text)
             or (not text and message.attachments)
             or (len(tokens) == 1 and discord_linkify_likely(tokens[0]))
@@ -96,7 +97,8 @@ class OwO(commands.Cog):
         if webhook is None:
             webhook = await message.channel.create_webhook(name="if you read this you're cute")
 
-        text = owolib.owofy(text)
+        if owo_score < 1:
+            text = owolib.owofy(text)
 
         if keep_last_owauthor:
             author_name = last_message.author.display_name
