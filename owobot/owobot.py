@@ -2,6 +2,7 @@ import contextlib
 # import functools
 import io
 import os
+import ssl
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from difflib import SequenceMatcher
@@ -15,6 +16,8 @@ from owobot.misc.config import Config
 import logging
 
 from typing import MutableMapping
+from httpx import AsyncClient
+from aiohttp import web
 
 
 log = logging.getLogger(__name__)
@@ -80,6 +83,15 @@ class OwOBot(Bot):
 
         self._load_cogs = load_cogs
 
+        # httpx client
+        self.http_client = AsyncClient()
+
+        # aiohttp server
+        self.http_app = web.Application()
+        self._aiohttp_runner = None
+        self._ssl_site = None
+        self._no_ssl_site = None
+
         self._dynamic_commands: MutableMapping[discord.PartialMessage, OwOBot.dynamic_command] = dict()
 
     dynamic_command = NamedTuple("dynamic_command", [("timestamp", datetime), ("name", str)])
@@ -122,6 +134,30 @@ class OwOBot(Bot):
 
     async def setup_hook(self):
         await self._load_cogs()
+
+        self._aiohttp_runner = web.AppRunner(self.http_app)
+        await self._aiohttp_runner.setup()
+
+        if self.config.http_ssl:
+            # CLIENT_AUTH: authenticate clients, i.e. operate as a server
+            ssl_ctx = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+            ssl_ctx.load_cert_chain(self.config.http_ssl_certfile, self.config.http_ssl_keyfile)
+
+            self._ssl_site = web.TCPSite(
+                self._aiohttp_runner,
+                host=self.config.http_hostname,
+                port=self.config.http_ssl_port,
+                ssl_context=ssl_ctx
+            )
+            await self._ssl_site.start()
+
+        if self.config.http_no_ssl:
+            self._no_ssl_site = web.TCPSite(
+                self._aiohttp_runner,
+                host=self.config.http_hostname,
+                port=self.config.http_no_ssl_port,
+            )
+            await self._no_ssl_site.start()
 
     def run(self, **kwargs):
         log.info("starting bot")

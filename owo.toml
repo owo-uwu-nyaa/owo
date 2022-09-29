@@ -3,7 +3,7 @@ command_prefix = "!"
 desc = "Pwease end my misewy, nyaaa~"
 
 # these cogs require additional setup and may not work right away
-blocked_cogs =  ["gallery","stats", "msg_writer", "music"]
+blocked_cogs = ["gallery", "msg_writer", "stats", "quotes", "music"]
 
 [mensa]
 
@@ -25,7 +25,7 @@ dl_location = "yt"
 # cute cat pictures nyaaa~
 # catapi = ""
 
-#discord bot token
+#discord
 # discord = ""
 
 [sqlite]
@@ -42,3 +42,23 @@ dir = "."
 # [csv]
 
 # dir = "."
+
+[http]
+
+hostname = "0.0.0.0"
+ssl_port = 443
+no_ssl_port = 80
+
+# to use SSL, set certfile and (optionally) keyfile as per
+# https://docs.python.org/3.8/library/ssl.html#ssl.SSLContext.load_cert_chain
+# certfile = "/path/to/cert.pem"
+# keyfile = "path/to/key.key"
+
+# ssl: serve over https
+# no_ssl: serve over http
+# at least one must be true to serve anything
+ssl = true
+# no_ssl = false
+
+# URL at which the site is available (for communicating with users, but not used internally)
+# url = "https://your.site/"

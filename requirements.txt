@@ -1,4 +1,4 @@
-discord.py
+discord.py == 2.0.1
 catapi.py
 pygelbooru
 pyspark
@@ -14,4 +14,10 @@ yt-dlp
 bottomify
 pyfiglet
 cowsay
+httpx
+aiohttp
+ics
+cachetools
+asyncache
+yarl
 more-itertools
