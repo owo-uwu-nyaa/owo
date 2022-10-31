@@ -18,7 +18,7 @@ from owobot.owobot import OwOBot
 from owobot.misc import common
 from owobot.misc.database import db, Calendar
 
-from typing import AsyncContextManager
+from typing import AsyncContextManager, Iterable
 
 
 log = logging.getLogger(__name__)
@@ -36,17 +36,22 @@ def wrap_async_with(cm: AsyncContextManager):
     return impl
 
 
-async def _build_ical_event(event: discord.ScheduledEvent):
+def _build_ical_event(event: discord.ScheduledEvent, users: Iterable[discord.User] = ()):
     end_time = event.end_time
     if event.entity_type in (discord.EntityType.stage_instance, discord.EntityType.voice):  # no scheduled end time
         end_time = event.start_time + timedelta(hours=1)
 
-    attendees = []
-    async for user in event.users():
-        attendees.append(ics.Attendee(
+    def common_name(user):
+        member = event.guild.get_member(user.id)
+        return (member if member is not None else user).display_name
+
+    attendees = (
+        ics.Attendee(
             email=f"{user.name}#{user.discriminator}",
-            common_name=user.display_name
-        ))
+            **common.nullable_dict(common_name=common_name(user)),
+        )
+        for user in users
+    )
 
     status = {
         discord.EventStatus.scheduled: "CONFIRMED",
@@ -60,9 +65,11 @@ async def _build_ical_event(event: discord.ScheduledEvent):
         begin=event.start_time,
         end=end_time,
         uid=f"{event.id}@owobot-discord-event",
-        description=discord.utils.remove_markdown(event.description),
+        **common.nullable_dict(
+            description=discord.utils.remove_markdown(event.description) if event.description is not None else None,
+        ),
         location=event.location,
-        url=f"https://discord.com/{event.guild_id}/{event.id}",
+        url=f"https://discord.com/events/{event.guild_id}/{event.id}",
         attendees=attendees,
         status=status
     )
@@ -79,7 +86,7 @@ def _rid_calendar_token(guild: discord.Guild, user: discord.User):
 @db.atomic()
 def _give_calendar_token(guild: discord.Guild, user: discord.User) -> str:
     try:
-        return Calendar.select().where(Calendar.guild == guild.id and Calendar.user == user.id).get().token
+        return Calendar.get(Calendar.guild == guild.id & Calendar.user == user.id).token
     except peewee.DoesNotExist:
         calendar_token = _new_calendar_token()
         Calendar.insert(guild=guild.id, user=user.id, token=calendar_token).execute()
@@ -150,17 +157,10 @@ class ICal(commands.Cog):
             ContentLine(name="X-WR-CALDESC", value=f"Calendar of scheduled events from {guild.name}.")
         ))
 
-        for event in guild.scheduled_events:
-            if user is None:
-                include_event = True
-            else:
-                include_event = False
-                async for event_user in event.users():
-                    if event_user == user:
-                        include_event = True
-                        break
-            if include_event:
-                cal.events.add(await _build_ical_event(event))
+        for event in await guild.fetch_scheduled_events():
+            event_users = [user async for user in event.users()]
+            if user is None or any(event_user == user for event_user in event_users):
+                cal.events.add(_build_ical_event(event, users=event_users))
 
         return cal
 
