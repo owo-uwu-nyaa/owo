@@ -93,6 +93,14 @@ class NyaaUsers(BaseModel):
 class PikaUsers(BaseModel):
     snowflake = BigIntegerField()
 
+class QuackUsers(BaseModel):
+    snowflake = BigIntegerField()
+
+
+class QuackPics(BaseModel):
+    picture = TextField()
+
+
 
 class RainbowGuild(BaseModel):
     snowflake = BigIntegerField()
@@ -122,6 +130,8 @@ def set_db(real_db: peewee.Database):
             RawwrUsers,
             NyaaUsers,
             PikaUsers,
+            QuackPics,
+            QuackUsers,
             RainbowGuild
         ]
     )

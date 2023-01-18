@@ -1,10 +1,10 @@
 import random
-
 import discord
 from discord.ext import commands
 from owobot.owobot import OwOBot
 
 from owobot.misc import common, owolib
+import requests
 
 
 class SimpleCommands(commands.Cog):
@@ -66,6 +66,11 @@ class SimpleCommands(commands.Cog):
     @commands.hybrid_command(brief="steal an avatar")
     async def steal(self, ctx, member: discord.Member):
         await ctx.send(member.display_avatar.url)
+
+    @commands.hybrid_command(brief="see how many people are at the mensa")
+    async def mensa(self, ctx):
+        stats = requests.get("http://mensa.liste.party/api").json()
+        await ctx.send(f"Gerade wuscheln {stats['current']} Menschen in der Mensa. Das ist eine Auslastung von {stats['percent']:.0f}%")
 
     @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
                                    "featuring simple graphics.")
