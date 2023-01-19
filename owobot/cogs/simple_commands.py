@@ -1,3 +1,4 @@
+import datetime
 import io
 import random
 
@@ -74,18 +75,19 @@ class SimpleCommands(commands.Cog):
     @commands.hybrid_command(brief="see how many people are at the mensa")
     async def mensa(self, ctx):
         stats = requests.get("http://mensa.liste.party/api").json()
-        await ctx.send(f"Gerade wuscheln {stats['current']} Menschen in der Mensa. Das ist eine Auslastung von {stats['percent']:.0f}%")
+        await ctx.send(
+            f"Gerade wuscheln {stats['current']} Menschen in der Mensa. Das ist eine Auslastung von {stats['percent']:.0f}%")
 
     @commands.hybrid_command(brief="get a simple graph of the mensa usage")
-    async def mensaplot(self, ctx):
+    async def mensaplot(self, ctx, dayofweek: int = datetime.datetime.today().weekday()):
         df = pd.read_csv(self.bot.config.mensa_csv, names=["time", "count"], dtype={"time": float, "count": int})
         df['time'] = pd.to_datetime(df['time'], unit="s")
-        fig = px.line(df, x="time", y="count")
+        dfw = df.loc[(df.time.dt.dayofweek == dayofweek) & (df.time.dt.hour > 9) & (df.time.dt.hour < 16)]
+        fig = px.line(dfw, x="time", y="count")
         img = io.BytesIO()
         fig.write_image(img, format="png", scale=3)
         img.seek(0)
         await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
-
 
     @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
                                    "featuring simple graphics.")
@@ -104,6 +106,7 @@ class SimpleCommands(commands.Cog):
             sad_words_minus = self.sad_words - {word}
             send_word = random.choice(tuple(sad_words_minus))
             await message.channel.send(send_word)
+
 
 def setup(bot):
     return bot.add_cog(SimpleCommands(bot))
