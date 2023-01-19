@@ -5,6 +5,10 @@ desc = "Pwease end my misewy, nyaaa~"
 # these cogs require additional setup and may not work right away
 blocked_cogs = ["gallery", "msg_writer", "stats", "quotes"]
 
+[mensa]
+
+historyfile = "mensa.csv"
+
 [navigation]
 
 left_emo = "<:rl:953752216949358692>"

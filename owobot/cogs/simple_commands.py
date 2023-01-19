@@ -1,10 +1,14 @@
+import io
 import random
+
 import discord
+import pandas as pd
+import plotly.express as px
+import requests
 from discord.ext import commands
-from owobot.owobot import OwOBot
 
 from owobot.misc import common, owolib
-import requests
+from owobot.owobot import OwOBot
 
 
 class SimpleCommands(commands.Cog):
@@ -72,6 +76,17 @@ class SimpleCommands(commands.Cog):
         stats = requests.get("http://mensa.liste.party/api").json()
         await ctx.send(f"Gerade wuscheln {stats['current']} Menschen in der Mensa. Das ist eine Auslastung von {stats['percent']:.0f}%")
 
+    @commands.hybrid_command(brief="get a simple graph of the mensa usage")
+    async def mensaplot(self, ctx):
+        df = pd.read_csv(self.bot.config.mensa_csv, names=["time", "count"], dtype={"time": float, "count": int})
+        df['time'] = pd.to_datetime(df['time'], unit="s")
+        fig = px.line(df, x="time", y="count")
+        img = io.BytesIO()
+        fig.write_image(img, format="png", scale=3)
+        img.seek(0)
+        await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
+
+
     @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
                                    "featuring simple graphics.")
     async def ping(self, ctx: commands.Context):
@@ -89,7 +104,6 @@ class SimpleCommands(commands.Cog):
             sad_words_minus = self.sad_words - {word}
             send_word = random.choice(tuple(sad_words_minus))
             await message.channel.send(send_word)
-
 
 def setup(bot):
     return bot.add_cog(SimpleCommands(bot))
