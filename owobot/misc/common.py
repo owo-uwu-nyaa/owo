@@ -10,7 +10,7 @@ import emoji
 from discord.ext import commands
 from peewee import PeeweeException
 from owobot.misc.database import Owner
-from typing import List, Optional
+from typing import List, Iterable, Optional, TypeVar, Callable, Any, overload
 
 try:
     from typing import Annotated
@@ -188,3 +188,37 @@ def redirect_string_io_std_streams():
             yield
 
     return stdout, stderr, manager
+
+
+T = TypeVar("T")
+
+
+@overload
+def minima(iterable: Iterable[T], key: Callable[[T], Any] = None, reverse=False) -> List[T]:
+    ...
+
+
+@overload
+def minima(item1: T, item2: T, *items: T, key: Callable[[T], Any] = None, reverse=False) -> List[T]:
+    ...
+
+
+def minima(*iterable_or_items: T | Iterable[T], key: Callable[[T], Any] = None, reverse=False) -> List[T]:
+    if len(iterable_or_items) < 1:
+        raise TypeError("expected at least one argument")
+
+    iterable = iterable_or_items if len(iterable_or_items) > 1 else iterable_or_items[0]
+    key = key if key is not None else (lambda x: x)
+
+    curr_minima = []
+    curr_min_key = None
+
+    for item in iterable:
+        item_key = key(item)
+        if not curr_minima or (item_key < curr_min_key if not reverse else item_key > curr_min_key):
+            curr_minima = [item]
+            curr_min_key = item_key
+        elif item_key == curr_min_key:
+            curr_minima.append(item)
+
+    return curr_minima
