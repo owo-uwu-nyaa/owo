@@ -81,7 +81,7 @@ class SimpleCommands(commands.Cog):
     @commands.hybrid_command(brief="get a simple graph of the mensa usage")
     async def mensaplot(self, ctx, dayofweek: int = datetime.datetime.today().weekday()):
         df = pd.read_csv(self.bot.config.mensa_csv, names=["time", "count"], dtype={"time": float, "count": int})
-        df['time'] = pd.to_datetime(df['time'], unit="s")
+        df['time'] = pd.to_datetime(df['time'], unit="s").dt.tz_localize('UTC').dt.tz_convert('Europe/Berlin')
         dfw = df.loc[(df.time.dt.dayofweek == dayofweek) & (df.time.dt.hour > 9) & (df.time.dt.hour < 16)]
         fig = px.line(dfw, x="time", y="count")
         img = io.BytesIO()
