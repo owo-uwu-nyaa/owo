@@ -79,7 +79,9 @@ class SimpleCommands(commands.Cog):
             f"Gerade wuscheln {stats['current']} Menschen in der Mensa. Das ist eine Auslastung von {stats['percent']:.0f}%")
 
     @commands.hybrid_command(brief="get a simple graph of the mensa usage")
-    async def mensaplot(self, ctx, dayofweek: int = datetime.datetime.today().weekday()):
+    async def mensaplot(self, ctx, dayofweek: int = -1):
+        if dayofweek == -1:
+            dayofweek = datetime.datetime.today().weekday()
         df = pd.read_csv(self.bot.config.mensa_csv, names=["time", "count"], dtype={"time": float, "count": int})
         df['time'] = pd.to_datetime(df['time'], unit="s").dt.tz_localize('UTC').dt.tz_convert('Europe/Berlin')
         df = df.set_index("time")
