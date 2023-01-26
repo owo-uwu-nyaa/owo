@@ -82,8 +82,15 @@ class SimpleCommands(commands.Cog):
     async def mensaplot(self, ctx, dayofweek: int = datetime.datetime.today().weekday()):
         df = pd.read_csv(self.bot.config.mensa_csv, names=["time", "count"], dtype={"time": float, "count": int})
         df['time'] = pd.to_datetime(df['time'], unit="s").dt.tz_localize('UTC').dt.tz_convert('Europe/Berlin')
-        dfw = df.loc[(df.time.dt.dayofweek == dayofweek) & (df.time.dt.hour > 9) & (df.time.dt.hour < 16)]
-        fig = px.line(dfw, x="time", y="count")
+        df = df.set_index("time")
+        df = df.resample("1min").sum()
+        df = df.loc[(df.index.hour > 9) & (df.index.hour < 16)]
+        df["date"] = df.index.date
+        df["clocktime"] = df.index.time
+        dfw = df
+        dfw.reset_index(drop=True, inplace=True)
+        dfw = df.loc[df.time.dt.dayofweek == dayofweek]
+        fig = px.line(dfw, x="clocktime", y="count", color="date")
         img = io.BytesIO()
         fig.write_image(img, format="png", scale=3)
         img.seek(0)
