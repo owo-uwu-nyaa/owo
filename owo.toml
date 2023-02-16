@@ -41,9 +41,3 @@ dir = "."
 [csv]
 
 dir = "."
-
-# use kudu as data lake backend, takes precedence over csv
-# [kudu]
-# host = ["localhost", "localhost", "localhost"]
-# port = [7051, 7151, 7251]
-# table_prefix = "uwu"

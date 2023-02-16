@@ -93,14 +93,7 @@ class Config:
             log.info("Using sqlite as DB")
 
         self.datalake = None
-        if self.has_toplevel_key("kudu"):
-            self.datalake = datalake.KuduDataLake(
-                self.get_key("kudu", "host"),
-                self.get_key("kudu", "port"),
-                self.get_key("kudu", "table_prefix"),
-            )
-            log.info("Using Kudu as Datastore")
-        elif self.has_toplevel_key("csv"):
+        if self.has_toplevel_key("csv"):
             self.datalake = datalake.CSVDataLake(self.get_key("csv", "dir"))
             log.info("Using CSV as Datastore")
 

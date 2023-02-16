@@ -22,40 +22,6 @@ class DataLake(ABC):
         pass
 
 
-class KuduDataLake(DataLake):
-    def __init__(self, khosts, kports, table_prefix):
-        # use local import as installing kudu-python requires 50GB of Diskspace and compiling for a few hours
-        import kudu
-
-        self.khosts = khosts
-        self.kports = kports
-        self.client = kudu.connect(khosts, kports)
-        self.kudu_writer_lock = threading.Lock()
-        self.table_prefix = table_prefix
-        self.session = self.client.new_session()
-
-    def put_row(self, table, row):
-        with self.kudu_writer_lock:
-            self.session = self.client.new_session()
-            try:
-                table = self.client.table(f"{self.table_prefix}.{table}")
-                op = table.new_insert(row)
-                self.session.apply(op)
-                self.session.flush()
-            except:
-                logging.debug(self.session.get_pending_errors())
-
-    def get_df(self, table):
-        masters = []
-        for i in range(0, len(self.khosts)):
-            masters.append(f"{self.khosts[i]}:{self.kports[i]}")
-        optdict = {
-            "kudu.master": ",".join(masters),
-            "kudu.table": f"{self.table_prefix}.{table}",
-        }
-        return spark.read.format("org.apache.kudu.spark.kudu").options(**optdict).load()
-
-
 class CSVHandle(NamedTuple):
     writer: csv.DictWriter
     file: TextIO
