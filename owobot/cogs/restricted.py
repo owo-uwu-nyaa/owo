@@ -104,7 +104,7 @@ class Restricted(commands.Cog):
     @commands.hybrid_command()
     @common.long_running_command
     async def sql(self, ctx: commands.Context, query: str):
-        await _run_raw_operation(lambda: list(db.execute_sql(query)), ctx)
+        await _run_raw_operation(lambda: list(db.execute_sql(query).fetchall()), ctx)
 
     @commands.hybrid_group()
     async def music_chan(self, ctx):

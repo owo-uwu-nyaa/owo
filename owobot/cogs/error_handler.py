@@ -25,6 +25,9 @@ def _format_unhandled_exception(error):
 
 
 async def _reply_on_error(reply_to, message: str):
+    print(reply_to.channel.id)
+    if reply_to.channel.id in [1007320173625221291, 1007320293079011528, 1007320154734080000, 1008432834983235754]:
+        return
     await reply_to.reply(
         message,
 

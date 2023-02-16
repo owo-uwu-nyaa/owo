@@ -21,6 +21,8 @@ from owobot.misc.database import (
     NyaaUsers,
     PikaUsers,
     PikaPics,
+    QuackPics,
+    QuackUsers,
 )
 
 
@@ -42,6 +44,7 @@ _animals = {
     "nyaa": _create_animal("nyaa", "nya+", NyaaPics, NyaaUsers),
     "moo": _create_animal("moo", "moo+", MooPics, MooUsers),
     "pika": _create_animal("pika", "pika+", PikaPics, PikaUsers),
+    "quack": _create_animal("quack", "qua+ck", QuackPics, QuackUsers),
 }
 
 

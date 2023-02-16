@@ -111,6 +111,13 @@ class MsgWriter(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        """
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        user = self.bot.get_user(payload.user_id)
+        if payload.emoji.name == "✅":
+            await message.remove_reaction(payload.emoji, user)
+        """
         self.datalake.put_row(
             "react",
             {

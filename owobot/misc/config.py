@@ -29,6 +29,7 @@ def _get_key(user, default, *key_path):
         raise MissingKeyException(*key_path) from e
 
 
+#TODO rewrite this to be configured automatically
 class Config:
     def __init__(self, config_file: str):
         try:
@@ -64,6 +65,8 @@ class Config:
         self.down_emo = str(self.get_key("navigation", "down_emo"))
 
         self.dl_folder = str(self.get_key("music", "dl_location"))
+
+        self.mensa_csv = str(self.get_key("mensa", "historyfile"))
 
         self.catapi_token = str(self.get_key("api_tokens", "catapi"))
         self.discord_token = str(self.get_key("api_tokens", "discord"))

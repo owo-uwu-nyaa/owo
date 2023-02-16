@@ -105,7 +105,7 @@ class CSVDataLake(DataLake):
     def get_df(self, table):
         handle = self.writers[table]
         df = (
-            spark.read.msg_schema(handle.msg_schema)
+            spark.read.schema(handle.schema)
             .options(mode="FAILFAST", multiLine=True, escape='"', header=True)
             .csv(handle.path)
         )

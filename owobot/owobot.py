@@ -43,8 +43,9 @@ class OwOBot(Bot):
         self._token = config.discord_token
 
         async def load_cogs():
+            print("Lowoading!")
             total, skipped, errors, ok = 0, 0, 0, 0
-            for file in (Path(__file__).parent / "cogs").iterdir():
+            for file in Path("owobot/cogs").iterdir():
                 cog_name = file.stem
 
                 if (

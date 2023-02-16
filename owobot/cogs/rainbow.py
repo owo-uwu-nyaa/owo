@@ -14,13 +14,12 @@ class Rainbow(commands.Cog):
         self.bot = bot
 
     async def cog_check(self, ctx):
-        return await common.is_owner(ctx)
-
+        return await common.is_owner(ctx) 
     @staticmethod
     def wrap(val):
         if val >= 1.0:
             return val - int(val)
-        return val
+        return val   
 
     @staticmethod
     def gen_colors(num_colors):
@@ -28,12 +27,19 @@ class Rainbow(commands.Cog):
         rand = random.random()
         for i in range(num_colors):
             rgb = colorsys.hsv_to_rgb(
-                Rainbow.wrap(rand + (1.0 / num_colors) * i), 0.52, 1.0
-            )
+                Rainbow.wrap(0.15 + (1.0 / num_colors) * i), 0.82, 0.98
+           )
+            #m = i % 2
+            #if m  == 0:
+            #3    rgb = (195, 15, 22)
+            #elif m == 1:
+            #    rgb = (7, 159, 65)
+            #colors.append(rgb)
             colors.append([int(255 * x) for x in rgb])
         if random.randint(0, 1):
-            colors = list(reversed(colors))
+            colors = colors[0:1] + list(reversed(colors[1:]))
         return colors
+
 
     @commands.hybrid_group()
     async def rainbowroles(self, ctx):
@@ -49,6 +55,9 @@ class Rainbow(commands.Cog):
     @staticmethod
     async def _activate(guild):
         members = sorted(guild.members, key=lambda m: str(m.display_name.lower()))
+        hidx = 0
+        members = members[hidx:] + members[:hidx]
+
         num_colors = len(members)
         colors = Rainbow.gen_colors(num_colors)
         for (member, color, i) in zip(members, colors, range(0, num_colors)):
@@ -116,7 +125,7 @@ class Rainbow(commands.Cog):
     async def refresh_rainbow(self, guild):
         await self._deactivate(guild)
         await self._activate(guild)
-        await self._top(guild)
+        #await self._top(guild)
 
     @rainbowroles.command(name="refresh", brief="refresh rainbow roles")
     @common.long_running_command
