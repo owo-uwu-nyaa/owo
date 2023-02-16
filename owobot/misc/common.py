@@ -327,7 +327,7 @@ linkify_result = namedtuple("linkify_result", ("scheme", "netloc", "start", "end
 
 def discord_linkify_likely(s: str) -> Optional[linkify_result]:
     """
-    python link handling is wack
+    discord link handling is wack
 
     - scheme may only be http or https
     - any text may precede the ``http(s)://`` (scheme), it will not be part of the link

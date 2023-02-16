@@ -22,18 +22,18 @@ prefixes = (
 )
 
 
-def rgl(match, group, value) -> str:
-    return len(match.group(group)) * value
-
-
+# first entry is what to replace (may be a regular expression)
+# second entry is what to replace with (may be function accepting regular expression match and returning string)
+# (optional, required if second entry is a regular expression) third entry is used to score owo-ness of messages
 mappings0 = (
-    # ("l", "wl"),
     ("r", "w"),
-    ("(?<=[aeiou])l(l+)", r"w\1", "wl+"),
-    ("(?<=[aeiou])l", "wl"),
-    # ("(?<!w)l", "w"),  # l, not preceded by w
-    ("n(a+|e+|i+|o+|u+)", lambda m: "ny" + rgl(m, 1, m.group(1)), "ny(a+|e+|i+|o+|u+)"),
-    (r"(?<=\w)ove", "uv"),
+    ("l", "w"),
+    ("na", "nya"),
+    ("ni", "nyi"),
+    ("nu", "nyu"),
+    ("ne", "nye"),
+    ("no", "nyo"),
+    ("ove", "uv"),
     ("small", "smol"),
     ("cute", "kawaii~"),
     ("fluff", "floof"),
@@ -41,8 +41,8 @@ mappings0 = (
     ("stupid", "baka"),
     ("what", "nani"),
     ("meow", "nya~"),
-    ("(e+)e", lambda m: rgl(m, 1, "e") + "w", "e+w"),
-    # ("at", "awt"),
+    ("ee", "ew"),
+    ("at", "awt"),
     ("oops", "oopsie woopsie"),
 )
 mappings = tuple((re.compile(m[0]), m[1], re.compile(m[-1])) for m in mappings0)
@@ -84,6 +84,7 @@ int_emote = (
     "(◕ᴥ◕)",
     "ʕ•ᴥ•ʔ",
     "ʕ￫ᴥ￩ʔ",
+    # these do funny things with markdown
     # "(*^ω^)",
     "(◕‿◕✿)",
     # "(*^.^*)",
