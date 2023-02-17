@@ -5,6 +5,10 @@ desc = "Pwease end my misewy, nyaaa~"
 # these cogs require additional setup and may not work right away
 blocked_cogs = ["gallery", "msg_writer", "stats", "quotes"]
 
+[mensa]
+
+historyfile = "mensa.csv"
+
 [navigation]
 
 left_emo = "<:rl:953752216949358692>"
@@ -37,9 +41,3 @@ dir = "."
 [csv]
 
 dir = "."
-
-# use kudu as data lake backend, takes precedence over csv
-# [kudu]
-# host = ["localhost", "localhost", "localhost"]
-# port = [7051, 7151, 7251]
-# table_prefix = "uwu"

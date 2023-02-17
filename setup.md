@@ -4,7 +4,6 @@
 
 - a moderately up-to date version of Python3
 - optional: a postgres database (default alternative: sqlite)
-- optional: apache kudu (default alternative: csv)
 
 ## Setup
 

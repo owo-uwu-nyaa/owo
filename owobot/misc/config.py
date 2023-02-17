@@ -2,6 +2,7 @@ import logging
 from os import path
 import toml
 from peewee import PostgresqlDatabase, SqliteDatabase
+from playhouse.migrate import PostgresqlMigrator, SqliteMigrator
 from owobot.misc import datalake
 from owobot.misc import database
 
@@ -28,6 +29,7 @@ def _get_key(user, default, *key_path):
         raise MissingKeyException(*key_path) from e
 
 
+#TODO rewrite this to be configured automatically
 class Config:
     def __init__(self, config_file: str):
         try:
@@ -65,6 +67,8 @@ class Config:
         self.dl_folder = str(self.get_key("music", "dl_location"))
         self.mensa_channel = str(self.get_key("mensa", "target_channel_id"))
 
+        self.mensa_csv = str(self.get_key("mensa", "historyfile"))
+
         self.catapi_token = str(self.get_key("api_tokens", "catapi"))
         self.discord_token = str(self.get_key("api_tokens", "discord"))
 
@@ -76,7 +80,7 @@ class Config:
                     host=str(self.get_key("postgres", "host")),
                     autorollback=True,
                 )
-                database.set_db(db)
+                database.set_db(db, PostgresqlMigrator(db))
                 log.info("Using postgres as DB")
             except Exception as e:
                 log.error(
@@ -86,18 +90,11 @@ class Config:
             db = SqliteDatabase(
                 path.join(str(self.get_key("sqlite", "dir")), "owo.sqlite")
             )
-            database.set_db(db)
+            database.set_db(db, SqliteMigrator(db))
             log.info("Using sqlite as DB")
 
         self.datalake = None
-        if self.has_toplevel_key("kudu"):
-            self.datalake = datalake.KuduDataLake(
-                self.get_key("kudu", "host"),
-                self.get_key("kudu", "port"),
-                self.get_key("kudu", "table_prefix"),
-            )
-            log.info("Using Kudu as Datastore")
-        elif self.has_toplevel_key("csv"):
+        if self.has_toplevel_key("csv"):
             self.datalake = datalake.CSVDataLake(self.get_key("csv", "dir"))
             log.info("Using CSV as Datastore")
 

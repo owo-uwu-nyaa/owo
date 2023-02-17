@@ -8,9 +8,6 @@ from difflib import SequenceMatcher
 import heapq
 from typing import NamedTuple
 
-os.environ[
-    "PYSPARK_SUBMIT_ARGS"
-] = "--packages org.apache.kudu:kudu-spark3_2.12:1.15.0 pyspark-shell"
 import discord
 from discord.ext import tasks
 from discord.ext.commands import Bot, Command
@@ -43,6 +40,7 @@ class OwOBot(Bot):
         self._token = config.discord_token
 
         async def load_cogs():
+            print("Lowoading!")
             total, skipped, errors, ok = 0, 0, 0, 0
             for file in (Path(__file__).parent / "cogs").iterdir():
                 cog_name = file.stem

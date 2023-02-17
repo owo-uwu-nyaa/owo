@@ -16,6 +16,7 @@ class Hugs(commands.Cog):
         self.gelbooru = Gelbooru()
         self.bot = bot
 
+
     async def send_hug(self, ctx, member, img_url: str) -> None:
         query = (
             HugConsent.select()
@@ -69,6 +70,26 @@ class Hugs(commands.Cog):
         await ctx.send(
             f"{name} {owolib.owofy('bonkt')} {other} <:pingbonk:940280394736074763>"
         )
+    
+    @commands.hybrid_command(aliases=["g"])
+    async def gelbooru_image(self, ctx, tags: Variadic):
+        tags += ["sort:random"]
+        blocklist = ["loli", "futanari", "shota"]
+        if not NsflChan.select().where(NsflChan.channel == ctx.channel.id).exists():
+            blocklist += ["nude", "rating:questionable", "rating:explicit"]
+        for i in range(0, 3):
+            result = await self.gelbooru.search_posts(tags=tags, exclude_tags=blocklist)
+            if result:  # not None and not empty
+                embed = discord.Embed()
+                embed.set_image(url=str(result[0]))
+                embed.add_field(
+                    name="tags",
+                    value=result[0].tags,
+                    inline=True,
+                )   
+                await ctx.send(embed=embed)
+                return
+        await ctx.send("🧺")
 
     @commands.hybrid_command(brief="@someone <3 (2 boys hugging)")
     async def bhug(self, ctx, member: discord.Member):
