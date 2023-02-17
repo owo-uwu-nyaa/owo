@@ -3,7 +3,6 @@ from os import path
 import toml
 from peewee import PostgresqlDatabase, SqliteDatabase
 from playhouse.migrate import PostgresqlMigrator, SqliteMigrator
-from owobot.misc import datalake
 from owobot.misc import database
 
 log = logging.getLogger(__name__)
@@ -94,6 +93,7 @@ class Config:
 
         self.datalake = None
         if self.has_toplevel_key("csv"):
+            from owobot.misc import datalake
             self.datalake = datalake.CSVDataLake(self.get_key("csv", "dir"))
             log.info("Using CSV as Datastore")
 
