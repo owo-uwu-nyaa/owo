@@ -72,31 +72,6 @@ class SimpleCommands(commands.Cog):
     async def steal(self, ctx, member: discord.Member):
         await ctx.send(member.display_avatar.url)
 
-    @commands.hybrid_command(brief="see how many people are at the mensa")
-    async def mensa(self, ctx):
-        stats = requests.get("http://mensa.liste.party/api").json()
-        await ctx.send(
-            f"Gerade wuscheln {stats['current']} Menschen in der Mensa. Das ist eine Auslastung von {stats['percent']:.0f}%")
-
-    @commands.hybrid_command(brief="get a simple graph of the mensa usage")
-    async def mensaplot(self, ctx, dayofweek: int = -1):
-        if dayofweek == -1:
-            dayofweek = datetime.datetime.today().weekday()
-        df = pd.read_csv(self.bot.config.mensa_csv, names=["time", "count"], dtype={"time": float, "count": int})
-        df['time'] = pd.to_datetime(df['time'], unit="s").dt.tz_localize('UTC').dt.tz_convert('Europe/Berlin')
-        df = df.set_index("time")
-        df = df.resample("1min").sum()
-        df = df.loc[(df.index.dayofweek == dayofweek) & (df.index.hour > 9) & (df.index.hour < 16)]
-        df["date"] = df.index.date
-        df["clocktime"] = df.index.time
-        dfw = df
-        dfw.reset_index(drop=True, inplace=True)
-        fig = px.line(dfw, x="clocktime", y="count", color="date")
-        img = io.BytesIO()
-        fig.write_image(img, format="png", scale=3)
-        img.seek(0)
-        await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
-
     @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
                                    "featuring simple graphics.")
     async def ping(self, ctx: commands.Context):

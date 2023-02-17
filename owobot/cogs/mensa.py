@@ -9,66 +9,38 @@ import requests
 from discord.ext import tasks, commands
 
 from owobot.owobot import OwOBot
-
-MENSA_LIST = {    
-    "GARCHING" : {
-        "graphite" : "ap.ap*-?mg*.ssid.*",
-        "menu" : "mensa-garching"
-    },
-    "ARCISSTR" : {
-        "graphite" : "ap.ap*-?bn*.ssid.*",
-        "menu" : "mensa-arcisstr"
-    },
-    "LEOPOLDSTR" : {
-        "graphite" : "ap.ap*-?lm*.ssid.*",
-        "menu" : "mensa-leopoldstr"
-    },
-    "MARTINSRIED" : {
-        "graphite" : "ap.ap*-?ij*.ssid.*",
-        "menu" : "mensa-martinsried"
-    }
-}
-
-async def get_stats(mensa):
-    return requests.get(f"http://graphite-kom.srv.lrz.de/render/?from=-1h&target={MENSA_LIST[mensa]['graphite']}&format=json").json()
-
-async def getMenu(id, year, week):
-    return requests.get(f"https://tum-dev.github.io/eat-api/{id}/{year}/{week}.json")
-
-async def getDishes():
-    year, week = datetime.today().year, datetime.today().strftime("%U")
-    data = await getMenu("mensa-garching", year, week).json()
-    for day in data["days"]:
-        print(day["date"])
-        for dish in day["dishes"]:
-            print("-",dish["name"])
-
-async def get_occupancy(mensa):
-    page = await get_stats(mensa)
-
-    aps = list(map(lambda x: (x['target'].split('.')[1], x['datapoints'][-1][0] or x['datapoints'][-2][0] or 0), page))
-    stats = dict()
-    for ap, current in aps:
-        if ap in stats:
-            stats[ap] += current
-        else:
-            stats[ap] = current
-
-    return sum(stats.values())
-
+from owobot.misc import mensa_api
 
 class Mensa(commands.Cog):
     def __init__(self, bot: OwOBot):
         self.bot = bot
         self.update_channel.start()
 
-    @commands.hybrid_command(brief="see how many people are at the mensa")
-    async def mensa(self, ctx):
-        stats = requests.get("http://mensa.liste.party/api").json()
-        await ctx.send(
-            f"Gerade wuscheln {stats['current']} Menschen in der Mensa. Das ist eine Auslastung von {stats['percent']:.0f}%")
+    @commands.hybrid_command(brief="see mensa stats")
+    async def mensa(self, ctx, mensa="garching"):
+        mensa = await mensa_api.mensa_from_string(mensa)
+        if not mensa:
+            return await ctx.send("Please select one of the following canteens: " + ", ".join(mensa_api.MENSA_LIST.keys()))
 
+        dishes = await mensa_api.get_dishes_for_today(mensa)
 
+        embed = discord.Embed(
+            title=f'{mensa["display_name"]} / {datetime.datetime.today().strftime("%Y-%m-%d")}',
+            color=0x3edb53
+        )
+        
+        for dish in list(filter(lambda dish : dish["dish_type"] != "Beilagen", dishes)):
+            dish_name = dish["name"]
+            dish_short = None
+            if "mit" in dish_name:
+                tbl = dish_name.split(" mit ")
+                dish_short = tbl[0]
+                #\n{" ".join(map(lambda x : mensa_api.LABELS.get(x), dish["labels"]))}\n
+                #{dish_name if dish_short else ""}\n
+            display_name = dish_short if dish_short else dish_name
+            embed.add_field(name=display_name + " " + mensa_api.TYPES.get(dish["dish_type"]), value=f'`{dish["dish_type"]}` €{dish["prices"]["students"]["price_per_unit"]} / {dish["prices"]["students"]["unit"]}', inline=True)
+
+        await ctx.send(embed=embed)
 
     @commands.hybrid_command(brief="get a simple graph of the mensa usage")
     async def mensaplot(self, ctx, dayofweek: int = -1):
@@ -92,17 +64,18 @@ class Mensa(commands.Cog):
     def cog_unload(self):
         self.printer.cancel()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(minutes=1)
     async def update_channel(self):
-        print("running schedule task")
-        channels = list(filter(lambda x: x.id == self.bot.config.mensa_channel, list(self.bot.get_all_channels())))
+        print("running scheduled task")
+        channels = list(filter(lambda x: str(x.id) in self.bot.config.mensa_channel, list(self.bot.get_all_channels())))
         if len(channels) < 1:
             return
-        channel = channels[0]
-        print(channel)
-        mensa = "GARCHING"
-        occupation = await get_occupancy(mensa)
-        await channel.edit(name=f"Mensa {mensa.lower().capitalize()}: {int(occupation)} :busts_in_silhouette:")
+
+        mensa = await mensa_api.mensa_from_string("Garching")
+        occupation = await mensa_api.get_occupancy(mensa)
+
+        for channel in channels:
+            await channel.edit(name=f'Mensa {(mensa["display_name"]).capitalize()}: {int(occupation)} 👥')
 
 
 def setup(bot):
