@@ -63,6 +63,7 @@ class Config:
         self.down_emo = str(self.get_key("navigation", "down_emo"))
 
         self.dl_folder = str(self.get_key("music", "dl_location"))
+        self.mensa_channel = str(self.get_key("mensa", "target_channel_id"))
 
         self.catapi_token = str(self.get_key("api_tokens", "catapi"))
         self.discord_token = str(self.get_key("api_tokens", "discord"))
