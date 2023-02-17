@@ -2,7 +2,7 @@ owobot/**/__pycache__
 
 .idea/
 .vscode/
-
+/*.toml
 **/.gitkeep
 
 # TODO: let owo.toml point to resource directory and put files like those into it
