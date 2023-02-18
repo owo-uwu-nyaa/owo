@@ -80,7 +80,7 @@ def _new_calendar_token():
 
 
 def _rid_calendar_token(guild: discord.Guild, user: discord.User):
-    Calendar.delete().where(Calendar.guild == guild.id and Calendar.user == user.id).execute()
+    Calendar.delete().where(Calendar.guild == guild.id & Calendar.user == user.id).execute()
 
 
 @db.atomic()
