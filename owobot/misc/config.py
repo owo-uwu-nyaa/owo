@@ -1,31 +1,37 @@
+from __future__ import annotations
+
 import logging
-from os import path
+import contextlib
+from os import path, environ
+import functools as ft
 import toml
+import yarl
 from peewee import PostgresqlDatabase, SqliteDatabase
 from playhouse.migrate import PostgresqlMigrator, SqliteMigrator
 from owobot.misc import database
+from collections.abc import Mapping
+from typing import TypeVar
 
 log = logging.getLogger(__name__)
 
 
-class MissingKeyException(Exception):
+class MissingKeyException(KeyError):
     pass
 
 
+def _get_mapping_key(mapping, *key_path):
+    """get value in nested mapping at path, or None"""
+    return ft.reduce(lambda m, k: m.get(k, None) if isinstance(m, Mapping) else None, key_path, mapping)
+
+
 def _get_key(user, default, *key_path):
-    if user is None and default is None:
-        raise MissingKeyException(*key_path)
-    if len(key_path) == 0:
-        return user if user is not None else default
-    key = key_path[0]
-    try:
-        return _get_key(
-            user[key] if user is not None and key in user else None,
-            default[key] if default is not None and key in default else None,
-            *(key_path[1:]),
-        )
-    except MissingKeyException as e:
-        raise MissingKeyException(*key_path) from e
+    env_key = ".".join(("owo", *key_path))
+    # find key in user config, then environment, then default config
+    for mapping, kp in [(user, key_path), (environ, [env_key]), (environ, [env_key.upper()]), (default, key_path)]:
+        if (value := _get_mapping_key(mapping, *kp)) is not None:
+            return value
+
+    raise MissingKeyException(".".join(key_path))
 
 
 #TODO rewrite this to be configured automatically
@@ -97,8 +103,37 @@ class Config:
             self.datalake = datalake.CSVDataLake(self.get_key("csv", "dir"))
             log.info("Using CSV as Datastore")
 
-    def get_key(self, *key_path):
-        return _get_key(self.config, self.default_config, *key_path)
+        self.http_hostname = self.get_key("http", "hostname")
+
+        self.http_ssl = self.get_key("http", "ssl", default=True)
+        self.http_no_ssl = self.get_key("http", "no_ssl", default=False)
+        if self.http_ssl:
+            self.http_ssl_port = self.get_key("http", "ssl_port")
+            self.http_ssl_certfile = self.get_key("http", "certfile")
+            self.http_ssl_keyfile = self.get_key("http", "keyfile", default=None)
+        if self.http_no_ssl:
+            self.http_no_ssl_port = self.get_key("http", "no_ssl_port")
+
+        if not self.http_ssl and not self.http_no_ssl:
+            log.warning(f"http.ssl and http.no_ssl are both set to false; no server will be started")
+        if self.http_ssl and self.http_no_ssl and self.http_ssl_port == self.http_no_ssl_port:
+            raise ValueError("http.ssl_port and http.no_ssl_port must be different")
+
+        self.http_url = self.get_key("http", "url", default=None)
+        if self.http_url is not None:
+            self.http_url = yarl.URL(self.http_url)
+
+    _missing = object()
+    T = TypeVar("T")
+
+    def get_key(self, *key_path: str, default: T = _missing) -> str | list[str] | T:
+        # if default is given, supress MissingKeyException and return default instead
+        with contextlib.suppress(*() if default is Config._missing else (MissingKeyException,)):
+            return _get_key(self.config, self.default_config, *key_path)
+        return default
+
+    def __getitem__(self, item):
+        return self.get_key(*item)
 
     def has_toplevel_key(self, key):
         return key in self.config

@@ -14,4 +14,10 @@ yt-dlp
 bottomify
 pyfiglet
 cowsay
+httpx
+aiohttp
+ics
+cachetools
+asyncache
+yarl
 more-itertools
