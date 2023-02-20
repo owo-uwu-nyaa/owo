@@ -11,6 +11,11 @@ MENSA_LIST = {
         "capacity": 1500,
         "thumbnail": "https://cdn.discordapp.com/attachments/829494984348270602/1076448239382966323/mensa.png",
     },
+    "STUCAFE_GARCHING": {
+        "display_name": "StuCafé Garching",
+        "id": "stucafe-garching",
+        "thumbnail": "https://cdn.discordapp.com/attachments/829494984348270602/1076917552481054740/mensa_garching_web1.jpg",
+    },
     "ARCISSTR": {
         "display_name": "Arcisstraße",
         "graphite": "ap.ap*-?bn*.ssid.*",
@@ -156,9 +161,8 @@ TYPES = {
     "Grill": "🍗",
     "Vegetarisch/fleischlos": "🥦",
 }
-
+    
 FOOD_TO_EMOJI = {"reis": "🍚", "saft": "🧃", "kartoffel": "🥔", "gemüse": "🥗"}
-
 
 def get_dish_emoji(dish):
     '''
@@ -195,6 +199,9 @@ async def get_occupancy(mensa):
     Given a key from MENSA_LIST, return the current
     occupation to a certain cafeteria.
     """
+    if not mensa.get("graphite"):
+        return 
+    
     page = await get_stats(mensa)
 
     # Maps and regroups access points from different entries into a single dict
@@ -237,6 +244,7 @@ async def get_menu(id, year, week):
 async def process_dishes(dishes):
     for dish in dishes:
         dish_name = dish["name"]
+        dish_short = None
         if "mit" in dish_name:
             tbl = dish_name.split(" mit ")
             dish_short = tbl[0]

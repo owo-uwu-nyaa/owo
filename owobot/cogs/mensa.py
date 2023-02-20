@@ -1,6 +1,7 @@
 import datetime
 import io
 import logging
+import random
 
 import discord
 import pandas as pd
@@ -26,7 +27,7 @@ def mensa_embed_builder(mensa, date):
     embed.set_author(name="Mensa " + mensa["display_name"])
     return embed
 
-def get_next_open_date(date):
+def get_next_open_date(date: datetime.datetime):
     '''
     Returns the next trivial open date (does not account for holidays)
     - If past 3pm on a weekday, return the next day
@@ -38,12 +39,14 @@ def get_next_open_date(date):
         date += datetime.timedelta(days=7-weekday)
     elif date.hour > 15:
         date += datetime.timedelta(days=1)
-    return date
+
+    return date.replace(hour=11, minute=0, second=0)
 
 class Mensa(commands.Cog):
     def __init__(self, bot: OwOBot):
         self.bot = bot
         self.update_channel.start()
+        self.current = 0
 
         
     async def info(self, ctx, mensa_name="garching"):
@@ -61,15 +64,16 @@ class Mensa(commands.Cog):
 
         occupation = await mensa_api.get_occupancy(mensa)
         capacity = mensa.get("capacity")
-        percent = min(occupation / capacity if capacity else 0, 1)
-        
-        bar = "🟦 " * math.ceil(percent*10) + "⬜ " * math.floor((1-percent)*10)
 
         dishes_today = await mensa_api.get_dishes_for_date(mensa, date)
 
         embed = mensa_embed_builder(mensa, date)
         embed.set_image(url=mensa["thumbnail"])
-        embed.description = "[ " + str(int(occupation)) + f" :people_hugging: ] " + ((bar + f"({round(percent*100,2):1.2f}%)") if capacity else "")    
+
+        if occupation:
+            percent = min(occupation / capacity if capacity else 0, 1)
+            bar = "🟦 " * math.ceil(percent*10) + "⬜ " * math.floor((1-percent)*10)
+            embed.description = f'[ {int(occupation)} / {mensa.get("capacity", 0)} :people_hugging: ] ' + ((bar + f"({round(percent*100,2):1.2f}%)") if capacity else "")    
 
         labels = {}
         for dish in dishes_today:
@@ -107,13 +111,13 @@ class Mensa(commands.Cog):
 
         dishes_today = await mensa_api.get_dishes_for_date(mensa, date)
 
-        pages = len(dishes_today) // page_size
+        pages = max(1, len(dishes_today) // page_size)
         index = page_size * page_number
 
         if page_number < 1 or page_number > pages:
             return
         
-        for dish in dishes_today[index:index+page_size]:
+        for dish in (dishes_today[index:index+page_size] if pages > 1 else dishes_today):
             embed.add_field(name=dish.get("name", "?") + " " + dish.get("emoji", "") , value=f'`{dish["dish_type"]}` €{dish["prices"]["students"]["price_per_unit"]} / {dish["prices"]["students"]["unit"]}\n\n{" ".join(map(lambda x : f"`{mensa_api.LABELS.get(x)}`", dish["labels"]))}', inline=True)
         embed.set_footer(text=f"Page {page_number} of {pages}")
         await ctx.send(embed=embed)
@@ -135,6 +139,8 @@ class Mensa(commands.Cog):
         command, sub_parameters = parameters[0], parameters[1:]
         f = None
         match command.lower():
+            case "day":
+                f = self.menu
             case "menu":
                 f = self.menu
             case "info":
@@ -173,18 +179,23 @@ class Mensa(commands.Cog):
     def cog_unload(self):
         self.update_channel.cancel()
 
-    @tasks.loop(minutes=5)
+    @tasks.loop(minutes=6)
     async def update_channel(self):
         log.info("Running scheduled task")
         channels = list(filter(lambda x: str(x.id) in self.bot.config.mensa_channel, list(self.bot.get_all_channels())))
         if len(channels) < 1:
             return
+        
+        mensa_name = "G"
+        if datetime.datetime.today().weekday() > 4:
+            mensa_name = ["A", "G", "L", "M"][self.current]
+            self.current = (self.current + 1) % 4
 
-        mensa = await mensa_api.mensa_from_string("arcisstr")
-        occupation = await mensa_api.get_occupancy(mensa)
+        mensa = await mensa_api.mensa_from_string(mensa_name)
+        occupation = await mensa_api.get_occupancy(mensa) or 0
 
         for channel in channels:
-            await channel.edit(name=f'Mensa {(mensa["display_name"]).capitalize()}: {int(occupation)} 👥')
+            await channel.edit(name=f'{int(occupation)} / {int(mensa.get("capacity", 0))} {(mensa["display_name"]).capitalize()}' + random.choice(list(mensa_api.TYPES.values())) ) 
 
 
 def setup(bot):
