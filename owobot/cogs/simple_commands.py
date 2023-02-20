@@ -85,10 +85,11 @@ class SimpleCommands(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        if re.match("[\w]+(\w)\\1+", message.content):
+        if re.match("[\w]+(\w)\\1+$", message.content):
             c_channel = discord.utils.get(message.guild.text_channels, name=message.channel.name)
             messages = [m async for m in c_channel.history(limit=2)]
-            if messages[1].content == message.content[:-1]:
+
+            if len(messages) > 1 and messages[1].content == message.content[:-1]:
                 await message.channel.send(message.content+message.content[-1])
 
         word = message.content[1:].lower()

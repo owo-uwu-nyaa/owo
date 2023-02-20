@@ -107,7 +107,7 @@ class Mensa(commands.Cog):
 
         embed = mensa_embed_builder(mensa, date)
         embed.set_thumbnail(url=mensa["thumbnail"])
-        embed.description = f'Menu for the {mensa.get("display_name", "")} mensa. Provided by the [eat-api](https://tum-dev.github.io/eat-api/).' + (f" Notice: this menu is for _{date.strftime('%A')}_!" if datetime.datetime.today() != date else " Enjoy!")
+        embed.description = f'Menu for the {mensa.get("display_name", "")} mensa. Provided by the [eat-api](https://tum-dev.github.io/eat-api/).' + (f" Notice: this menu is for _{date.strftime('%A')}_!" if datetime.datetime.today().day != date.day else " Enjoy!")
 
         dishes_today = await mensa_api.get_dishes_for_date(mensa, date)
 
