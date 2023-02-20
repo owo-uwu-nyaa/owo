@@ -1,6 +1,7 @@
 import datetime
 import io
 import random
+import re
 
 import discord
 import pandas as pd
@@ -73,7 +74,7 @@ class SimpleCommands(commands.Cog):
         await ctx.send(member.display_avatar.url)
 
     @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
-                                   "featuring simple graphics.")
+                                   "featuring simple graphics.")    
     async def ping(self, ctx: commands.Context):
         await ctx.send(f":ping_pong: ping pong! (`{round(self.bot.latency * 1000)}ms`)")
 
@@ -83,6 +84,13 @@ class SimpleCommands(commands.Cog):
     async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
             return
+
+        if re.match("[\w]+(\w)\\1+", message.content):
+            c_channel = discord.utils.get(message.guild.text_channels, name=message.channel.name)
+            messages = [m async for m in c_channel.history(limit=2)]
+            if messages[1].content == message.content[:-1]:
+                await message.channel.send(message.content+message.content[-1])
+
         word = message.content[1:].lower()
         if message.content and message.content[0] == self.bot.command_prefix and word in self.sad_words:
             self.bot.handle_dynamic(message)
