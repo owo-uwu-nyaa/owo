@@ -161,13 +161,14 @@ TYPES = {
     "Grill": "🍗",
     "Vegetarisch/fleischlos": "🥦",
 }
-    
+
 FOOD_TO_EMOJI = {"reis": "🍚", "saft": "🧃", "kartoffel": "🥔", "gemüse": "🥗"}
 
+
 def get_dish_emoji(dish):
-    '''
+    """
     Return an appropriate emoji for a given dish name
-    '''
+    """
     for food, emoji in FOOD_TO_EMOJI.items():
         if food in dish.get("name", "").lower():
             return emoji
@@ -200,8 +201,8 @@ async def get_occupancy(mensa):
     occupation to a certain cafeteria.
     """
     if not mensa.get("graphite"):
-        return 
-    
+        return
+
     page = await get_stats(mensa)
 
     # Maps and regroups access points from different entries into a single dict
@@ -258,6 +259,7 @@ async def process_dishes(dishes):
 cache = {}
 CACHE_MAX_SIZE = len(MENSA_LIST)
 
+
 async def get_dishes_for_date(mensa, date):
     """
     Returns a post-processed list of dishes for a given day
@@ -289,14 +291,14 @@ async def get_raw_dishes_for_date(mensa, date):
 
 
 async def get_dishes_for_today(mensa):
-    '''
+    """
     Returns the current dishes for today
-    '''
+    """
     return await get_dishes_for_date(mensa, datetime.today())
 
 
 def dish_to_string(dish):
-    '''
+    """
     Simple to_string method which shows dish type, name, prices and labels.
-    '''
+    """
     return f'{dish["dish_type"]} {dish["name"]} €{dish["prices"]["students"]["price_per_unit"]} / {dish["prices"]["students"]["unit"]} {" ".join(map(lambda x : LABELS.get(x), dish["labels"]))}'
