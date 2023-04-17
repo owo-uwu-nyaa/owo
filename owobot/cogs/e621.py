@@ -76,6 +76,7 @@ class E621(commands.Cog):
 
     @e.command(name="tags", brief="tags!", aliases=["t"])
     async def e_tag(self, ctx, tags: common.Variadic):
+        tags = list(filter(lambda t: t != "duck", tags))
         tags = ["order:random"] + tags
         f = self._create_basefurl().add({"tags": " ".join(tags), "limit": "1"})
         posts = await self._get_posts(f.url)
