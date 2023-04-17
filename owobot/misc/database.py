@@ -7,7 +7,7 @@ db = DatabaseProxy()
 
 
 def _model_meta(model):
-    # this field *is* documented
+    # this field *is* documented    
     return model._meta
 
 

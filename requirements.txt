@@ -1,9 +1,10 @@
 discord.py
 catapi.py
 pygelbooru
-pyspark
+#pyspark
 plotly
 kaleido
+requests
 pandas
 toml
 peewee
@@ -11,7 +12,7 @@ recordclass
 emoji >= 2.0.0
 suffix-trees == 0.3.0
 yt-dlp
-bottomify
+#bottomify
 pyfiglet
 cowsay
 httpx

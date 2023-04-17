@@ -6,8 +6,15 @@ desc = "Pwease end my misewy, nyaaa~"
 blocked_cogs = ["gallery", "stats", "msg_writer", "music"]
 
 [mensa]
-
 historyfile = "mensa.csv"
+target_channel_id = ["1076257303340265617"]
+
+[transportation]
+target_channel_id = ["1083382041300701276"] # gafoze mvg updates channel
+
+[nina]
+target_channel_id = ["1083145256360497242"] # help-the-world-is-ending channel
+ars = ["091620000000", "091840000000"] # Amtlicher Regionalschlüssel for Garching + München
 
 [navigation]
 

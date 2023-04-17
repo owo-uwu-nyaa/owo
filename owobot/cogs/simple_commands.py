@@ -1,6 +1,7 @@
 import datetime
 import io
 import random
+import re
 
 import discord
 import pandas as pd
@@ -72,33 +73,18 @@ class SimpleCommands(commands.Cog):
     async def steal(self, ctx, member: discord.Member):
         await ctx.send(member.display_avatar.url)
 
-    @commands.hybrid_command(brief="see how many people are at the mensa")
-    async def mensa(self, ctx):
-        stats = requests.get("http://mensa.liste.party/api").json()
-        await ctx.send(
-            f"Gerade wuscheln {stats['current']} Menschen in der Mensa. Das ist eine Auslastung von {stats['percent']:.0f}%")
-
-    @commands.hybrid_command(brief="get a simple graph of the mensa usage")
-    async def mensaplot(self, ctx, dayofweek: int = -1):
-        if dayofweek == -1:
-            dayofweek = datetime.datetime.today().weekday()
-        df = pd.read_csv(self.bot.config.mensa_csv, names=["time", "count"], dtype={"time": float, "count": int})
-        df['time'] = pd.to_datetime(df['time'], unit="s").dt.tz_localize('UTC').dt.tz_convert('Europe/Berlin')
-        df = df.set_index("time")
-        df = df.resample("1min").sum()
-        df = df.loc[(df.index.dayofweek == dayofweek) & (df.index.hour > 9) & (df.index.hour < 16)]
-        df["date"] = df.index.date
-        df["clocktime"] = df.index.time
-        dfw = df
-        dfw.reset_index(drop=True, inplace=True)
-        fig = px.line(dfw, x="clocktime", y="count", color="date")
-        img = io.BytesIO()
-        fig.write_image(img, format="png", scale=3)
-        img.seek(0)
-        await ctx.channel.send(file=discord.File(fp=img, filename="yeet.png"))
+    @commands.hybrid_command(brief="Purges up to n : [1,50] messages")
+    async def purge(self, ctx, n):
+        n = int(n)
+        if n < 1 or n >= 50:
+            return
+        
+        msg = await ctx.send(f"Deleting {n} message(s)...")
+        deleted = await ctx.channel.purge(limit=int(n), bulk=True, check=lambda m:m!=msg and m!=ctx.message)
+        await msg.edit(content=f'Sucessfully deleted {len(deleted)} message(s)')
 
     @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
-                                   "featuring simple graphics.")
+                                   "featuring simple graphics.")    
     async def ping(self, ctx: commands.Context):
         await ctx.send(f":ping_pong: ping pong! (`{round(self.bot.latency * 1000)}ms`)")
 
@@ -108,6 +94,14 @@ class SimpleCommands(commands.Cog):
     async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
             return
+
+        if re.match("[\w]+(\w)\\1+$", message.content):
+            c_channel = discord.utils.get(message.guild.text_channels, name=message.channel.name)
+            messages = [m async for m in c_channel.history(limit=2)]
+
+            if len(messages) > 1 and messages[1].content == message.content[:-1]:
+                await message.channel.send(message.content+message.content[-1])
+
         word = message.content[1:].lower()
         if message.content and message.content[0] == self.bot.command_prefix and word in self.sad_words:
             self.bot.handle_dynamic(message)
