@@ -132,6 +132,15 @@ class RainbowGuild(BaseModel):
     snowflake = BigIntegerField()
 
 
+class Calendar(BaseModel):
+    guild = BigIntegerField()
+    user = BigIntegerField()
+    token = TextField(unique=True)
+
+    class Meta:
+        primary_key = CompositeKey("guild", "user")
+
+
 def set_db(real_db: peewee.Database, migrator: SchemaMigrator):
     db.initialize(real_db)
     introspector = Introspector.from_database(db)
@@ -163,6 +172,7 @@ def set_db(real_db: peewee.Database, migrator: SchemaMigrator):
             PikaUsers,
             QuackPics,
             QuackUsers,
-            RainbowGuild
+            RainbowGuild,
+            Calendar
         ]
     )
