@@ -5,7 +5,6 @@ pygelbooru
 plotly
 kaleido
 requests
-re
 pandas
 toml
 peewee

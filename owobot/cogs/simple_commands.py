@@ -73,6 +73,16 @@ class SimpleCommands(commands.Cog):
     async def steal(self, ctx, member: discord.Member):
         await ctx.send(member.display_avatar.url)
 
+    @commands.hybrid_command(brief="Purges up to n : [1,50] messages")
+    async def purge(self, ctx, n):
+        n = int(n)
+        if n < 1 or n >= 50:
+            return
+        
+        msg = await ctx.send(f"Deleting {n} message(s)...")
+        deleted = await ctx.channel.purge(limit=int(n), bulk=True, check=lambda m:m!=msg and m!=ctx.message)
+        await msg.edit(content=f'Sucessfully deleted {len(deleted)} message(s)')
+
     @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
                                    "featuring simple graphics.")    
     async def ping(self, ctx: commands.Context):

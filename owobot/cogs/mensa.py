@@ -229,7 +229,7 @@ class Mensa(commands.Cog):
         log.info("Running scheduled task")
         channels = list(
             filter(
-                lambda x: str(x.id) in self.bot.config.mensa_channel,
+                lambda x: str(x.id) in self.bot.config.mensa_channels,
                 list(self.bot.get_all_channels()),
             )
         )
