@@ -224,7 +224,7 @@ class Mensa(commands.Cog):
     def cog_unload(self):
         self.update_channel.cancel()
 
-    @tasks.loop(minutes=6)
+    @tasks.loop(minutes=10)
     async def update_channel(self):
         log.info("Running scheduled task")
         channels = list(

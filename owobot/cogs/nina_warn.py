@@ -100,7 +100,7 @@ class NinaWarn(commands.Cog):
 
         return warningDetails.json()
 
-    @tasks.loop(seconds=15)
+    @tasks.loop(seconds=60)
     async def update_channel(self):
         log.info("Running scheduled task")
         channels = list(
