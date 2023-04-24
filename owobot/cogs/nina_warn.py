@@ -116,13 +116,13 @@ class NinaWarn(commands.Cog):
         
         for channel in channels:
             # Process old messages, see what needs to be deleted or updated!
-            messages = [m async for m in channel.history(limit=25) if m.author == self.bot.user]
+            messages = [m async for m in channel.history(limit=25) if m.author == self.bot.user and "nina" in m.content]
             old_messages = {}
             for m in messages:
                 c = m.content.strip("`").split("@")
-                if len(c) != 2:
-                    continue
-                id, timestamp = tuple(c)
+                if len(c) < 2: continue
+                id, timestamp, *_ = tuple(c)
+                print(id, timestamp)
                 old_messages[id] = (m, timestamp)
                 warnings[id] = {"cached": True}
 
@@ -140,7 +140,7 @@ class NinaWarn(commands.Cog):
                     continue
 
                 embed = create_embed_for_warning(warning)
-                identifier = f'`{id}@{warning.get("sent","")}`'
+                identifier = f'`{id}@{warning.get("sent","")}@nina`'
 
                 outdated_message = None
                 if warning.get("msgType") == "Update":
