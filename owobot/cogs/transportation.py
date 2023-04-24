@@ -21,7 +21,7 @@ class Transportation(commands.Cog):
         self.bot = bot
         self.update_channel.start()
 
-    @tasks.loop(seconds=6)
+    @tasks.loop(seconds=120)
     async def update_channel(self):
         channels = list(
             filter(

@@ -17,7 +17,6 @@ target_channel_id = ["1083145256360497242"] # help-the-world-is-ending channel
 ars = ["091620000000", "091840000000"] # Amtlicher Regionalschlüssel for Garching + München
 
 [navigation]
-
 left_emo = "<:rl:953752216949358692>"
 right_emo = "<:rr:953752217062637588>"
 down_emo = "<:down:956234695526449212>"

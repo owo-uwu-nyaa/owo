@@ -109,7 +109,7 @@ class Config:
 
         self.http_hostname = self.get_key("http", "hostname")
 
-        self.http_ssl = self.get_key("http", "ssl", default=True)
+        self.http_ssl = self.get_key("http", "ssl", default=False)
         self.http_no_ssl = self.get_key("http", "no_ssl", default=False)
         if self.http_ssl:
             self.http_ssl_port = self.get_key("http", "ssl_port")
