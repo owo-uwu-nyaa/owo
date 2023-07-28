@@ -50,6 +50,8 @@ def _owochan_last_author_migration(introspector: Introspector, migrator: SchemaM
 class MusicChan(BaseModel):
     channel = BigIntegerField(primary_key=True)
 
+class PicHash(BaseModel):
+    hash = TextField(primary_key=True, unique=True)
 
 class KirbySpam(BaseModel):
     user_id = BigIntegerField(primary_key=True)
@@ -70,7 +72,6 @@ class HugConsent(BaseModel):
 
     class Meta:
         primary_key = CompositeKey("snowflake", "target")
-
 
 class BaaPics(BaseModel):
     picture = TextField()
@@ -173,6 +174,7 @@ def set_db(real_db: peewee.Database, migrator: SchemaMigrator):
             QuackPics,
             QuackUsers,
             RainbowGuild,
-            Calendar
+            Calendar,
+            PicHash
         ]
     )

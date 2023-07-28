@@ -1,15 +1,14 @@
-import datetime
-import io
 import random
 import re
+from hashlib import sha256
 
 import discord
-import pandas as pd
-import plotly.express as px
 import requests
 from discord.ext import commands
+from peewee import IntegrityError
 
 from owobot.misc import common, owolib
+from owobot.misc.database import PicHash
 from owobot.owobot import OwOBot
 
 
@@ -92,6 +91,15 @@ class SimpleCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        if self.bot.config.repost_shaming and message.attachments:
+            for attachment in message.attachments:
+                r = requests.get(attachment.url)
+                sha_hash = sha256(r.content)
+                try:
+                    PicHash.create(hash=sha_hash.hexdigest())
+                except IntegrityError as e:
+                    await message.add_reaction("♻️")
+
         if message.author == self.bot.user:
             return
 

@@ -80,6 +80,8 @@ class Config:
         self.catapi_token = str(self.get_key("api_tokens", "catapi"))
         self.discord_token = str(self.get_key("api_tokens", "discord"))
 
+        self.repost_shaming = bool(self.get_key("repost_shaming"))
+
         if self.has_toplevel_key("postgres"):
             try:
                 db = PostgresqlDatabase(
