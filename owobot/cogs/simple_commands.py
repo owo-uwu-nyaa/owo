@@ -1,3 +1,4 @@
+import asyncio
 import random
 import re
 from hashlib import sha256
@@ -8,7 +9,7 @@ from discord.ext import commands
 from peewee import IntegrityError
 
 from owobot.misc import common, owolib
-from owobot.misc.database import PicHash
+from owobot.misc.database import UrlContentHashes
 from owobot.owobot import OwOBot
 
 
@@ -77,38 +78,77 @@ class SimpleCommands(commands.Cog):
         n = int(n)
         if n < 1 or n >= 50:
             return
-        
+
         msg = await ctx.send(f"Deleting {n} message(s)...")
-        deleted = await ctx.channel.purge(limit=int(n), bulk=True, check=lambda m:m!=msg and m!=ctx.message)
+        deleted = await ctx.channel.purge(limit=int(n), bulk=True, check=lambda m: m != msg and m != ctx.message)
         await msg.edit(content=f'Sucessfully deleted {len(deleted)} message(s)')
 
     @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
-                                   "featuring simple graphics.")    
+                                   "featuring simple graphics.")
     async def ping(self, ctx: commands.Context):
         await ctx.send(f":ping_pong: ping pong! (`{round(self.bot.latency * 1000)}ms`)")
 
     sad_words = {"trauer", "schmerz", "leid"}
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        if self.bot.config.repost_shaming and message.attachments:
-            for attachment in message.attachments:
-                r = requests.get(attachment.url)
-                sha_hash = sha256(r.content)
-                try:
-                    PicHash.create(hash=sha_hash.hexdigest())
-                except IntegrityError as e:
-                    await message.add_reaction("♻️")
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
+        if reaction.emoji == "🤡":
+            message = reaction.message
+            urls = re.findall(r'(https?://\S+)', message.content)
+            orig_post = UrlContentHashes.select().where(UrlContentHashes.orig_message == urls[1]).first()
+            if orig_post:
+                orig_post.whitelisted += 1
+                orig_post.save()
+            if orig_post.whitelisted > 1:
+                await message.edit(content="Sowwy, i will leave you alone :3")
+                await asyncio.sleep(10)
+                await message.delete()
 
+        if reaction.emoji != "🏓":
+            return
+        if user == self.bot.user:
+            return
+        await reaction.message.channel.send(f":ping_pong: pong! (`{round(self.bot.latency * 1000)}ms`)")
+
+
+    @staticmethod
+    async def check_url_for_repost(url, message: discord.Message):
+        r = requests.get(url)
+        sha_hash = sha256(r.content)
+        orig_post = UrlContentHashes.select().where((UrlContentHashes.hash == sha_hash.hexdigest()) & (UrlContentHashes.guild == message.guild.id)).first()
+        print(orig_post)
+        if orig_post:
+            if orig_post.whitelisted > 1:
+                return
+            await message.add_reaction("♻️")
+            shame_message = f"Hewooo! I have already seen the same content as you sent via {url} in message {orig_post.orig_message}"
+            if orig_post.orig_url != url:
+                shame_message += f"under the URL {orig_post.orig_url})"
+            shame_message += "\n If you think this content is cute and shamed in error, react with 🤡"
+            await message.reply(shame_message)
+        else:
+            print(message.jump_url)
+            UrlContentHashes.create(hash=sha_hash.hexdigest(), guild=message.guild.id, orig_url=url,
+                                    orig_message=message.jump_url, whitelisted=0)
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
             return
+
+        urls = re.findall(r'(https?://\S+)', message.content)
+        urls += [a.url for a in message.attachments]
+        print(urls)
+        if self.bot.config.repost_shaming and urls:
+            for url in urls:
+                await self.check_url_for_repost(url, message)
 
         if re.match("[\w]+(\w)\\1+$", message.content):
             c_channel = discord.utils.get(message.guild.text_channels, name=message.channel.name)
             messages = [m async for m in c_channel.history(limit=2)]
 
             if len(messages) > 1 and messages[1].content == message.content[:-1]:
-                await message.channel.send(message.content+message.content[-1])
+                await message.channel.send(message.content + message.content[-1])
 
         word = message.content[1:].lower()
         if message.content and message.content[0] == self.bot.command_prefix and word in self.sad_words:

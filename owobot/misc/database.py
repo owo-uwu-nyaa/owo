@@ -1,5 +1,5 @@
 import peewee
-from peewee import DatabaseProxy, Model, BigIntegerField, TextField, CompositeKey
+from peewee import DatabaseProxy, Model, BigIntegerField, TextField, CompositeKey, IntegerField
 from playhouse.migrate import migrate, SchemaMigrator, Field
 from playhouse.reflection import Introspector
 
@@ -50,8 +50,17 @@ def _owochan_last_author_migration(introspector: Introspector, migrator: SchemaM
 class MusicChan(BaseModel):
     channel = BigIntegerField(primary_key=True)
 
-class PicHash(BaseModel):
-    hash = TextField(primary_key=True, unique=True)
+
+class UrlContentHashes(BaseModel):
+    guild = BigIntegerField()
+    hash = TextField()
+    orig_url = TextField()
+    orig_message = TextField(index=True)
+    whitelisted = IntegerField()
+
+    class Meta:
+        primary_key = CompositeKey("guild", "hash")
+
 
 class KirbySpam(BaseModel):
     user_id = BigIntegerField(primary_key=True)
@@ -72,6 +81,7 @@ class HugConsent(BaseModel):
 
     class Meta:
         primary_key = CompositeKey("snowflake", "target")
+
 
 class BaaPics(BaseModel):
     picture = TextField()
@@ -175,6 +185,6 @@ def set_db(real_db: peewee.Database, migrator: SchemaMigrator):
             QuackUsers,
             RainbowGuild,
             Calendar,
-            PicHash
+            UrlContentHashes
         ]
     )
