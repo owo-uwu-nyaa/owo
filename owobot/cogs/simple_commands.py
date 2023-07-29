@@ -4,9 +4,8 @@ import re
 from hashlib import sha256
 
 import discord
-import requests
+import aiohttp
 from discord.ext import commands
-from peewee import IntegrityError
 
 from owobot.misc import common, owolib
 from owobot.misc.database import UrlContentHashes
@@ -113,22 +112,26 @@ class SimpleCommands(commands.Cog):
 
     @staticmethod
     async def check_url_for_repost(url, message: discord.Message):
-        r = requests.get(url)
-        sha_hash = sha256(r.content)
-        orig_post = UrlContentHashes.select().where((UrlContentHashes.hash == sha_hash.hexdigest()) & (UrlContentHashes.guild == message.guild.id)).first()
-        print(orig_post)
-        if orig_post:
-            if orig_post.whitelisted > 1:
-                return
-            shame_message = f"♻️ Hewooo! I have already seen the same content as you sent via <{url}> in message {orig_post.orig_message}"
-            if orig_post.orig_url != url:
-                shame_message += f"under the URL <{orig_post.orig_url}>"
-            shame_message += "\n If you think this content is cute and shamed in error, react with 🤡"
-            await message.reply(shame_message)
-        else:
-            print(message.jump_url)
-            UrlContentHashes.create(hash=sha_hash.hexdigest(), guild=message.guild.id, orig_url=url,
-                                    orig_message=message.jump_url, whitelisted=0)
+        # async get request
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=3)) as r:
+                if r.status != 200:
+                    return
+                content = await r.content.read()
+                sha_hash = sha256(content)
+                orig_post = UrlContentHashes.select().where((UrlContentHashes.hash == sha_hash.hexdigest()) & (UrlContentHashes.guild == message.guild.id)).first()
+                if orig_post:
+                    if orig_post.whitelisted > 1:
+                        return
+                    shame_message = f"♻️ Hewooo! I have already seen the same content as <{url}> in message {orig_post.orig_message} "
+                    if orig_post.orig_url != url:
+                        shame_message += f"under the URL {orig_post.orig_url})"
+                    shame_message += "\n If you think this content is cute and shamed in error, react with 🤡"
+                    await message.reply(shame_message)
+                else:
+                    print(message.jump_url)
+                    UrlContentHashes.create(hash=sha_hash.hexdigest(), guild=message.guild.id, orig_url=url,
+                                            orig_message=message.jump_url, whitelisted=0)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
