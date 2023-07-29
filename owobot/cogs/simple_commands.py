@@ -120,10 +120,9 @@ class SimpleCommands(commands.Cog):
         if orig_post:
             if orig_post.whitelisted > 1:
                 return
-            await message.add_reaction("♻️")
-            shame_message = f"Hewooo! I have already seen the same content as you sent via {url} in message {orig_post.orig_message}"
+            shame_message = f"♻️ Hewooo! I have already seen the same content as you sent via {url} in message {orig_post.orig_message}"
             if orig_post.orig_url != url:
-                shame_message += f"under the URL {orig_post.orig_url})"
+                shame_message += f"under the URL {orig_post.orig_url}"
             shame_message += "\n If you think this content is cute and shamed in error, react with 🤡"
             await message.reply(shame_message)
         else:
