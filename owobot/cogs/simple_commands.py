@@ -111,7 +111,20 @@ class SimpleCommands(commands.Cog):
 
 
     @staticmethod
-    async def check_url_for_repost(url, message: discord.Message):
+    async def send_shame_message(message, orig_post, url):
+        shame_message = f"♻️ Hewooo! I have already seen the same content as <{url}> in message {orig_post.orig_message} "
+        if orig_post.orig_url != url:
+            shame_message += f"under the URL {orig_post.orig_url})"
+        shame_message += "\n If you think this content is cute and shamed in error, react with 🤡"
+        await message.reply(shame_message)
+
+    @staticmethod
+    async def insert_hash_into_db(message, sha_hash, url):
+        UrlContentHashes.create(hash=sha_hash.hexdigest(), guild=message.guild.id, orig_url=url,
+                                orig_message=message.jump_url, whitelisted=0)
+
+
+    async def check_url_for_repost(self, url, message: discord.Message):
         # async get request
         async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=3)) as r:
@@ -120,18 +133,20 @@ class SimpleCommands(commands.Cog):
                 content = await r.content.read()
                 sha_hash = sha256(content)
                 orig_post = UrlContentHashes.select().where((UrlContentHashes.hash == sha_hash.hexdigest()) & (UrlContentHashes.guild == message.guild.id)).first()
-                if orig_post:
-                    if orig_post.whitelisted > 1:
-                        return
-                    shame_message = f"♻️ Hewooo! I have already seen the same content as <{url}> in message {orig_post.orig_message} "
-                    if orig_post.orig_url != url:
-                        shame_message += f"under the URL {orig_post.orig_url})"
-                    shame_message += "\n If you think this content is cute and shamed in error, react with 🤡"
-                    await message.reply(shame_message)
-                else:
-                    print(message.jump_url)
-                    UrlContentHashes.create(hash=sha_hash.hexdigest(), guild=message.guild.id, orig_url=url,
-                                            orig_message=message.jump_url, whitelisted=0)
+                if not orig_post:
+                    await SimpleCommands.insert_hash_into_db(message, sha_hash, url)
+                    return
+                if orig_post.whitelisted > 1:
+                    return
+                # check if the original message still exists
+                try:
+                    guild_id, channel_id, message_id = orig_post.orig_message.split("/")[-3::]
+                    await self.bot.get_guild(int(guild_id)).get_channel(int(channel_id)).fetch_message(int(message_id))
+                except discord.NotFound:
+                    orig_post.delete_instance()
+                    await SimpleCommands.insert_hash_into_db(message, sha_hash, url)
+                    return
+                await SimpleCommands.send_shame_message(message, orig_post, url)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
