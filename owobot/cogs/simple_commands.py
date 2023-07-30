@@ -140,12 +140,11 @@ class SimpleCommands(commands.Cog):
 
         urls = re.findall(r'(https?://\S+)', message.content)
         urls += [a.url for a in message.attachments]
-        print(urls)
         if self.bot.config.repost_shaming and urls:
             for url in urls:
                 await self.check_url_for_repost(url, message)
 
-        if re.match("[\w]+(\w)\\1+$", message.content):
+        if re.match("\w+(\w)\\1+$", message.content):
             c_channel = discord.utils.get(message.guild.text_channels, name=message.channel.name)
             messages = [m async for m in c_channel.history(limit=2)]
 
