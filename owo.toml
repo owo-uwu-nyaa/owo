@@ -38,18 +38,12 @@ dl_location = "yt"
 
 [sqlite]
 
-dir = "."
-
-# use postgres as general purpose db, takes precedence over sqlite
-# [postgres]
-# host = "localhost"
-# user = "uwu"
-# db = "owo"
+dir = "./data/sqlite"
 
 # requires working pyspark
 # [csv]
 
-# dir = "."
+# dir = "./data/csv"
 
 [http]
 
