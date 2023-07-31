@@ -22,3 +22,5 @@ cachetools
 asyncache
 yarl
 more-itertools
+dhash
+wand

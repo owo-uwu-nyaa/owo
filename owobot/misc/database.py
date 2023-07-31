@@ -51,11 +51,12 @@ class MusicChan(BaseModel):
     channel = BigIntegerField(primary_key=True)
 
 
-class UrlContentHashes(BaseModel):
+class MediaDHash(BaseModel):
     guild = BigIntegerField()
-    hash = TextField()
+    channel = BigIntegerField()
+    message = BigIntegerField()
+    hash = BigIntegerField()
     orig_url = TextField()
-    orig_message = TextField(index=True)
     whitelisted = IntegerField()
 
     class Meta:
@@ -185,6 +186,6 @@ def set_db(real_db: peewee.Database, migrator: SchemaMigrator):
             QuackUsers,
             RainbowGuild,
             Calendar,
-            UrlContentHashes
+            MediaDHash
         ]
     )
