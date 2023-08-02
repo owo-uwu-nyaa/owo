@@ -194,7 +194,7 @@ def sanitize_markdown(text: str) -> str:
 
 
 def sanitize_send(text: str) -> str:
-    if not text or text[0] in emoji.EMOJI_UNICODE_ENGLISH:
+    if not text or emoji.is_emoji(text[0]):
         return text
     return re.sub(r"^[^\w<>()@*_~`]+", "", text)
 
