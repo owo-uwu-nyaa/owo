@@ -5,35 +5,29 @@
 
 # owo 😝
 
-----
-
-Notes: may occasionally be broken on inferior platforms such as Windows and MacOs.
-(it's officially broken on windows because of pyspark)
-
-----
+[![Docker](https://github.com/owo-uwu-nyaa/owo/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/owo-uwu-nyaa/owo/actions/workflows/docker-publish.yml)
 
 # Setup
 
 ## Requirements
 
-- a moderately up-to date version of Python3 (Ideally >3.10)
-- optional: a postgres database (default alternative: sqlite)
+One of 
+- Python 3.11
+- Docker
 
 ## Setup
 
-1.  install requirements via `pip install -r requirements.txt`
-    (pip3 if using something like debian)
+1.  Install requirements via `pip install -r requirements.txt`
 
     ```bash
     # Install requirements
     pip install -r requirements.txt
     ```
 
-1.  edit owo.toml to your liking - at minimum you should provide a discord
+1.  Edit owo.toml to your liking - at minimum you should provide a discord
     bot token
 
-1.  run - you may pass a custom path to the configuration file as i
-    the first command line argument
+1.  Run - you may pass a custom path to the configuration file as the first command line argument
 
     ```bash
     cd owobot
