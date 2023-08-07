@@ -72,7 +72,7 @@ idna==3.4
     #   yarl
 kaleido==0.2.1
     # via -r requirements.in
-more-itertools==10.0.0
+more-itertools==10.1.0
     # via -r requirements.in
 multidict==6.0.4
     # via
