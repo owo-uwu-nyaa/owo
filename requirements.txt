@@ -109,7 +109,7 @@ python-dateutil==2.8.2
     #   pandas
 pytz==2023.3
     # via pandas
-recordclass==0.19.2
+recordclass==0.20
     # via -r requirements.in
 requests==2.31.0
     # via -r requirements.in
