@@ -90,7 +90,7 @@ pandas==2.0.3
     # via -r requirements.in
 peewee==3.16.2
     # via -r requirements.in
-plotly==5.15.0
+plotly==5.16.0
     # via -r requirements.in
 py4j==0.10.9.7
     # via pyspark
