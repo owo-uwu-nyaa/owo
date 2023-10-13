@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  app:
+    build: .
+    volumes:
+      - type: bind
+        source: ./data/db.sqlite
+        target: /app/owo.sqlite
+      - type: bind
+        source: ./data/msgs.csv
+        target: /app/msgs.csv
+      - type: bind
+        source: ./conf.toml
+        target: /app/uwu.toml
+    ports:
+      - "8449:8000"
+    entrypoint: ["python", "./main.py", "uwu.toml"]

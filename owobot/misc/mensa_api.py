@@ -1,5 +1,7 @@
-import requests
 from datetime import datetime
+
+import requests
+from cachetools.func import ttl_cache
 
 # These could be Enums but I'm not a java addict!
 # Do I get headpats?
@@ -256,25 +258,13 @@ async def process_dishes(dishes):
     return dishes
 
 
-cache = {}
-CACHE_MAX_SIZE = len(MENSA_LIST)
-
-
+@ttl_cache(maxsize=100, ttl=60 * 60)
 async def get_dishes_for_date(mensa, date):
     """
     Returns a post-processed list of dishes for a given day
-
-    Uses a trivial cache which clears itself when full (CACHE_MAX_SIZE is the amount of cafeterias!)
+    Caches the result for up to 1 hour
     """
-    global cache
-    if len(cache) >= CACHE_MAX_SIZE:
-        cache = {}
-
-    key = (mensa.get("id"), date.strftime("%Y-%m-%d"))
-
-    if not cache.get(key):
-        cache[key] = await process_dishes(await get_raw_dishes_for_date(mensa, date))
-    return cache[key]
+    return await process_dishes(await get_raw_dishes_for_date(mensa, date))
 
 
 async def get_raw_dishes_for_date(mensa, date):
@@ -301,4 +291,4 @@ def dish_to_string(dish):
     """
     Simple to_string method which shows dish type, name, prices and labels.
     """
-    return f'{dish["dish_type"]} {dish["name"]} €{dish["prices"]["students"]["price_per_unit"]} / {dish["prices"]["students"]["unit"]} {" ".join(map(lambda x : LABELS.get(x), dish["labels"]))}'
+    return f'{dish["dish_type"]} {dish["name"]} €{dish["prices"]["students"]["price_per_unit"]} / {dish["prices"]["students"]["unit"]} {" ".join(map(lambda x: LABELS.get(x), dish["labels"]))}'

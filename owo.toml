@@ -5,6 +5,8 @@ desc = "Pwease end my misewy, nyaaa~"
 # these cogs require additional setup and may not work right away
 blocked_cogs = ["gallery", "stats", "msg_writer", "music"]
 
+repost_shaming = true
+
 [mensa]
 historyfile = "mensa.csv"
 target_channel_id = ["1076257303340265617"]
@@ -36,18 +38,12 @@ dl_location = "yt"
 
 [sqlite]
 
-dir = "."
-
-# use postgres as general purpose db, takes precedence over sqlite
-# [postgres]
-# host = "localhost"
-# user = "uwu"
-# db = "owo"
+dir = "./data/sqlite"
 
 # requires working pyspark
 # [csv]
 
-# dir = "."
+# dir = "./data/csv"
 
 [http]
 
