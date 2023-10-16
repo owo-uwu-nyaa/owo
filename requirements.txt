@@ -88,7 +88,7 @@ packaging==23.1
     # via plotly
 pandas==2.1.1
     # via -r requirements.in
-peewee==3.16.3
+peewee==3.17.0
     # via -r requirements.in
 plotly==5.17.0
     # via -r requirements.in
@@ -109,7 +109,7 @@ python-dateutil==2.8.2
     #   pandas
 pytz==2023.3
     # via pandas
-recordclass==0.20.1
+recordclass==0.21
     # via -r requirements.in
 requests==2.31.0
     # via -r requirements.in
@@ -146,5 +146,5 @@ yarl==1.9.2
     # via
     #   -r requirements.in
     #   aiohttp
-yt-dlp==2023.10.7
+yt-dlp==2023.10.13
     # via -r requirements.in
