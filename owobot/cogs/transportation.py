@@ -17,10 +17,12 @@ from owobot.owobot import OwOBot
 log = logging.getLogger(__name__)
 
 SEVERITY = {
-    "Major Disruption" : (6, "🔴", 0xDD2E44),
-    "Fahrtausfälle" : (5, "🔴", 0xDD2E44),
-    "Verspätungen" : (4, "🟠", 0xF4900B),
-    "Umleitung" : (3, "🟠", 0xF4900B),
+    "Major Disruption" : (8, "🔴", 0xDD2E44),
+    "Fahrtausfälle" : (7, "🔴", 0xDD2E44),
+    "Verspätungen" : (6, "🟠", 0xF4900B),
+    "Umleitung" : (5, "🟠", 0xF4900B),
+    "Bauarbeiten" : (4, "🟠", 0xF4900B),
+    "Betriebsstörung" : (3, "🟡", 0xFDCB58),
     "Unregelmäßigkeiten" : (2, "🟡", 0xFDCB58),
     "Disruption" : (1, "🔵", 0x5EAEEC)
 }
@@ -109,8 +111,8 @@ def get_severity_level(warning, lines=None):
 
 def create_embed_for_warning(warning):
     info = warning.get("text").split("<br/>")
-    if len(info) > 3:
-        info = "\n".join(info[0:2])
+    if len(info) > 5:
+        info = "\n".join(info[0:4])
     else:
         info = "\n".join(info)
 
@@ -257,7 +259,7 @@ class Transportation(commands.Cog):
 
 
 
-    @tasks.loop(seconds=600)
+    @tasks.loop(seconds=300)
     async def update_channel(self):
         log.info("Running scheduled task")
 
