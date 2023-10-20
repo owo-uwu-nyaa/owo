@@ -237,6 +237,7 @@ async def get_stats(mensa):
     ).json()
 
 
+#@ttl_cache(maxsize=100, ttl=60 * 60)
 async def get_menu(id, year, week):
     """
     Get the daily menu from a given mensa-id
@@ -258,7 +259,6 @@ async def process_dishes(dishes):
     return dishes
 
 
-@ttl_cache(maxsize=100, ttl=60 * 60)
 async def get_dishes_for_date(mensa, date):
     """
     Returns a post-processed list of dishes for a given day
