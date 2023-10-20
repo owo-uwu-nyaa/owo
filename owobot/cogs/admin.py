@@ -1,7 +1,7 @@
 from discord.ext import commands
 from discord.ext.commands import Bot
 from owobot.misc import common
-from owobot.misc.database import NsflChan, OwoChan, RainbowGuild
+from owobot.misc.database import NsflChan, OwoChan, RainbowGuild, ForceEmbed
 
 
 class Admin(commands.Cog):
@@ -10,6 +10,12 @@ class Admin(commands.Cog):
 
     def cog_check(self, ctx):
         return ctx.author.guild_permissions.administrator
+
+    @commands.hybrid_command()
+    async def add_embed_url(self, ctx, domain, new_domain):
+        query = ForceEmbed.insert(url=domain, new_url=new_domain).on_conflict("replace")
+        await common.try_exe_cute_query(ctx, query)
+        print(ForceEmbed.select().where(ForceEmbed.url==domain).get())
 
     @commands.hybrid_group()
     async def mark(self, ctx: commands.Context):

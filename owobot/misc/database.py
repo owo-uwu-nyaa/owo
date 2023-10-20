@@ -71,6 +71,9 @@ class HugShort(BaseModel):
     key = TextField(primary_key=True)
     val = TextField()
 
+class ForceEmbed(BaseModel):
+    url = TextField(primary_key=True)
+    new_url = TextField()
 
 class Consent(BaseModel):
     snowflake = BigIntegerField(primary_key=True)
@@ -186,6 +189,7 @@ def set_db(real_db: peewee.Database, migrator: SchemaMigrator):
             QuackUsers,
             RainbowGuild,
             Calendar,
-            MediaDHash
+            MediaDHash,
+            ForceEmbed
         ]
     )

@@ -2,6 +2,8 @@ import asyncio
 import random
 import re
 
+from urllib.parse import urlparse
+
 import discord
 import aiohttp
 from wand.image import Image
@@ -9,7 +11,7 @@ from dhash import dhash_int
 from discord.ext import commands
 
 from owobot.misc import common, owolib
-from owobot.misc.database import MediaDHash
+from owobot.misc.database import MediaDHash, ForceEmbed
 from owobot.owobot import OwOBot
 
 
@@ -158,6 +160,7 @@ class SimpleCommands(commands.Cog):
                     await SimpleCommands.send_shame_message(message, orig_post, url)
                 except Exception as ex:
                     print(ex)
+                    
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
@@ -168,6 +171,20 @@ class SimpleCommands(commands.Cog):
         if self.bot.config.repost_shaming and urls:
             for url in urls:
                 await self.check_url_for_repost(url, message)
+
+        embeddable_urls = []
+        for url in urls:
+            domain = urlparse(url).netloc
+            print(domain)
+            query = ForceEmbed.get_or_none(ForceEmbed.url == domain)
+            print(query)
+            if query:
+                x = url.replace(domain, query.new_url)
+                print(x)
+                embeddable_urls.append(x)
+        
+        if len(embeddable_urls) > 0:
+            await message.channel.send("\n".join(embeddable_urls))
 
         if re.match("\w+(\w)\\1+$", message.content):
             c_channel = discord.utils.get(message.guild.text_channels, name=message.channel.name)
