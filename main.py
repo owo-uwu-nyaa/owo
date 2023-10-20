@@ -6,7 +6,11 @@ from owobot.owobot import OwOBot
 
 
 def main():
-    logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+    logging.basicConfig(
+        level=os.environ.get("LOGLEVEL", "INFO"),
+        format="%(asctime)s %(levelname)s     %(filename)s, in %(funcName)s: %(message)s",
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
     config_file = sys.argv[1] if len(sys.argv) == 2 else "owobot/owo.toml"
     bot = OwOBot(config_file)
     

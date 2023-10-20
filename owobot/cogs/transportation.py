@@ -157,9 +157,13 @@ class Transportation(commands.Cog):
         self.fetch_warning.start()
 
     def get_warning_from_mvg(self):
-        response = requests.get(MVG_BASEURL+WARNING_ENDPOINT)
-        assert(response.ok)
-        return response.json()
+        try:
+            response = requests.get(MVG_BASEURL+WARNING_ENDPOINT, timeout=10)
+            assert(response.ok)
+            return response.json()
+        except requests.exceptions.Timeout:
+            log.warn("MVG Request Timeout")
+            return dict()
     
     def get_warnings_for_station(self, globalId, includePlanned=False):
         warnings =  dict()
@@ -191,24 +195,32 @@ class Transportation(commands.Cog):
         return warnings
     
     def query_station_name(self, query):
-        response = requests.get(MVG_BASEURL+LOCATION_ENDPOINT+"?query="+query.strip())
-        assert(response.ok)
+        try:
+            response = requests.get(MVG_BASEURL+LOCATION_ENDPOINT+"?query="+query.strip(), timeout=10)
+            assert(response.ok)
 
-        locations = list(filter(lambda l:  l.get("type") == "STATION",response.json()))
-        if len(locations) < 1:
-            print("no locations found")
+            locations = list(filter(lambda l:  l.get("type") == "STATION",response.json()))
+            if len(locations) < 1:
+                print("no locations found")
+                return
+            
+            return locations[0]
+        except requests.exceptions.Timeout:
+            log.warn("MVG Request Timeout")
             return
-        
-        return locations[0]
 
     def get_departures(self, globalId):
-        req = requests.get(MVG_BASEURL+DEPARTURE_ENDPOINT.format(globalId=globalId))
-        if not req.ok:
-            log.warn("Something went wrong")
-            print(req.status_code, req.text, req.raw)
+        try:
+            req = requests.get(MVG_BASEURL+DEPARTURE_ENDPOINT.format(globalId=globalId), timeout=10)
+            if not req.ok:
+                log.warn("Something went wrong")
+                print(req.status_code, req.text, req.raw)
+                return
+            
+            return sorted([d for d in req.json()], key=lambda x:x['plannedDepartureTime'])
+        except requests.exceptions.Timeout:
+            log.warn("MVG Request Timeout")
             return
-        
-        return sorted([d for d in req.json()], key=lambda x:x['plannedDepartureTime'])
 
     @commands.hybrid_command(brief="Fetches and displays current MVG disruptions")
     async def mvg(self, ctx):
@@ -254,13 +266,11 @@ class Transportation(commands.Cog):
 
         await ctx.send(content=f"`{global_id}`",embed=create_embed_for_station(station_data, departures, list(warnings)))
 
-        # warning = get_highest_severity_warning(warnings)
-        # await ctx.send(embed=create_embed_for_warning(warning))
-
-
-
-    @tasks.loop(seconds=300)
+    @tasks.loop(minutes=10)
     async def update_channel(self):
+        if not self.bot.config.transport_channels:
+            return
+
         log.info("Running scheduled task")
 
         channels = list(
@@ -289,10 +299,11 @@ class Transportation(commands.Cog):
         for channel in channels:
             await channel.edit(name=message)
 
-
-
-    @tasks.loop(seconds=300)
+    @tasks.loop(minutes=15)
     async def fetch_warning(self):
+        if not self.bot.config.transport_channels:
+            return
+        
         log.info("Running scheduled task / MVG Warning")
 
         channels = list(
