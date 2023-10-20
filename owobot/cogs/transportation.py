@@ -36,15 +36,12 @@ WARNING_ENDPOINT = "/ems/tickers"
 
 CLEANR = re.compile('<.*?>') 
 
-
 def cleanhtml(raw_html):
-    
     cleantext = re.sub(CLEANR, '', raw_html)
     return cleantext
 
 def get_lines(warning):
     return set(map(lambda line: "`"+line.get("name")+"`",warning.get("lines")))
-        
         
 def create_embed_for_station(station, departures=[], warnings=[]):
     embed = discord.Embed()
@@ -80,8 +77,6 @@ def create_embed_for_station(station, departures=[], warnings=[]):
     embed.set_image(url=f"https://www.mvv-muenchen.de/fileadmin/bis/Bilder/Architektur/{station.get('divaId'):04d}_1.jpg")
     embed.set_footer(text= "Last updated on " + datetime.datetime.now().strftime("%A %Y/%m/%d %H:%M"))
 
-    
-    
     return embed
 
 def get_highest_severity_warning(warnings):
@@ -134,7 +129,6 @@ def create_embed_for_warning(warning):
     return embed
 
 def stationInLines(globalId, lines):
-    print("searching", globalId, lines)
     for line in lines:
         result = stationInLine(globalId, line)
         if result is True:
@@ -143,9 +137,7 @@ def stationInLines(globalId, lines):
 
 def stationInLine(globalId, line):
     for station in line.get("stations"):
-        print(station.get("name"), station.get("id"), globalId)
         if globalId == station.get("id"):
-            print("found", station.get("name"))
             return True
     return False
     
@@ -268,10 +260,10 @@ class Transportation(commands.Cog):
 
     @tasks.loop(minutes=10)
     async def update_channel(self):
-        if not self.bot.config.transport_channels:
+        if not self.bot.config.mvg_enabled:
             return
 
-        log.info("Running scheduled task")
+        log.debug("Running scheduled channel update MVG task")
 
         channels = list(
             filter(
@@ -301,10 +293,10 @@ class Transportation(commands.Cog):
 
     @tasks.loop(minutes=15)
     async def fetch_warning(self):
-        if not self.bot.config.transport_channels:
+        if not self.bot.config.mvg_enabled:
             return
         
-        log.info("Running scheduled task / MVG Warning")
+        log.debug("Running scheduled task / MVG Warning")
 
         channels = list(
             filter(

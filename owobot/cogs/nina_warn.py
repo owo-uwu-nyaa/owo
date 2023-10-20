@@ -102,7 +102,10 @@ class NinaWarn(commands.Cog):
 
     @tasks.loop(seconds=60)
     async def update_channel(self):
-        log.info("Running scheduled task")
+        if not self.bot.config.nina_enabled:
+            return
+        
+        log.debug("Running scheduled NINA task")
         channels = list(
             filter(
                 lambda x: str(x.id) in self.bot.config.nina_warning_channels,
