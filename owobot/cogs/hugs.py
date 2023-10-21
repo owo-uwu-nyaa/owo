@@ -53,7 +53,7 @@ class Hugs(commands.Cog):
     async def get_hug_gelbooru(self, ctx, tags):
         tags = tags.split(" ")
         tags += ["hug", "sort:random"]
-        blocklist = ["loli", "futanari", "shota"]
+        blocklist = ["loli", "shota"]
         if not NsflChan.select().where(NsflChan.channel == ctx.channel.id).exists():
             blocklist += ["nude", "rating:questionable", "rating:explicit"]
         for i in range(0, 3):
