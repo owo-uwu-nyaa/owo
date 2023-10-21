@@ -1,8 +1,10 @@
 import asyncio
+import io
 import random
 import re
+import functools as ft
 
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs, urlencode
 
 import discord
 import aiohttp
@@ -11,7 +13,7 @@ from dhash import dhash_int
 from discord.ext import commands
 
 from owobot.misc import common, owolib
-from owobot.misc.database import MediaDHash, ForceEmbed
+from owobot.misc.database import EvilTrackingParameter, MediaDHash, ForceEmbed
 from owobot.owobot import OwOBot
 
 
@@ -161,9 +163,61 @@ class SimpleCommands(commands.Cog):
                 except Exception as ex:
                     print(ex)
                     
+    async def recreate_message(self, message, content):
+        files = []
+        attachments = list(message.attachments)
+
+        for attachment in attachments:
+            fp = io.BytesIO()
+            await attachment.save(fp)
+            fp.seek(0)
+            file = discord.File(
+                fp,
+                filename=attachment.filename,
+                description="owo",
+                spoiler=attachment.is_spoiler(),
+            )
+            files.append(file)
+
+        webhook = None
+        for channel_webhook in await message.channel.webhooks():
+            if channel_webhook.user == self.bot.user and channel_webhook.auth_token is not None:
+                webhook = channel_webhook
+                break
+        if webhook is None:
+            webhook = await message.channel.create_webhook(name="if you read this you're cute")
+
+        reply_embed = (
+            await common.message_as_embedded_reply(
+                await message.channel.fetch_message(message.reference.message_id)
+            )
+            if message.reference
+            else None
+        )
+
+        # content may be at most 2000 characters
+        # https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
+        send = ft.partial(
+            common.send_paginated,
+            webhook,
+            page_length=2000,
+            username=message.author.display_name,
+            avatar_url=message.author.display_avatar.url,
+            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
+        )
+        # send the "reply" and the actual message separately,
+        # which lets Discord automatically (re)generate the embeds from the message body in the second message
+        # (there is no way to send anything except 'rich' embeds through the API)
+
+        if reply_embed is not None:
+        # wait=True so messages don't get sent out-of-order
+            await send(embed=reply_embed, wait=True)
+        await send(content, files=files, wait=True)
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author == self.bot.user:
+        
+        if message.author == self.bot.user or message.webhook_id is not None:
             return
 
         urls = re.findall(r'(https?://\S+)', message.content)
@@ -171,20 +225,6 @@ class SimpleCommands(commands.Cog):
         if self.bot.config.repost_shaming and urls:
             for url in urls:
                 await self.check_url_for_repost(url, message)
-
-        embeddable_urls = []
-        for url in urls:
-            domain = urlparse(url).netloc
-            print(domain)
-            query = ForceEmbed.get_or_none(ForceEmbed.url == domain)
-            print(query)
-            if query:
-                x = url.replace(domain, query.new_url)
-                print(x)
-                embeddable_urls.append(x)
-        
-        if len(embeddable_urls) > 0:
-            await message.channel.send("\n".join(embeddable_urls))
 
         if re.match("\w+(\w)\\1+$", message.content):
             c_channel = discord.utils.get(message.guild.text_channels, name=message.channel.name)
@@ -199,6 +239,42 @@ class SimpleCommands(commands.Cog):
             sad_words_minus = self.sad_words - {word}
             send_word = random.choice(tuple(sad_words_minus))
             await message.channel.send(send_word)
+
+        # dont look beyond here i dont fucking know what this abomination is
+        cringe_urls = []
+        for url in urls:
+            new_url = None
+
+            parsed_url = urlparse(url)
+            domain = parsed_url.netloc
+
+            evil = False
+            
+            params = parse_qs(parsed_url.query)
+            new_params = dict.copy(params)
+            for key in params.keys():
+                if EvilTrackingParameter.get_or_none(EvilTrackingParameter.url == domain and EvilTrackingParameter.tracking_parameter == key):
+                    new_params.pop(key)
+                    evil = True
+
+            if evil:
+                new_url = parsed_url._replace(query=urlencode(new_params, doseq=True))
+
+            nonembeddable_url = ForceEmbed.get_or_none(ForceEmbed.url == domain)
+            if nonembeddable_url:
+                new_url = parsed_url._replace(netloc=nonembeddable_url.new_url)
+
+            if new_url:
+                cringe_urls.append((url, new_url.geturl()))
+
+        content = message.content if len(cringe_urls) > 0 else None
+        for url, new_url in cringe_urls:
+            print(url, new_url)
+            content = content.replace(url, new_url)
+
+        if content is not None:
+            await self.recreate_message(message, content)
+            await message.delete()
 
 
 def setup(bot):

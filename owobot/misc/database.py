@@ -75,6 +75,13 @@ class ForceEmbed(BaseModel):
     url = TextField(primary_key=True)
     new_url = TextField()
 
+class EvilTrackingParameter(BaseModel):
+    url = TextField()
+    tracking_parameter = TextField()
+
+    class Meta:
+        primary_key = CompositeKey("url", "tracking_parameter")
+
 class Consent(BaseModel):
     snowflake = BigIntegerField(primary_key=True)
 
@@ -190,6 +197,7 @@ def set_db(real_db: peewee.Database, migrator: SchemaMigrator):
             RainbowGuild,
             Calendar,
             MediaDHash,
-            ForceEmbed
+            ForceEmbed,
+            EvilTrackingParameter
         ]
     )
