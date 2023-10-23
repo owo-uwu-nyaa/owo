@@ -61,11 +61,16 @@ class Admin(commands.Cog):
 
     @commands.hybrid_command(brief="sync slash commands to the current guild")
     async def sync(self, ctx: commands.Context):
+        await ctx.send(f":3 Syncing {len(self.bot.cogs)} from a total of {self.bot.total_cog_count} cogs...")
+
         self.bot.tree.copy_global_to(guild=ctx.guild)
         synced = await self.bot.tree.sync(guild=ctx.guild)
         await ctx.send(
             f"Synced {len(synced)} slash command(s) to **{ctx.guild.name}**."
         )
+
+        if self.bot.error_cog_count > 0:
+            await ctx.send(f"⚠ Due to errors when loading the cogs, {self.bot.error_cog_count} cog(s) have been skipped. Some commands may not have been synced properly.")
 
 
 def setup(bot):

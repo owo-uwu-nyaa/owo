@@ -145,3 +145,7 @@ EMOJIS_BY_NAME: Mapping[str, Emoji] = MappingProxyType(
 EMOJIS_BY_SURROGATES: Mapping[str, Emoji] = MappingProxyType(
     {emoji.surrogates: emoji for emoji in iter_emojis()}
 )
+
+
+def get_unicode_emoji(name):
+    return EMOJIS_BY_NAME[name].surrogates

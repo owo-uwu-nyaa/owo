@@ -22,7 +22,6 @@ from aiohttp import web
 
 log = logging.getLogger(__name__)
 
-
 class OwOBot(Bot):
     def __init__(self, config_path, *args, **options):
         config = Config(config_path)
@@ -80,6 +79,10 @@ class OwOBot(Bot):
             log.info(
                 f"done loading cogs (skipped = {skipped}, errors = {errors}, ok = {ok} out of {total} found cog(s))"
             )
+            
+            self.total_cog_count = total
+            self.error_cog_count = errors
+
 
         self._load_cogs = load_cogs
 
