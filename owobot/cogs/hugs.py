@@ -10,57 +10,68 @@ def tags_to_str(iterable):
     return "_ _\n" + "\n".join(map(lambda x: f"`{x.key} | {x.val}`", iterable))
 
 
+async def has_consent(author, member):
+    return (
+        HugConsent.select()
+        .where(
+            ((HugConsent.snowflake == member.id) & (HugConsent.target == author.id))
+            | ((HugConsent.snowflake == member.id) & (HugConsent.target == 0))
+        )
+        .exists()
+    )
+
+
 class Hugs(commands.Cog):
     def __init__(self, bot):
         self.config = bot.config
         self.gelbooru = Gelbooru()
         self.bot = bot
 
+    async def process_consent(self, ctx, member):
+        if ctx.author.id == member.id:
+            return True
 
-    async def send_hug(self, ctx, member, img_url: str) -> None:
-        query = (
-            HugConsent.select()
-            .where(
-                (
-                    (HugConsent.snowflake == member.id)
-                    & (HugConsent.target == ctx.author.id)
-                )
-                | ((HugConsent.snowflake == member.id) & (HugConsent.target == 0))
-            )
-            .exists()
-        )
-        if ctx.author.id == member.id or query:
-            hug_sender_name = (
-                ctx.me.display_name
-                if ctx.author.id == member.id
-                else common.get_nick_or_name(ctx.author)
-            )
-            await ctx.send(
-                f"{hug_sender_name} sends you a hug, {common.get_nick_or_name(member)}"
-            )
-            await ctx.send(img_url)
-        else:
-            await ctx.send(
-                f"UwU, Consent is key, {common.get_nick_or_name(ctx.author)}.\n"
-                f"Pwease awsk {common.get_nick_or_name(member)} for consent 🥺👉👈\n"
-                f"If you want to consent, exe_cute_ `{self.bot.command_prefix}consent add {ctx.author.id}`\n"
-                f"Or you can just `{self.bot.command_prefix}consent all`"
-            )
         HugConsent.get_or_create(snowflake=ctx.author.id, target=member.id)
+
+        if await has_consent(ctx.author, member):
+            return True
+
+        await ctx.send(
+            f"UwU, Consent is key, {ctx.author.mention}.\n"
+            f"Pwease awsk {common.get_nick_or_name(member)} for consent 🥺👉👈\n"
+            f"{member.mention}, iIf you want to consent, exe_cute_ `{self.bot.command_prefix}consent add {ctx.author.id}`\n"
+            f"Or you can just `{self.bot.command_prefix}consent all`"
+        )
+
+        return False
+
+    async def send_hug(self, ctx, member, img) -> None:
+        if img is None:
+            await ctx.send("Couldn't find a hug for your request :<")
+            return
+
+        await ctx.send(
+            ("I see you're hugging yourself... Here, have a hug! "
+            if ctx.author == member
+            else f"{member.mention}, {common.get_nick_or_name(ctx.author)} sends you a hug! ")
+            + f"[(...)](<https://gelbooru.com/index.php?page=post&s=view&id={img.id}>)"
+        )
+
+        await ctx.send(str(img))
 
     # penguin pics
     # random.choice(["https://tenor.com/view/chibird-penguin-hug-gif-14248948", "https://tenor.com/view/cuddle-group-group-hug-friends-penguin-gif-13295520"])
     async def get_hug_gelbooru(self, ctx, tags):
         tags = tags.split(" ")
         tags += ["hug", "sort:random"]
-        blocklist = ["loli", "futanari", "shota"]
+        blocklist = ["loli", "shota"]
         if not NsflChan.select().where(NsflChan.channel == ctx.channel.id).exists():
             blocklist += ["nude", "rating:questionable", "rating:explicit"]
         for i in range(0, 3):
             result = await self.gelbooru.search_posts(tags=tags, exclude_tags=blocklist)
             if result:  # not None and not empty
                 return result[0]
-        return "Couldn't find a hug for your request :<"
+        return None
 
     # Nils: bonking is basically a hug
     @commands.hybrid_command(brief="bonk")
@@ -70,11 +81,11 @@ class Hugs(commands.Cog):
         await ctx.send(
             f"{name} {owolib.owofy('bonkt')} {other} <:pingbonk:940280394736074763>"
         )
-    
+
     @commands.hybrid_command(aliases=["g"])
     async def gelbooru_image(self, ctx, tags: Variadic):
         tags += ["sort:random"]
-        blocklist = ["loli", "futanari", "shota"]
+        blocklist = ["loli", "shota"]
         if not NsflChan.select().where(NsflChan.channel == ctx.channel.id).exists():
             blocklist += ["nude", "rating:questionable", "rating:explicit"]
         for i in range(0, 3):
@@ -86,34 +97,46 @@ class Hugs(commands.Cog):
                     name="tags",
                     value=result[0].tags,
                     inline=True,
-                )   
+                )
                 await ctx.send(embed=embed)
                 return
         await ctx.send("🧺")
 
     @commands.hybrid_command(brief="@someone <3 (2 boys hugging)")
     async def bhug(self, ctx, member: discord.Member):
-        gelbooru_url = await self.get_hug_gelbooru(ctx, "hug 2boys")
-        await self.send_hug(ctx, member, str(gelbooru_url))
+        if not await self.process_consent(ctx, member):
+            return
+        gelbooru_image = await self.get_hug_gelbooru(ctx, "hug 2boys")
+        await self.send_hug(ctx, member, gelbooru_image)
 
-    @commands.hybrid_command(brief="@someone <3 (customize your hug!)", aliases=["hugc"])
+    @commands.hybrid_command(
+        brief="@someone <3 (customize your hug!)", aliases=["hugc"]
+    )
     async def hug(self, ctx, member: discord.Member, tags: Variadic):
+        if not await self.process_consent(ctx, member):
+            return
         # convert tags to a space separated string, as that's what get_hug_gelbooru expects
-        gelbooru_url = await self.get_hug_gelbooru(ctx, " ".join(tags))
-        await self.send_hug(ctx, member, str(gelbooru_url))
+        gelbooru_image = await self.get_hug_gelbooru(ctx, " ".join(tags))
+        await self.send_hug(ctx, member, gelbooru_image)
 
     @commands.hybrid_command(brief="@someone <3 (people hugging)")
     async def ahug(self, ctx, member: discord.Member):
-        gelbooru_url = await self.get_hug_gelbooru(ctx, "hug androgynous")
-        await self.send_hug(ctx, member, str(gelbooru_url))
+        if not await self.process_consent(ctx, member):
+            return
+        gelbooru_image = await self.get_hug_gelbooru(ctx, "hug androgynous")
+        await self.send_hug(ctx, member, gelbooru_image)
 
     @commands.hybrid_command(brief="@someone <3 (2 girls hugging)")
     async def ghug(self, ctx, member: discord.Member):
-        gelbooru_url = await self.get_hug_gelbooru(ctx, "hug 2girls")
-        await self.send_hug(ctx, member, str(gelbooru_url))
+        if not await self.process_consent(ctx, member):
+            return
+        gelbooru_image = await self.get_hug_gelbooru(ctx, "hug 2girls")
+        await self.send_hug(ctx, member, gelbooru_image)
 
     @commands.hybrid_command(brief="Use the tag shorthands uwu :)")
     async def h(self, ctx, member: discord.Member, short: Variadic):
+        if not await self.process_consent(ctx, member):
+            return
         tags = ""
         if len(short) > 0:
             query = HugShort.select().where(HugShort.key.in_(list(short[0])))
@@ -122,8 +145,8 @@ class Hugs(commands.Cog):
                 + " "
                 + " ".join(short[1:])
             )
-        gelbooru_url = await self.get_hug_gelbooru(ctx, tags)
-        await self.send_hug(ctx, member, str(gelbooru_url))
+        gelbooru_image = await self.get_hug_gelbooru(ctx, tags)
+        await self.send_hug(ctx, member, gelbooru_image)
 
     @commands.hybrid_group()
     async def hugconfigure(self, ctx):
