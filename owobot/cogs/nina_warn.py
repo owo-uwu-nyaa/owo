@@ -56,9 +56,9 @@ def create_embed_for_warning(warning):
             msg_type = "Expired"
             expired = True
 
+    embed.set_thumbnail(url="https://www.bbk.bund.de/SharedDocs/Bilder/DE/Themen-BBK-spezifisch/Warn-App-NINA/NINA-Icon-Warnmeldungen.png?__blob=square&v=7")
     embed.description = f"[{msg_type}] [{warning['status']}] - {info.get('senderName', info.get('web', '?').lower())}" + (" - **THIS IS A TEST**" if warning["status"] == "Test" else "")
     embed.color = SEVERITY[severity][2]
-
     embed.add_field(name=SEVERITY[severity][1] + " " + info.get("headline", "?") + (" [EXPIRED]" if expired else ""), value=unescape(info.get("description", "")).replace("<br/>","\n") + "\n"+info.get("instructions", ""), inline=False)
     if effective:
         embed.add_field(name="Effective from", value=datetime.datetime.fromisoformat(effective).strftime("%A %Y/%m/%d %H:%M"), inline=True)
@@ -102,7 +102,10 @@ class NinaWarn(commands.Cog):
 
     @tasks.loop(seconds=60)
     async def update_channel(self):
-        log.info("Running scheduled task")
+        if not self.bot.config.nina_enabled:
+            return
+        
+        log.debug("Running scheduled NINA task")
         channels = list(
             filter(
                 lambda x: str(x.id) in self.bot.config.nina_warning_channels,
@@ -151,7 +154,7 @@ class NinaWarn(commands.Cog):
                     
                 # If msgType is Update and the previous warning has been found, reply to it
                 if outdated_message:
-                    await outdated_message.reply(content=identifier, embed=embed)
+                    await outdated_message[0].reply(content=identifier, embed=embed)
                     continue
 
                 # If no old message with given ID is found, send a new one

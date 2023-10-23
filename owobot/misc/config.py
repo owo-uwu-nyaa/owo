@@ -70,10 +70,15 @@ class Config:
         self.down_emo = str(self.get_key("navigation", "down_emo"))
 
         self.dl_folder = str(self.get_key("music", "dl_location"))
+        
         self.mensa_channels = str(self.get_key("mensa", "target_channel_id"))
-        self.nina_warning_channels = list(map(str, self.get_key("nina", "target_channel_id")))
-        self.transport_channels = list(map(str, self.get_key("transportation", "target_channel_id")))
+
+        self.nina_enabled = bool(self.get_key("nina", "nina_enabled"))
         self.nina_ars = list(map(str, self.get_key("nina", "ars")))
+        self.nina_warning_channels = list(map(str, self.get_key("nina", "target_channel_id")))
+
+        self.mvg_enabled = bool(self.get_key("transportation", "mvg_enabled"))
+        self.transport_channels = list(map(str, self.get_key("transportation", "target_channel_id")))
 
         self.mensa_csv = str(self.get_key("mensa", "historyfile"))
 

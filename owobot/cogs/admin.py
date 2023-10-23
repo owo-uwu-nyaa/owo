@@ -1,7 +1,7 @@
 from discord.ext import commands
 from discord.ext.commands import Bot
 from owobot.misc import common
-from owobot.misc.database import NsflChan, OwoChan, RainbowGuild
+from owobot.misc.database import NsflChan, OwoChan, RainbowGuild, ForceEmbed, EvilTrackingParameter
 
 
 class Admin(commands.Cog):
@@ -10,6 +10,16 @@ class Admin(commands.Cog):
 
     def cog_check(self, ctx):
         return ctx.author.guild_permissions.administrator
+
+    @commands.hybrid_command()
+    async def add_embed_url(self, ctx, domain, new_domain):
+        query = ForceEmbed.insert(url=domain, new_url=new_domain).on_conflict("replace")
+        await common.try_exe_cute_query(ctx, query)
+
+    @commands.hybrid_command()
+    async def add_evil_parameter(self, ctx, domain, parameter_name):
+        query = EvilTrackingParameter.insert(url=domain, tracking_parameter=parameter_name).on_conflict("replace")
+        await common.try_exe_cute_query(ctx, query)
 
     @commands.hybrid_group()
     async def mark(self, ctx: commands.Context):
@@ -51,11 +61,16 @@ class Admin(commands.Cog):
 
     @commands.hybrid_command(brief="sync slash commands to the current guild")
     async def sync(self, ctx: commands.Context):
+        await ctx.send(f":3 Syncing {len(self.bot.cogs)} from a total of {self.bot.total_cog_count} cogs...")
+
         self.bot.tree.copy_global_to(guild=ctx.guild)
         synced = await self.bot.tree.sync(guild=ctx.guild)
         await ctx.send(
             f"Synced {len(synced)} slash command(s) to **{ctx.guild.name}**."
         )
+
+        if self.bot.error_cog_count > 0:
+            await ctx.send(f"⚠ Due to errors when loading the cogs, {self.bot.error_cog_count} cog(s) have been skipped. Some commands may not have been synced properly.")
 
 
 def setup(bot):

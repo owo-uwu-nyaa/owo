@@ -226,7 +226,7 @@ class Mensa(commands.Cog):
 
     @tasks.loop(minutes=10)
     async def update_channel(self):
-        log.info("Running scheduled task")
+        log.debug("Running scheduled task")
         channels = list(
             filter(
                 lambda x: str(x.id) in self.bot.config.mensa_channels,

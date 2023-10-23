@@ -1,21 +1,72 @@
 import asyncio
+import io
 import random
 import re
+import functools as ft
+
+from urllib.parse import urlparse, parse_qs, urlencode
 
 import discord
 import aiohttp
 from wand.image import Image
 from dhash import dhash_int
 from discord.ext import commands
+from discord import app_commands
 
-from owobot.misc import common, owolib
-from owobot.misc.database import MediaDHash
+from owobot.misc import common, owolib, interactions, discord_emoji
+from owobot.misc.database import EvilTrackingParameter, MediaDHash, ForceEmbed
 from owobot.owobot import OwOBot
 
+def get_urls_in_message(message):
+    urls = re.findall(r'(https?://\S+)', message.content)
+    return urls
 
-class SimpleCommands(commands.Cog):
+async def clear_links(urls=None):
+    cringe_urls = []
+    for url in urls:
+        new_url = None
+
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc
+
+        evil = False
+
+        params = parse_qs(parsed_url.query)
+        new_params = dict.copy(params)
+        for key in params.keys():
+            if EvilTrackingParameter.get_or_none(EvilTrackingParameter.url == domain and EvilTrackingParameter.tracking_parameter == key):
+                new_params.pop(key)
+                evil = True
+
+        if evil:
+            parsed_url = parsed_url._replace(query=urlencode(new_params, doseq=True))
+            new_url = True
+
+        nonembeddable_url = ForceEmbed.get_or_none(ForceEmbed.url == domain)
+        if nonembeddable_url:
+            parsed_url = parsed_url._replace(netloc=nonembeddable_url.new_url)
+            new_url = True
+
+        if new_url:
+            cringe_urls.append((url, parsed_url.geturl()))
+
+    return cringe_urls
+
+class SimpleCommands(interactions.ContextMenuCog):
     def __init__(self, bot: OwOBot):
         self.bot = bot
+        super().__init__()
+
+    @interactions.context_menu_command(name="Clear links")
+    async def remove_tracking(self, interaction: discord.Interaction, message: discord.Message) -> None:
+        await interaction.response.send_message('Looking for evil links :3', ephemeral=True)
+        cringe_urls = await clear_links(get_urls_in_message(message))
+        if len(cringe_urls) == 0:
+            await interaction.edit_original_response(content="I found nothing wrong with this message. Maybe consider using `add_evil_parameter` or `add_embed_url`")
+        else:
+            await message.add_reaction(discord_emoji.get_unicode_emoji("rotating_light"))
+            await message.reply("SHAME. I've cleaned the links in your message.\n" + "\n".join(map(lambda x: x[1], cringe_urls)), mention_author=True)
+
 
     @commands.hybrid_command(name="obamamedal")
     async def obamamedal(self, ctx):
@@ -25,12 +76,15 @@ class SimpleCommands(commands.Cog):
 
     @commands.hybrid_command()
     async def owobamamedal(self, ctx):
+        print(self)
         await ctx.send(
             "https://cdn.discordapp.com/attachments/938102328282722345/939605208999264367/Unbenannt.png"
         )
 
     @commands.hybrid_command(aliases=["hewwo"])
     async def hello(self, ctx):
+        print(self.x)
+
         await ctx.send(random.choice(["Hello", "Hello handsome :)"]))
 
     @commands.hybrid_command(aliases=["evewyone"])
@@ -158,14 +212,82 @@ class SimpleCommands(commands.Cog):
                     await SimpleCommands.send_shame_message(message, orig_post, url)
                 except Exception as ex:
                     print(ex)
+
+    async def recreate_message(self, message, content, reply):
+        files = []
+        attachments = list(message.attachments)
+
+        for attachment in attachments:
+            fp = io.BytesIO()
+            await attachment.save(fp)
+            fp.seek(0)
+            file = discord.File(
+                fp,
+                filename=attachment.filename,
+                description=attachment.description or "",
+                spoiler=attachment.is_spoiler(),
+            )
+            files.append(file)
+
+        webhook = None
+        for channel_webhook in await message.channel.webhooks():
+            if channel_webhook.user == self.bot.user and channel_webhook.auth_token is not None:
+                webhook = channel_webhook
+                break
+        if webhook is None:
+            webhook = await message.channel.create_webhook(name="if you read this you're cute")
+
+        reply_embed = (
+            await common.message_as_embedded_reply(
+                await message.channel.fetch_message(message.reference.message_id)
+            )
+            if message.reference
+            else None
+        )
+
+        # content may be at most 2000 characters
+        # https://discord.com/developers/docs/resources/webhook#execute-webhook-jsonform-params
+        send = ft.partial(
+            common.send_paginated,
+            webhook,
+            page_length=2000,
+            username=message.author.display_name,
+            avatar_url=message.author.display_avatar.url,
+            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
+        )
+        # send the "reply" and the actual message separately,
+        # which lets Discord automatically (re)generate the embeds from the message body in the second message
+        # (there is no way to send anything except 'rich' embeds through the API)
+
+        if reply_embed is not None:
+        # wait=True so messages don't get sent out-of-order
+            await send(embed=reply_embed, wait=True)
+        await send(content, files=files, wait=True)
+
+
+    async def clear_message(self, message, urls=None, delete=False):
+        cringe_urls = await clear_links(urls or get_urls_in_message(message))
+
+        content = message.content if len(cringe_urls) > 0 else None
+        for url, new_url in cringe_urls:
+            content = content.replace(url, new_url)
+
+        if content is None:
+            return
+        
+        await self.recreate_message(message, content, not delete)
+        if delete:
+            await message.delete()
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if message.author == self.bot.user:
+
+        if message.author == self.bot.user or message.webhook_id is not None:
             return
 
-        urls = re.findall(r'(https?://\S+)', message.content)
-        urls += [a.url for a in message.attachments]
+        urls = get_urls_in_message(message)
         if self.bot.config.repost_shaming and urls:
+            urls += [a.url for a in message.attachments]
             for url in urls:
                 await self.check_url_for_repost(url, message)
 
@@ -182,6 +304,8 @@ class SimpleCommands(commands.Cog):
             sad_words_minus = self.sad_words - {word}
             send_word = random.choice(tuple(sad_words_minus))
             await message.channel.send(send_word)
+
+        await self.clear_message(message, urls=urls, delete=True)
 
 
 def setup(bot):
