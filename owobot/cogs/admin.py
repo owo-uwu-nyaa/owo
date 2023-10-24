@@ -31,6 +31,16 @@ class Admin(commands.Cog):
         query = EvilTrackingParameter.insert(url=domain, tracking_parameter=parameter_name).on_conflict("replace")
         await common.try_exe_cute_query(ctx, query)
 
+    @commands.hybrid_command()
+    async def add_embed_url(self, ctx, domain, new_domain):
+        query = ForceEmbed.insert(url=domain, new_url=new_domain).on_conflict("replace")
+        await common.try_exe_cute_query(ctx, query)
+
+    @commands.hybrid_command()
+    async def add_evil_parameter(self, ctx, domain, parameter_name):
+        query = EvilTrackingParameter.insert(url=domain, tracking_parameter=parameter_name).on_conflict("replace")
+        await common.try_exe_cute_query(ctx, query)
+
     @commands.hybrid_group()
     async def mark(self, ctx: commands.Context):
         pass

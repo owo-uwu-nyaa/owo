@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements.in
 #
-aiohttp==3.8.5
+aiohttp==3.8.6
     # via
     #   -r requirements.in
     #   catapi-py
@@ -42,13 +42,13 @@ charset-normalizer==3.2.0
     # via
     #   aiohttp
     #   requests
-cowsay==5.0
+cowsay==6.1
     # via -r requirements.in
 dhash==1.4
     # via -r requirements.in
-discord-py==2.3.1
+discord-py==2.3.2
     # via -r requirements.in
-emoji==2.7.0
+emoji==2.8.0
     # via -r requirements.in
 frozenlist==1.4.0
     # via
@@ -58,9 +58,9 @@ furl==2.1.3
     # via pygelbooru
 h11==0.14.0
     # via httpcore
-httpcore==0.17.3
+httpcore==0.18.0
     # via httpx
-httpx==0.24.1
+httpx==0.25.0
     # via -r requirements.in
 ics==0.7.2
     # via -r requirements.in
@@ -72,7 +72,7 @@ idna==3.4
     #   yarl
 kaleido==0.2.1
     # via -r requirements.in
-more-itertools==10.0.0
+more-itertools==10.1.0
     # via -r requirements.in
 multidict==6.0.4
     # via
@@ -86,21 +86,21 @@ orderedmultidict==1.0.1
     # via furl
 packaging==23.1
     # via plotly
-pandas==2.0.3
+pandas==2.1.1
     # via -r requirements.in
-peewee==3.16.2
+peewee==3.17.0
     # via -r requirements.in
-plotly==5.15.0
+plotly==5.17.0
     # via -r requirements.in
 py4j==0.10.9.7
     # via pyspark
 pycryptodomex==3.18.0
     # via yt-dlp
-pyfiglet==0.8.post1
+pyfiglet==1.0.2
     # via -r requirements.in
 pygelbooru==0.5.0
     # via -r requirements.in
-pyspark==3.4.1
+pyspark==3.5.0
     # via -r requirements.in
 python-dateutil==2.8.2
     # via
@@ -109,7 +109,7 @@ python-dateutil==2.8.2
     #   pandas
 pytz==2023.3
     # via pandas
-recordclass==0.19.2
+recordclass==0.21
     # via -r requirements.in
 requests==2.31.0
     # via -r requirements.in
@@ -146,5 +146,5 @@ yarl==1.9.2
     # via
     #   -r requirements.in
     #   aiohttp
-yt-dlp==2023.7.6
+yt-dlp==2023.10.13
     # via -r requirements.in
