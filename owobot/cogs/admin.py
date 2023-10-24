@@ -10,6 +10,16 @@ class Admin(commands.Cog):
 
     def cog_check(self, ctx):
         return ctx.author.guild_permissions.administrator
+    
+    @commands.hybrid_command()
+    async def purge(self, ctx, n):
+        n = int(n)
+        if n < 1 or n >= 50:
+            return
+
+        msg = await ctx.send(f"Deleting {n} message(s)...")
+        deleted = await ctx.channel.purge(limit=int(n), bulk=True, check=lambda m: m != msg and m != ctx.message)
+        await msg.edit(content=f'Sucessfully deleted {len(deleted)} message(s)')
 
     @commands.hybrid_command()
     async def add_embed_url(self, ctx, domain, new_domain):
