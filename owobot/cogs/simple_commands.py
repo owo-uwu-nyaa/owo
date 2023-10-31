@@ -13,7 +13,7 @@ from dhash import dhash_int
 from discord.ext import commands
 from discord import app_commands
 
-from owobot.misc import common, owolib, interactions, discord_emoji
+from owobot.misc import common, owolib, interactions, discord_emoji, bottom
 from owobot.misc.database import EvilTrackingParameter, MediaDHash, ForceEmbed
 from owobot.owobot import OwOBot
 
@@ -76,15 +76,12 @@ class SimpleCommands(interactions.ContextMenuCog):
 
     @commands.hybrid_command()
     async def owobamamedal(self, ctx):
-        print(self)
         await ctx.send(
             "https://cdn.discordapp.com/attachments/938102328282722345/939605208999264367/Unbenannt.png"
         )
 
     @commands.hybrid_command(aliases=["hewwo"])
     async def hello(self, ctx):
-        print(self.x)
-
         await ctx.send(random.choice(["Hello", "Hello handsome :)"]))
 
     @commands.hybrid_command(aliases=["evewyone"])
@@ -127,15 +124,25 @@ class SimpleCommands(interactions.ContextMenuCog):
     async def steal(self, ctx, member: discord.Member):
         await ctx.send(member.display_avatar.url)
 
-    @commands.hybrid_command(brief="Purges up to n : [1,50] messages")
-    async def purge(self, ctx, n):
-        n = int(n)
-        if n < 1 or n >= 50:
-            return
+    @commands.hybrid_command()
+    async def bottom(self, ctx, text):
+        result = ""
+        try:
+            result = bottom.to_bottom(text)
+        except Exception as e:
+            result = e
+        finally:
+            await ctx.send(result)
 
-        msg = await ctx.send(f"Deleting {n} message(s)...")
-        deleted = await ctx.channel.purge(limit=int(n), bulk=True, check=lambda m: m != msg and m != ctx.message)
-        await msg.edit(content=f'Sucessfully deleted {len(deleted)} message(s)')
+    @commands.hybrid_command()
+    async def unbottom(self, ctx, text):
+        result = ""
+        try:
+            result = bottom.from_bottom(text)
+        except Exception as e:
+            result = e
+        finally:
+            await ctx.send(result)
 
     @commands.hybrid_command(brief="Pong is a table tennis–themed twitch arcade sports video game "
                                    "featuring simple graphics.")
