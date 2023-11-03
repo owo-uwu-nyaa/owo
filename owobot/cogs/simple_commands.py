@@ -34,7 +34,7 @@ async def clear_links(urls=None):
         params = parse_qs(parsed_url.query)
         new_params = dict.copy(params)
         for key in params.keys():
-            if EvilTrackingParameter.get_or_none(EvilTrackingParameter.url == domain & EvilTrackingParameter.tracking_parameter == key):
+            if EvilTrackingParameter.get_or_none((EvilTrackingParameter.url == domain) & (EvilTrackingParameter.tracking_parameter == key)):
                 new_params.pop(key)
                 evil = True
 
