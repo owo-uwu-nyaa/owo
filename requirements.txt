@@ -38,12 +38,16 @@ certifi==2023.7.22
     #   httpx
     #   requests
     #   yt-dlp
+cffi==1.16.0
+    # via cryptography
 charset-normalizer==3.2.0
     # via
     #   aiohttp
     #   requests
 cowsay==6.1
     # via -r requirements.in
+cryptography==41.0.5
+    # via secretstorage
 dhash==1.4
     # via -r requirements.in
 discord-py==2.3.2
@@ -70,6 +74,8 @@ idna==3.4
     #   httpx
     #   requests
     #   yarl
+jeepney==0.8.0
+    # via secretstorage
 kaleido==0.2.1
     # via -r requirements.in
 more-itertools==10.1.0
@@ -94,6 +100,8 @@ plotly==5.17.0
     # via -r requirements.in
 py4j==0.10.9.7
     # via pyspark
+pycparser==2.21
+    # via cffi
 pycryptodomex==3.18.0
     # via yt-dlp
 pyfiglet==1.0.2
@@ -112,7 +120,11 @@ pytz==2023.3
 recordclass==0.21
     # via -r requirements.in
 requests==2.31.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   yt-dlp
+secretstorage==3.3.3
+    # via yt-dlp
 six==1.16.0
     # via
     #   furl
@@ -135,7 +147,9 @@ toml==0.10.2
 tzdata==2023.3
     # via pandas
 urllib3==2.0.4
-    # via requests
+    # via
+    #   requests
+    #   yt-dlp
 wand==0.6.11
     # via -r requirements.in
 websockets==11.0.3
@@ -146,5 +160,5 @@ yarl==1.9.2
     # via
     #   -r requirements.in
     #   aiohttp
-yt-dlp==2023.10.13
+yt-dlp==2023.11.14
     # via -r requirements.in
