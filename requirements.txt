@@ -112,7 +112,9 @@ pytz==2023.3
 recordclass==0.21
     # via -r requirements.in
 requests==2.31.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   yt-dlp
 six==1.16.0
     # via
     #   furl
@@ -135,7 +137,9 @@ toml==0.10.2
 tzdata==2023.3
     # via pandas
 urllib3==2.0.4
-    # via requests
+    # via
+    #   requests
+    #   yt-dlp
 wand==0.6.11
     # via -r requirements.in
 websockets==11.0.3
@@ -146,5 +150,5 @@ yarl==1.9.2
     # via
     #   -r requirements.in
     #   aiohttp
-yt-dlp==2023.10.13
+yt-dlp==2023.11.16
     # via -r requirements.in
