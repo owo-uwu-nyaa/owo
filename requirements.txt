@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements.in
 #
-aiohttp==3.8.6
+aiohttp==3.9.0
     # via
     #   -r requirements.in
     #   catapi-py
@@ -13,11 +13,11 @@ aiohttp==3.8.6
 aiosignal==1.3.1
     # via aiohttp
 anyio==3.7.1
-    # via httpcore
+    # via
+    #   httpcore
+    #   httpx
 arrow==1.2.3
     # via ics
-async-timeout==4.0.2
-    # via aiohttp
 asyncache==0.3.1
     # via -r requirements.in
 attrs==23.1.0
@@ -26,7 +26,7 @@ attrs==23.1.0
     #   ics
 brotli==1.0.9
     # via yt-dlp
-cachetools==5.3.1
+cachetools==5.3.2
     # via
     #   -r requirements.in
     #   asyncache
@@ -39,9 +39,7 @@ certifi==2023.7.22
     #   requests
     #   yt-dlp
 charset-normalizer==3.2.0
-    # via
-    #   aiohttp
-    #   requests
+    # via requests
 cowsay==6.1
     # via -r requirements.in
 dhash==1.4
@@ -60,7 +58,7 @@ h11==0.14.0
     # via httpcore
 httpcore==0.18.0
     # via httpx
-httpx==0.25.0
+httpx==0.25.1
     # via -r requirements.in
 ics==0.7.2
     # via -r requirements.in
@@ -86,11 +84,11 @@ orderedmultidict==1.0.1
     # via furl
 packaging==23.1
     # via plotly
-pandas==2.1.1
+pandas==2.1.3
     # via -r requirements.in
 peewee==3.17.0
     # via -r requirements.in
-plotly==5.17.0
+plotly==5.18.0
     # via -r requirements.in
 py4j==0.10.9.7
     # via pyspark
@@ -112,7 +110,9 @@ pytz==2023.3
 recordclass==0.21
     # via -r requirements.in
 requests==2.31.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   yt-dlp
 six==1.16.0
     # via
     #   furl
@@ -135,8 +135,10 @@ toml==0.10.2
 tzdata==2023.3
     # via pandas
 urllib3==2.0.4
-    # via requests
-wand==0.6.11
+    # via
+    #   requests
+    #   yt-dlp
+wand==0.6.13
     # via -r requirements.in
 websockets==11.0.3
     # via yt-dlp
@@ -146,5 +148,5 @@ yarl==1.9.2
     # via
     #   -r requirements.in
     #   aiohttp
-yt-dlp==2023.10.13
+yt-dlp==2023.11.16
     # via -r requirements.in
