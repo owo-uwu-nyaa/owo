@@ -142,7 +142,7 @@ websockets==11.0.3
     # via yt-dlp
 xmltodict==0.13.0
     # via pygelbooru
-yarl==1.9.2
+yarl==1.9.3
     # via
     #   -r requirements.in
     #   aiohttp
