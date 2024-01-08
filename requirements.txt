@@ -90,7 +90,7 @@ plotly==5.18.0
     # via -r requirements.in
 py4j==0.10.9.7
     # via pyspark
-pycryptodomex==3.18.0
+pycryptodomex==3.19.1
     # via yt-dlp
 pyfiglet==1.0.2
     # via -r requirements.in
