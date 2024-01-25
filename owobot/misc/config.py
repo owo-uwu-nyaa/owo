@@ -135,6 +135,7 @@ class Config:
             self.http_url = yarl.URL(self.http_url)
 
         self.anon_port = int(self.get_key("anon", "port", default=None))
+        self.anon_hostname = int(self.get_key("anon", "hostname", default=None))
         self.anon_chan = int(self.get_key("anon", "chan", default=None))
         self.anon_guild = int(self.get_key("anon", "guild", default=None))
 

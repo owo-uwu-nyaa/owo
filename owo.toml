@@ -69,6 +69,7 @@ ssl = true
 
 [anon]
 
+hostname = ""
 port = 1337
 guild = 4242424242424242442424242
 channel = 424242424242424242424242

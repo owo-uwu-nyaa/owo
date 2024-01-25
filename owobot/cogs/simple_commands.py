@@ -73,7 +73,8 @@ class SimpleCommands(interactions.ContextMenuCog):
     async def run_anon_server(self):
         print("Starting anon server")
         port = self.bot.config.anon_port
-        server = await asyncio.start_server(self.send_anon_message, 'localhost', port)
+        hn = self.bot.config.anon_hostname
+        server = await asyncio.start_server(self.send_anon_message, hn, port)
         print("Started anon server")
         async with server:
             await server.serve_forever()
