@@ -66,3 +66,9 @@ ssl = true
 
 # URL at which the site is available (for communicating with users, but not used internally)
 # url = "https://your.site/"
+
+[anon]
+
+port = 1337
+guild = 4242424242424242442424242
+channel = 424242424242424242424242

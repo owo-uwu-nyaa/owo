@@ -3,6 +3,7 @@ import io
 import random
 import re
 import functools as ft
+import socket
 
 from urllib.parse import urlparse, parse_qs, urlencode
 
@@ -55,7 +56,22 @@ async def clear_links(urls=None):
 class SimpleCommands(interactions.ContextMenuCog):
     def __init__(self, bot: OwOBot):
         self.bot = bot
+        asyncio.run(self.run_anon_server())
         super().__init__()
+
+
+    async def send_anon_message(self, r, _):
+        text = r.readline()
+        channel = self.bot.config.anon_chan
+        guild = self.bot.config.anon_guild
+        anon_channel = self.bot.get_guild(guild).get_channel(channel)
+        await anon_channel.send(text)
+
+    async def run_anon_server(self):
+        port = self.bot.config.anon_port
+        server = await asyncio.start_server(self.send_anon_message, 'localhost', port)
+        async with server:
+            await server.serve_forever()
 
     @interactions.context_menu_command(name="Clear links")
     async def remove_tracking(self, interaction: discord.Interaction, message: discord.Message) -> None:
