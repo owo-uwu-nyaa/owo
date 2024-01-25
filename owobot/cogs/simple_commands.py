@@ -68,7 +68,7 @@ class SimpleCommands(interactions.ContextMenuCog):
         guild = self.bot.config.anon_guild
         anon_channel = self.bot.get_guild(guild).get_channel(channel)
         await anon_channel.send(text)
-        w.close()
+        await w.close()
 
     async def run_anon_server(self):
         print("Starting anon server")
