@@ -61,6 +61,7 @@ class SimpleCommands(interactions.ContextMenuCog):
 
 
     async def send_anon_message(self, r, _):
+        print("Received anon message")
         text = r.readline()
         channel = self.bot.config.anon_chan
         guild = self.bot.config.anon_guild
@@ -68,8 +69,10 @@ class SimpleCommands(interactions.ContextMenuCog):
         await anon_channel.send(text)
 
     async def run_anon_server(self):
+        print("Starting anon server")
         port = self.bot.config.anon_port
         server = await asyncio.start_server(self.send_anon_message, 'localhost', port)
+        print("Started anon server")
         async with server:
             await server.serve_forever()
 
