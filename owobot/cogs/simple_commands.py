@@ -56,7 +56,7 @@ async def clear_links(urls=None):
 class SimpleCommands(interactions.ContextMenuCog):
     def __init__(self, bot: OwOBot):
         self.bot = bot
-        asyncio.run(self.run_anon_server())
+        asyncio.create_task(self.run_anon_server())
         super().__init__()
 
 
