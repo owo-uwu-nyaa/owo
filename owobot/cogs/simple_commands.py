@@ -62,7 +62,7 @@ class SimpleCommands(interactions.ContextMenuCog):
 
     async def send_anon_message(self, r, _):
         print("Received anon message")
-        text = r.readline()
+        text = await r.readline()
         channel = self.bot.config.anon_chan
         guild = self.bot.config.anon_guild
         anon_channel = self.bot.get_guild(guild).get_channel(channel)
