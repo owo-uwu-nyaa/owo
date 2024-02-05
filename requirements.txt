@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements.in
 #
-aiohttp==3.9.1
+aiohttp==3.9.3
     # via
     #   -r requirements.in
     #   catapi-py
@@ -44,7 +44,7 @@ dhash==1.4
     # via -r requirements.in
 discord-py==2.3.2
     # via -r requirements.in
-emoji==2.9.0
+emoji==2.10.1
     # via -r requirements.in
 frozenlist==1.4.0
     # via
@@ -68,7 +68,7 @@ idna==3.4
     #   yarl
 kaleido==0.2.1
     # via -r requirements.in
-more-itertools==10.1.0
+more-itertools==10.2.0
     # via -r requirements.in
 multidict==6.0.4
     # via
@@ -82,7 +82,7 @@ orderedmultidict==1.0.1
     # via furl
 packaging==23.1
     # via plotly
-pandas==2.1.4
+pandas==2.2.0
     # via -r requirements.in
 peewee==3.17.0
     # via -r requirements.in
