@@ -84,9 +84,9 @@ packaging==23.1
     # via plotly
 pandas==2.2.0
     # via -r requirements.in
-peewee==3.17.0
+peewee==3.17.1
     # via -r requirements.in
-plotly==5.18.0
+plotly==5.19.0
     # via -r requirements.in
 py4j==0.10.9.7
     # via pyspark
